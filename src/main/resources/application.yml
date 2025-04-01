@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: DOAN
+  datasource:
+    url: jdbc:mysql://localhost:3306/test_auth
+    username: root
+    password: 17062003
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddlAuto: update
+    showSql: true
+  logging:
+    level:
+      org.springframework.security: DEBUG
+      org.springframework.mail: DEBUG
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: vonguyenphat012@gmail.com
+    password: gktr mpay hzyz meme
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
