@@ -1,6 +1,6 @@
 package dtu.doan.model;
-
 import jakarta.persistence.*;
+import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,24 +9,32 @@ import java.util.Date;
 
 @Data
 @Entity
-public class Customer {
+public class Employee {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(columnDefinition = ("varchar(45)"))
+    private String id;
     @NotNull
     private String fullName;
+    private String image;
+    @NotNull
     private Boolean gender;
     @DateTimeFormat()
+    @NotNull
     private Date birthday;
+    @NotNull
     private String email;
+    private Boolean isActivated;
+    @NotNull
     @Column(columnDefinition = ("varchar(15)"))
     private String phoneNumber;
+    @NotNull
+    @Column(columnDefinition = ("varchar(255)"))
     private String address;
+    @Column(columnDefinition = ("varchar(255)"))
     private String cardId;
-
-    @OneToOne
-    @JoinColumn(name = "username")
-    private Account account;
-
+    @ManyToOne
+    @JoinColumn(name = "position_id")
+    @NotNull
+    private Position position;
     private Boolean isDelete;
 }
