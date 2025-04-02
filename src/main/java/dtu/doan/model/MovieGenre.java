@@ -1,19 +1,23 @@
 package dtu.doan.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
-public class MovieAndType {
+public class MovieGenre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "movie_id")
+    @JsonIgnore
     private Movie movie;
 
     @ManyToOne
-    @JoinColumn(name = "movie_type_id")
-    private MovieType movieType;
+    @JoinColumn(name = "genre_id")
+    @JsonIgnore
+    private Genre genre;
 }

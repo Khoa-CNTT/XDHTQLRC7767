@@ -1,0 +1,116 @@
+package dtu.doan.service.impl;
+
+import dtu.doan.dto.IMovieDetailDTO;
+import dtu.doan.dto.MovieRequestDTO;
+import dtu.doan.dto.MovieResponseDTO;
+import dtu.doan.model.Genre;
+import dtu.doan.model.Movie;
+import dtu.doan.model.MovieGenre;
+import dtu.doan.repository.GenreRepository;
+import dtu.doan.repository.MovieGenreRepository;
+import dtu.doan.repository.MovieRepository;
+import dtu.doan.service.MovieService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+public class MovieServiceImpl implements MovieService {
+    @Autowired
+    private MovieRepository repository;
+    @Autowired
+    private GenreRepository genreRepository;
+    @Autowired
+    private MovieGenreRepository movieGenreRepository;
+
+    @Override
+    public List<Movie> getMovieList(String name, String director, String actor, String genreName) {
+        List<Movie> movies = repository.searchMovies(name, director, actor, genreName);
+
+        return movies;
+    }
+
+    // UI detail role user
+    @Override
+    public IMovieDetailDTO getMovieById(Long id) {
+        return repository.getMovieById(id);
+    }
+
+    @Transactional
+    @Override
+    public Movie saveMovie(MovieRequestDTO movie) {
+        Movie movieEntity;
+        if (movie.getId() != null && repository.existsById(movie.getId())) {
+            movieEntity = repository.findById(movie.getId()).orElse(new Movie());
+        } else {
+            movieEntity = new Movie();
+        }
+        movieEntity.setName(movie.getName());
+        movieEntity.setDirector(movie.getDirector());
+        movieEntity.setActor(movie.getActor());
+        movieEntity.setDescription(movie.getDescription());
+        movieEntity.setReleaseYear(movie.getReleaseYear());
+        movieEntity.setDuration(movie.getDuration());
+        movieEntity.setRating(movie.getRating());
+        movieEntity.setImageUrl(movie.getImageUrl());
+        movieEntity.setDelete(false);
+        Movie savedMovie = repository.save(movieEntity);
+
+        if (movie.getGenreIds() != null && !movie.getGenreIds().isEmpty()) {
+
+            List<MovieGenre> existingMovieGenres = movieGenreRepository.findByMovieId(savedMovie.getId());
+            movieGenreRepository.deleteAll(existingMovieGenres);
+
+            List<MovieGenre> newMovieGenres = new ArrayList<>();
+            for (Long genreId : movie.getGenreIds()) {
+                Genre genre = genreRepository.findById(genreId).orElseThrow(
+                        () -> new RuntimeException("Genre not found with ID: " + genreId)
+                );
+                MovieGenre movieGenre = new MovieGenre();
+                movieGenre.setMovie(savedMovie);
+                movieGenre.setGenre(genre);
+                newMovieGenres.add(movieGenre);
+            }
+
+            movieGenreRepository.saveAll(newMovieGenres);
+        }
+        return savedMovie;
+    }
+
+    @Override
+    public void deleteMovie(Long id) {
+        Movie movie = repository.findById(id).orElse(null);
+        if (movie != null) {
+            movie.setDelete(true);
+            repository.save(movie);
+        }
+    }
+
+    @Override
+    public MovieResponseDTO getMovieDtl(Long id) {
+        Movie movie = repository.findById(id).orElse(null);
+        if (movie != null) {
+            MovieResponseDTO movieResponseDTO = new MovieResponseDTO();
+            movieResponseDTO.setId(movie.getId());
+            movieResponseDTO.setName(movie.getName());
+            movieResponseDTO.setDescription(movie.getDescription());
+            movieResponseDTO.setImageUrl(movie.getImageUrl());
+            movieResponseDTO.setDirector(movie.getDirector());
+            movieResponseDTO.setActor(movie.getActor());
+            movieResponseDTO.setDuration(movie.getDuration());
+            movieResponseDTO.setReleaseYear(movie.getReleaseYear());
+            movieResponseDTO.setRating(movie.getRating());
+            Set<Genre> genres =  new HashSet<>(genreRepository.getGenreByMovieId(movie.getId()));
+            System.out.println(genres);
+            movieResponseDTO.setMovieGenres(new HashSet<>());
+
+            return movieResponseDTO;
+        }
+        return null;
+    }
+}

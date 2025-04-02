@@ -14,7 +14,4 @@ public class Cinema {
     private String email;
     private String imageUrl;
     private boolean isDelete;
-    @ManyToOne
-    @JoinColumn(name = "movie_id")
-    private Movie movie;
 }

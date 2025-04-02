@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
+
+import java.util.Set;
 
 @Data
 @Entity
@@ -17,12 +18,12 @@ public class Movie {
     private String imageUrl;
     private String director;
     private String actor;
-    private String genre;
     private int duration;
     private int releaseYear;
     private double rating;
     private boolean isDelete;
     @OneToMany(mappedBy = "movie")
     @JsonIgnore
-    private List<MovieAndType> getListType;
+    private Set<MovieGenre> movieGenres;
+
 }

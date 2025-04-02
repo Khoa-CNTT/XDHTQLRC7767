@@ -5,7 +5,7 @@ import dtu.doan.model.Account;
 import dtu.doan.model.VerificationToken;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.VerificationTokenRepository;
-import dtu.doan.service.MailService;
+import dtu.doan.service.impl.MailService;
 import dtu.doan.service.VerificationService;
 import dtu.doan.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
