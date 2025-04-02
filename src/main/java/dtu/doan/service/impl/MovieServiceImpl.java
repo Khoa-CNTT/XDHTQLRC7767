@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class MovieServiceImpl implements MovieService {
@@ -30,9 +28,7 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     public List<Movie> getMovieList(String name, String director, String actor, String genreName) {
-        List<Movie> movies = repository.searchMovies(name, director, actor, genreName);
-
-        return movies;
+        return repository.searchMovies(name, director, actor, genreName);
     }
 
     // UI detail role user
@@ -43,7 +39,7 @@ public class MovieServiceImpl implements MovieService {
 
     @Transactional
     @Override
-    public Movie saveMovie(MovieRequestDTO movie) {
+    public MovieResponseDTO saveMovie(MovieRequestDTO movie) {
         Movie movieEntity;
         if (movie.getId() != null && repository.existsById(movie.getId())) {
             movieEntity = repository.findById(movie.getId()).orElse(new Movie());
@@ -76,10 +72,22 @@ public class MovieServiceImpl implements MovieService {
                 movieGenre.setGenre(genre);
                 newMovieGenres.add(movieGenre);
             }
-
             movieGenreRepository.saveAll(newMovieGenres);
         }
-        return savedMovie;
+
+        MovieResponseDTO savedMovieResponse = new MovieResponseDTO();
+        savedMovieResponse.setId(savedMovie.getId());
+        savedMovieResponse.setName(savedMovie.getName());
+        savedMovieResponse.setDirector(savedMovie.getDirector());
+        savedMovieResponse.setActor(savedMovie.getActor());
+        savedMovieResponse.setDescription(savedMovie.getDescription());
+        savedMovieResponse.setReleaseYear(savedMovie.getReleaseYear());
+        savedMovieResponse.setDuration(savedMovie.getDuration());
+        savedMovieResponse.setRating(savedMovie.getRating());
+        savedMovieResponse.setImageUrl(savedMovie.getImageUrl());
+        savedMovieResponse.setMovieGenres(genreRepository.getGenreByMovieId(savedMovie.getId()));
+        return savedMovieResponse;
+
     }
 
     @Override
@@ -105,9 +113,8 @@ public class MovieServiceImpl implements MovieService {
             movieResponseDTO.setDuration(movie.getDuration());
             movieResponseDTO.setReleaseYear(movie.getReleaseYear());
             movieResponseDTO.setRating(movie.getRating());
-            Set<Genre> genres =  new HashSet<>(genreRepository.getGenreByMovieId(movie.getId()));
-            System.out.println(genres);
-            movieResponseDTO.setMovieGenres(new HashSet<>());
+            List<Genre> genres =  genreRepository.getGenreByMovieId(movie.getId());
+            movieResponseDTO.setMovieGenres(genres);
 
             return movieResponseDTO;
         }

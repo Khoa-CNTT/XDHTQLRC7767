@@ -13,7 +13,7 @@ public interface MovieService {
 
     IMovieDetailDTO getMovieById(Long id);
 
-    Movie saveMovie(MovieRequestDTO movie);
+    MovieResponseDTO saveMovie(MovieRequestDTO movie);
 
     void deleteMovie(Long id);
 

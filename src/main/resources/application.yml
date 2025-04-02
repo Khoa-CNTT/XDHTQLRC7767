@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/doan
     username: root
-    password: 1234
+    password: 17062003
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

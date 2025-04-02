@@ -1,9 +1,10 @@
 package dtu.doan.dto;
 
 import dtu.doan.model.Genre;
+import dtu.doan.model.Movie;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 @Data
 public class MovieResponseDTO {
     private Long id;
@@ -15,5 +16,6 @@ public class MovieResponseDTO {
     private int duration;
     private int releaseYear;
     private double rating;
-    private Set<Genre> movieGenres;
+    private List<Genre> movieGenres;
+
 }
