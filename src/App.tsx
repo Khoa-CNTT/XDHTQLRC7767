@@ -21,6 +21,7 @@ import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
 import CinemaPage from "./pages/user/CinemaPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import UserLayout from "./layouts/UserLayout";
+import InvoicePage from "./pages/user/InvoicePage";
 
 // Admin pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -84,6 +85,8 @@ const AppRoutes = () => {
           </UserLayout>
         }
       />
+      <Route path="/invoice" element={<InvoicePage />} />
+      
       {/* Login và Register không sử dụng UserLayout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
