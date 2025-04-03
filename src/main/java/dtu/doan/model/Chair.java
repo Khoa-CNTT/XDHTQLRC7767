@@ -21,6 +21,6 @@ public class Chair {
     @OneToOne
     @JoinColumn(name = "room_id")
     private Room room;
-    @ManyToMany(mappedBy = "chairs")
-    private Set<Ticket> tickets;
+    @OneToOne
+    private Ticket tickets;
 }

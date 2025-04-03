@@ -46,7 +46,10 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
-
+	implementation 'com.google.zxing:core:3.5.0'
+	implementation 'com.google.zxing:javase:3.5.0'
+	implementation 'com.google.zxing:core:3.5.0'
+	implementation 'com.google.zxing:javase:3.5.0'
 
 
 }

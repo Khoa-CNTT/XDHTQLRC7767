@@ -23,7 +23,7 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String code;
-    private String status;
+    private Boolean used;
     private String type;
     private int price;
     @DateTimeFormat
@@ -31,11 +31,8 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "show_time_id")
     private ShowTime showTime;
-    @ManyToMany
-    @JoinTable(name = "ticket_chair",
-            joinColumns = @JoinColumn(name = "ticket_id"),
-            inverseJoinColumns = @JoinColumn(name = "chair_id"))
-    private Set<Chair> chairs;
+    @OneToOne
+    private Chair chairs;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private Customer customer;
