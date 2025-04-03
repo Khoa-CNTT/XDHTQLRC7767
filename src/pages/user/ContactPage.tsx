@@ -6,8 +6,6 @@ import {
   MailOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
@@ -22,7 +20,7 @@ const ContentWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 0;
-  
+
   @media (max-width: 768px) {
     width: 90%;
     padding: 30px 0;
@@ -117,13 +115,13 @@ const MapContainer = styled.div`
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 20px;
-  
+
   iframe {
     width: 100%;
     height: 100%;
     border: 0;
   }
-  
+
   @media (max-width: 768px) {
     height: 300px;
   }
@@ -148,8 +146,6 @@ const ContactPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <HeaderNoSlider />
-
       <ContentWrapper>
         <PageTitle>Liên hệ với chúng tôi</PageTitle>
 
@@ -314,7 +310,6 @@ const ContactPage: React.FC = () => {
         </Row>
       </ContentWrapper>
 
-      <Footer />
     </PageContainer>
   );
 };

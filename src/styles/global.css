@@ -1,0 +1,69 @@
+/* Màu hover cho menu items */
+.ant-menu-horizontal > .ant-menu-item:hover,
+.ant-menu-horizontal > .ant-menu-submenu:hover {
+  color: #00BFFF !important; /* Màu xanh da trời sáng */
+  border-bottom: 2px solid #00BFFF !important;
+  background-color: rgba(0, 191, 255, 0.1) !important; /* Thêm background nhẹ */
+  transition: all 0.3s ease !important;
+  transform: translateY(-2px) !important; /* Hiệu ứng nâng lên nhẹ */
+}
+
+/* Màu active/selected cho menu items */
+.ant-menu-horizontal > .ant-menu-item-selected,
+.ant-menu-horizontal > .ant-menu-submenu-selected {
+  color: #e94560 !important; /* Giữ màu đỏ cho selected */
+  border-bottom: 2px solid #e94560 !important;
+}
+
+/* Thêm hiệu ứng khi hover vào các nút */
+.ant-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Hiệu ứng cho logo khi hover */
+.logo-container:hover {
+  background-color: rgba(0, 191, 255, 0.1) !important;
+}
+
+/* Hiệu ứng cho menu mobile */
+.ant-drawer .ant-menu-item:hover {
+  color: #00BFFF !important;
+  background-color: rgba(0, 191, 255, 0.1) !important;
+}
+
+/* Hiệu ứng cho nút tìm kiếm */
+.search-button:hover {
+  background-color: #00BFFF !important;
+  color: #16213e !important;
+}
+
+/* Hiệu ứng cho thumbnail */
+.small-thumbnail:hover {
+  border-color: #00BFFF !important;
+  transform: translateY(-5px) !important;
+  box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3) !important;
+}
+
+/* Hiệu ứng cho nút slider */
+.slider-button:hover {
+  background-color: rgba(0, 191, 255, 0.7) !important;
+  color: #16213e !important;
+}
+
+/* Hiệu ứng cho menu item khi hover */
+.ant-menu-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #00BFFF;
+  transition: width 0.3s ease;
+}
+
+.ant-menu-item:hover::after {
+  width: 100%;
+} 

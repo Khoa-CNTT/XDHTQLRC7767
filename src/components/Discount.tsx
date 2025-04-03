@@ -6,7 +6,7 @@ import { fadeIn, slideInLeft, slideInRight } from "../utils/animations";
 // Styled Components
 const DiscountContainer = styled.div`
   width: 100%;
-  background-color: #f9f9f1;
+  background-color: #f8f9fa;
   padding: 40px 0;
   display: flex;
   flex-direction: column;
@@ -16,7 +16,7 @@ const DiscountContainer = styled.div`
 const DiscountContent = styled.div`
   width: 80%;
   max-width: 1200px;
-  
+
   @media (max-width: 768px) {
     width: 90%;
   }
@@ -27,7 +27,7 @@ const DiscountTitle = styled.h2`
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 30px;
-  color: #000;
+  color: #00bfff;
 `;
 
 const DiscountGrid = styled.div`
@@ -35,11 +35,11 @@ const DiscountGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto;
   gap: 20px;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -48,7 +48,7 @@ const DiscountGrid = styled.div`
 const DiscountItem = styled.div`
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
   background-color: white;
@@ -58,7 +58,7 @@ const DiscountItem = styled.div`
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 191, 255, 0.2);
   }
 `;
 
@@ -80,11 +80,11 @@ const DiscountTextBox = styled.div`
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
-  
+
   @media (max-width: 1024px) {
     grid-column: span 2;
   }
-  
+
   @media (max-width: 768px) {
     grid-column: 1;
   }
@@ -108,7 +108,7 @@ const DiscountName = styled.h3<{ $isRed?: boolean }>`
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
-  color: ${(props) => (props.$isRed ? "#e74c3c" : "#333")};
+  color: ${(props) => (props.$isRed ? "#00bfff" : "#1a1a2e")};
 `;
 
 const DiscountDescription = styled.p`
@@ -128,7 +128,7 @@ const Discount: React.FC = () => {
       rootMargin: "0px",
       threshold: 0.2,
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -137,11 +137,11 @@ const Discount: React.FC = () => {
         }
       });
     }, options);
-    
+
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
     }
-    
+
     return () => {
       if (sectionRef.current) {
         observer.unobserve(sectionRef.current);

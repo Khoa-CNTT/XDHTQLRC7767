@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Statistic, Table, Typography, DatePicker, Button } from "antd";
+import {
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Table,
+  Typography,
+  DatePicker,
+  Button,
+} from "antd";
 import {
   UserOutlined,
   ShoppingCartOutlined,
@@ -172,11 +181,16 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 24,
+        }}
+      >
         <Title level={2} style={{ margin: 0 }}>
           Tổng quan
         </Title>
-        <RangePicker style={{ width: 300 }} />
       </div>
 
       <Row gutter={[24, 24]}>
