@@ -5,7 +5,11 @@ import lombok.Data;
 import jakarta.persistence.*;
 @Data
 @Entity
-@Table(name = "job_position")
+@Table(name = "job_position",indexes = {
+        @Index(name = "idx_position_name", columnList = "name"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name"),
+})
 public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

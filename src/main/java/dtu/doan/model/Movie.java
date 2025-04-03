@@ -13,6 +13,8 @@ import java.util.Set;
         @Index(name = "idx_movie_name", columnList = "name"),
         @Index(name = "idx_movie_director", columnList = "director"),
         @Index(name = "idx_movie_actor", columnList = "actor"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name"),
 })
 public class Movie {
     @Id

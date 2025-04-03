@@ -13,6 +13,9 @@ import java.util.Date;
         @Index(name = "idx_fullName", columnList = "fullName"),
         @Index(name = "idx_email", columnList = "email"),
         @Index(name = "idx_phoneNumber", columnList = "phoneNumber"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "phoneNumber"),
 })
 public class Employee {
     @Id

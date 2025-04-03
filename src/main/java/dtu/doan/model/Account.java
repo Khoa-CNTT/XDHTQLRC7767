@@ -7,6 +7,8 @@ import lombok.Data;
 @Table(indexes = {
         @Index(name = "idx_username", columnList = "username"),
         @Index(name = "idx_password", columnList = "password"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
 })
 public class Account {
     @Id

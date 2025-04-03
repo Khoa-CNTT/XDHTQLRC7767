@@ -12,6 +12,8 @@ import java.util.Date;
         @Index(name = "idx_endTime", columnList = "endTime"),
         @Index(name = "idx_date", columnList = "date"),
         @Index(name = "idx_status", columnList = "status"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"startTime", "endTime", "date", "room_id"}),
 })
 public class ShowTime {
     @Id

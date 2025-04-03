@@ -9,7 +9,14 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(indexes = {
+@Table(name = "customer",indexes = {
+        @Index(name = "idx_customer_username", columnList = "username"),
+        @Index(name = "idx_customer_email", columnList = "email"),
+        @Index(name = "idx_customer_cardId", columnList = "cardId")
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "cardId")
 })
 public class Customer {
     @Id

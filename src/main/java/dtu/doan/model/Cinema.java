@@ -7,6 +7,8 @@ import lombok.Data;
 @Table(indexes = {
         @Index(name = "idx_name", columnList = "name"),
         @Index(name = "idx_address", columnList = "address"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name"),
 })
 public class Cinema {
     @Id

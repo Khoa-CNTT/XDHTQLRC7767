@@ -15,6 +15,8 @@ import java.util.Set;
         @Index(name = "idx_type", columnList = "type"),
         @Index(name = "idx_price", columnList = "price"),
         @Index(name = "idx_date", columnList = "date"),
+},uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"code", "show_time_id"}),
 })
 public class Ticket {
     @Id

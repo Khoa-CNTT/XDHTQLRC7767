@@ -5,6 +5,11 @@ import lombok.Data;
 import jakarta.persistence.*;
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_title", columnList = "title"),
+        @Index(name = "idx_name", columnList = "name"),
+}, uniqueConstraints = {
+        @UniqueConstraint(columnNames = "title"),})
 public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
