@@ -204,6 +204,48 @@ const BookingPage: React.FC = () => {
     setSelectedDate(date);
   };
 
+  // Hàm xử lý khi người dùng nhấn nút thanh toán
+  const handlePayment = () => {
+    // Kiểm tra xem người dùng đã chọn ghế chưa
+    if (selectedSeats.length === 0) {
+      message.error("Vui lòng chọn ít nhất một ghế!");
+      return;
+    }
+
+    // Đảm bảo selectedDate là string nếu là Dayjs object
+    const formattedDate = selectedDate ? selectedDate.format("DD/MM/YYYY") : "";
+
+    // Tạo dữ liệu booking để truyền sang trang hóa đơn
+    const bookingData = {
+      movie: {
+        id: id || "",
+        title: movie?.title || "Unknown Movie",
+        image: movie?.poster || "",
+        duration: movie?.duration || "N/A",
+      },
+      cinema: {
+        name: "UBANFLIX Vincom Plaza Ngô Quyền",
+        address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
+      },
+      showtime: {
+        date: formattedDate,
+        time: selectedShowtime || "",
+        screen: "Screen 1",
+      },
+      seats: selectedSeats,
+      pricing: {
+        ticketPrice: 90000, // Giá vé cơ bản
+        quantity: selectedSeats.length,
+        subtotal: 90000 * selectedSeats.length,
+        serviceFee: 10000 * selectedSeats.length,
+        total: (90000 + 10000) * selectedSeats.length,
+      },
+    };
+
+    // Chuyển hướng đến trang hóa đơn và truyền dữ liệu booking
+    navigate("/invoice", { state: { bookingData } });
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -611,7 +653,7 @@ const BookingPage: React.FC = () => {
 
               <ButtonsContainer>
                 <BackButton onClick={handleBack}>Quay lại</BackButton>
-                <NextButton type="primary" onClick={handleNext}>
+                <NextButton type="primary" onClick={handlePayment}>
                   Thanh toán
                 </NextButton>
               </ButtonsContainer>
