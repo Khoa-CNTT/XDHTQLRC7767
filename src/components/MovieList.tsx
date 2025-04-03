@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Button } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  LeftOutlined,
+  RightOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeIn, slideInUp } from "../utils/animations";
@@ -224,6 +228,20 @@ const MovieRating = styled.div`
   color: white;
   padding: 2px 5px;
   border-radius: 5px;
+`;
+
+// Thêm styled component cho nút Chi tiết phim
+const DetailButton = styled(Button)`
+  background-color: #00bfff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  margin-right: 8px;
+
+  &:hover {
+    background-color: #0099cc;
+    color: white;
+  }
 `;
 
 const MovieList: React.FC = () => {
@@ -500,8 +518,10 @@ const MovieList: React.FC = () => {
                     <MoviePoster>
                       <PosterImage src={movie.image} alt={movie.title} />
                       <PosterOverlay className="overlay">
-                        <Link to={`/booking/${movie.id}`}>
-                          <ActionButton>ĐẶT VÉ</ActionButton>
+                        <Link to={`/movie/${movie.id}`}>
+                          <DetailButton icon={<InfoCircleOutlined />}>
+                            CHI TIẾT
+                          </DetailButton>
                         </Link>
                       </PosterOverlay>
                     </MoviePoster>
@@ -509,6 +529,11 @@ const MovieList: React.FC = () => {
                     <MovieInfo>{movie.duration}</MovieInfo>
                     <MovieInfo>{movie.releaseDate}</MovieInfo>
                     <ButtonsContainer>
+                      <Link to={`/movie/${movie.id}`}>
+                        <DetailButton icon={<InfoCircleOutlined />}>
+                          CHI TIẾT
+                        </DetailButton>
+                      </Link>
                       <Link to={`/booking/${movie.id}`}>
                         <ActionButton>ĐẶT VÉ</ActionButton>
                       </Link>

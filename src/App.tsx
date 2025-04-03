@@ -86,12 +86,12 @@ const AppRoutes = () => {
         }
       />
       <Route path="/invoice" element={<InvoicePage />} />
-      
+
       {/* Login và Register không sử dụng UserLayout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      
+
       <Route
         path="/profile"
         element={
@@ -103,7 +103,7 @@ const AppRoutes = () => {
       <Route
         path="/news"
         element={
-          <UserLayout> 
+          <UserLayout>
             <NewsPage />
           </UserLayout>
         }
