@@ -32,9 +32,14 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             ",mv.actor" +
             ",mv.duration" +
             ",mv.release_year as releaseYear" +
-            ",GROUP_CONCAT(DISTINCT mtype.name SEPARATOR ', ') as movieGenres, " +
-            "mv.rating as rating " +
-            "from movie as mv " +
+            ",GROUP_CONCAT(DISTINCT mtype.name SEPARATOR ', ') as movieGenres" +
+            ",mv.rating as rating" +
+            ",mv.country" +
+            ",mv.language" +
+            ",mv.subtitle" +
+            ",mv.age_limit as ageLimit" +
+            ",mv.content" +
+            " from movie as mv " +
             "LEFT JOIN movie_genre matype ON mv.id = matype.movie_id " +
             "LEFT JOIN genre as mtype ON matype.genre_id = mtype.id " +
             "WHERE mv.id = ?1 and mv.is_delete = 0 " +

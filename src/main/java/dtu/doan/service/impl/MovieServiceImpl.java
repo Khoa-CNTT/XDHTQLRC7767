@@ -54,6 +54,11 @@ public class MovieServiceImpl implements MovieService {
         movieEntity.setDuration(movie.getDuration());
         movieEntity.setRating(movie.getRating());
         movieEntity.setImageUrl(movie.getImageUrl());
+        movieEntity.setCountry(movie.getCountry());
+        movieEntity.setLanguage(movie.getLanguage());
+        movieEntity.setSubtitle(movie.getSubtitle());
+        movieEntity.setAgeLimit(movie.getAgeLimit());
+        movieEntity.setContent(movie.getContent());
         movieEntity.setDelete(false);
         Movie savedMovie = repository.save(movieEntity);
 
@@ -85,6 +90,11 @@ public class MovieServiceImpl implements MovieService {
         savedMovieResponse.setDuration(savedMovie.getDuration());
         savedMovieResponse.setRating(savedMovie.getRating());
         savedMovieResponse.setImageUrl(savedMovie.getImageUrl());
+        savedMovieResponse.setCountry(savedMovie.getCountry());
+        savedMovieResponse.setLanguage(savedMovie.getLanguage());
+        savedMovieResponse.setSubtitle(savedMovie.getSubtitle());
+        savedMovieResponse.setAgeLimit(savedMovie.getAgeLimit());
+        savedMovieResponse.setContent(savedMovie.getContent());
         savedMovieResponse.setMovieGenres(genreRepository.getGenreByMovieId(savedMovie.getId()));
         return savedMovieResponse;
 
@@ -113,6 +123,11 @@ public class MovieServiceImpl implements MovieService {
             movieResponseDTO.setDuration(movie.getDuration());
             movieResponseDTO.setReleaseYear(movie.getReleaseYear());
             movieResponseDTO.setRating(movie.getRating());
+            movieResponseDTO.setCountry(movie.getCountry());
+            movieResponseDTO.setLanguage(movie.getLanguage());
+            movieResponseDTO.setSubtitle(movie.getSubtitle());
+            movieResponseDTO.setAgeLimit(movie.getAgeLimit());
+            movieResponseDTO.setContent(movie.getContent());
             List<Genre> genres =  genreRepository.getGenreByMovieId(movie.getId());
             movieResponseDTO.setMovieGenres(genres);
 

@@ -21,6 +21,11 @@ public class Movie {
     private int duration;
     private int releaseYear;
     private double rating;
+    private String country;
+    private String language;
+    private String subtitle;
+    private int ageLimit;
+    private String content;
     private boolean isDelete;
     @OneToMany(mappedBy = "movie")
     @JsonIgnore

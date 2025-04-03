@@ -2,14 +2,15 @@ spring:
   application:
     name: DOAN
   datasource:
-    url: jdbc:mysql://localhost:3306/doan
-    username: root
-    password: 17062003
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddlAuto: update
     showSql: true
+
   logging:
     level:
       org.springframework.security: DEBUG
@@ -17,8 +18,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: vonguyenphat012@gmail.com
-    password: gktr mpay hzyz meme
+    username: ${MY_EMAIL}
+    password: ${MY_PASSWORD}
     properties:
       mail:
         smtp:

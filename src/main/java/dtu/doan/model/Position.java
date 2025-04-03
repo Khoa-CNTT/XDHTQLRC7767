@@ -5,6 +5,7 @@ import lombok.Data;
 import jakarta.persistence.*;
 @Data
 @Entity
+@Table(name = "job_position")
 public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -20,4 +20,17 @@ public interface IMovieDetailDTO {
     Double getAvgRating();
 
     String getMovieGenres();
+
+    String getCountry();
+
+    String getLanguage();
+
+    String getSubtitle();
+
+    Integer getAgeLimit();
+
+    String getContent();
+
+
+
 }
