@@ -9,6 +9,13 @@ import java.util.Set;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_code", columnList = "code"),
+        @Index(name = "idx_status", columnList = "status"),
+        @Index(name = "idx_type", columnList = "type"),
+        @Index(name = "idx_price", columnList = "price"),
+        @Index(name = "idx_date", columnList = "date"),
+})
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

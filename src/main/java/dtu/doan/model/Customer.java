@@ -9,6 +9,8 @@ import java.util.Date;
 
 @Data
 @Entity
+@Table(indexes = {
+})
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

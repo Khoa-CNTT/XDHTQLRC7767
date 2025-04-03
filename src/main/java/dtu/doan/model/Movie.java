@@ -9,6 +9,11 @@ import java.util.Set;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_movie_name", columnList = "name"),
+        @Index(name = "idx_movie_director", columnList = "director"),
+        @Index(name = "idx_movie_actor", columnList = "actor"),
+})
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

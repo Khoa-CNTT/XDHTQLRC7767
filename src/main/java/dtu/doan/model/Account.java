@@ -4,6 +4,10 @@ import lombok.Data;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_username", columnList = "username"),
+        @Index(name = "idx_password", columnList = "password"),
+})
 public class Account {
     @Id
     @Column(columnDefinition = ("varchar(45)"))

@@ -4,6 +4,10 @@ import lombok.Data;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_name", columnList = "name"),
+        @Index(name = "idx_address", columnList = "address"),
+})
 public class Cinema {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

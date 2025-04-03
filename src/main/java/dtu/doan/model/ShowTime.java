@@ -7,6 +7,12 @@ import java.util.Date;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_startTime", columnList = "startTime"),
+        @Index(name = "idx_endTime", columnList = "endTime"),
+        @Index(name = "idx_date", columnList = "date"),
+        @Index(name = "idx_status", columnList = "status"),
+})
 public class ShowTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

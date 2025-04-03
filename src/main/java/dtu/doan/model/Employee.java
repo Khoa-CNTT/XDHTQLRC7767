@@ -9,6 +9,11 @@ import java.util.Date;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_fullName", columnList = "fullName"),
+        @Index(name = "idx_email", columnList = "email"),
+        @Index(name = "idx_phoneNumber", columnList = "phoneNumber"),
+})
 public class Employee {
     @Id
     @Column(columnDefinition = ("varchar(45)"))
