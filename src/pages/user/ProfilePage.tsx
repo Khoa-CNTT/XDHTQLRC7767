@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Layout, Tabs, message } from "antd";
+import React, { useState } from "react";
+import { Layout, Tabs } from "antd";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
-import UserProfile from "../components/profile/UserProfile";
-import TicketHistory from "../components/profile/TicketHistory";
-import PointHistory from "../components/profile/PointHistory";
-import PasswordChange from "../components/profile/PasswordChange";
-import { useAuth } from "../contexts/AuthContext";
+import UserProfile from "../../components/profile/UserProfile";
+import TicketHistory from "../../components/profile/TicketHistory";
+import PointHistory from "../../components/profile/PointHistory";
+import PasswordChange from "../../components/profile/PasswordChange";
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
@@ -105,7 +103,6 @@ const ProfilePage: React.FC = () => {
 
   return (
     <ProfilePageContainer>
-      <HeaderNoSlider />
       <ProfileContent>
         <ProfileWrapper
           initial="hidden"
@@ -136,7 +133,6 @@ const ProfilePage: React.FC = () => {
           </StyledTabs>
         </ProfileWrapper>
       </ProfileContent>
-      <Footer />
     </ProfilePageContainer>
   );
 };

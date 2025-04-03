@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, Typography, Avatar, Dropdown } from "antd";
+import { Menu, Avatar, Dropdown } from "antd";
 import {
   LeftOutlined,
   RightOutlined,
@@ -46,8 +46,6 @@ import {
   SmallThumbnailImage,
 } from "../styles/HeaderStyles";
 
-const { Text } = Typography;
-
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -66,18 +64,18 @@ const Header: React.FC = () => {
     const path = location.pathname;
     if (path === "/") return "home";
     if (path.includes("/movies")) return "movies";
-    if (path.includes("/cinemas")) return "cinemas";
-    if (path.includes("/promotions")) return "promotions";
+    if (path.includes("/cinema")) return "cinema";
+    if (path.includes("/promotions")) return "promotion";
     if (path.includes("/news")) return "news";
     return "";
   };
 
   const menuItems = [
-    { key: "home", label: "Trang chủ", link: "/" },
+    { key: "home", label: "Trang Chủ", link: "/" },
     { key: "movies", label: "Phim", link: "/movies" },
-    { key: "cinemas", label: "Rạp chiếu", link: "/cinemas" },
-    { key: "promotions", label: "Khuyến mãi", link: "/promotions" },
-    { key: "news", label: "Tin tức", link: "/news" },
+    { key: "cinema", label: "Rạp Chiếu", link: "/cinema" },
+    { key: "promotion", label: "Khuyến Mãi", link: "/promotions" },
+    { key: "news", label: "Tin Tức", link: "/news" },
   ];
 
   const userMenu = (
@@ -165,7 +163,7 @@ const Header: React.FC = () => {
         <MainHeader>
           <HeaderContent>
             <LogoContainer>
-              <Logo onClick={() => navigate("/")}>
+              <Logo className="logo-container" onClick={() => navigate("/")}>
                 <LogoText>
                   UBAN<span>FLIX</span>
                 </LogoText>
@@ -203,69 +201,19 @@ const Header: React.FC = () => {
 
             <MobileMenu
               title="Menu"
-              placement="right"
+              placement="left"
               onClose={() => setMobileMenuVisible(false)}
               visible={mobileMenuVisible}
-              width={250}
             >
               <Menu mode="vertical" selectedKeys={[getActiveKey()]}>
                 {menuItems.map((item) => (
                   <Menu.Item
                     key={item.key}
-                    onClick={() => {
-                      navigate(item.link);
-                      setMobileMenuVisible(false);
-                    }}
+                    onClick={() => setMobileMenuVisible(false)}
                   >
-                    {item.label}
+                    <Link to={item.link}>{item.label}</Link>
                   </Menu.Item>
                 ))}
-                {isAuthenticated ? (
-                  <>
-                    <Menu.Divider />
-                    <Menu.Item
-                      key="profile"
-                      onClick={() => {
-                        navigate("/profile");
-                        setMobileMenuVisible(false);
-                      }}
-                    >
-                      Quản lý tài khoản
-                    </Menu.Item>
-                    <Menu.Item
-                      key="logout"
-                      onClick={() => {
-                        logout();
-                        setMobileMenuVisible(false);
-                        navigate("/");
-                      }}
-                    >
-                      Đăng xuất
-                    </Menu.Item>
-                  </>
-                ) : (
-                  <>
-                    <Menu.Divider />
-                    <Menu.Item
-                      key="login"
-                      onClick={() => {
-                        navigate("/login");
-                        setMobileMenuVisible(false);
-                      }}
-                    >
-                      Đăng nhập
-                    </Menu.Item>
-                    <Menu.Item
-                      key="register"
-                      onClick={() => {
-                        navigate("/register");
-                        setMobileMenuVisible(false);
-                      }}
-                    >
-                      Đăng ký
-                    </Menu.Item>
-                  </>
-                )}
               </Menu>
             </MobileMenu>
           </HeaderContent>
@@ -284,6 +232,7 @@ const Header: React.FC = () => {
                 }
               />
               <SearchButton
+                className="search-button"
                 icon={<SearchOutlined />}
                 onClick={() => {
                   const inputElement = document.querySelector(
@@ -303,10 +252,10 @@ const Header: React.FC = () => {
         <BannerContent>
           <MainBanner>
             <BannerImage src={bannerImages[currentSlide]} alt="Banner" />
-            <LeftButton onClick={prevSlide}>
+            <LeftButton className="slider-button" onClick={prevSlide}>
               <LeftOutlined />
             </LeftButton>
-            <RightButton onClick={nextSlide}>
+            <RightButton className="slider-button" onClick={nextSlide}>
               <RightOutlined />
             </RightButton>
           </MainBanner>
@@ -314,6 +263,7 @@ const Header: React.FC = () => {
           <SmallThumbnailsContainer>
             {thumbnailImages.map((img, index) => (
               <SmallThumbnail
+                className="small-thumbnail"
                 key={index}
                 onClick={() => setCurrentSlide(index % bannerImages.length)}
               >

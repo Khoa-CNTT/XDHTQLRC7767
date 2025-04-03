@@ -54,7 +54,7 @@ export const TopBarRight = styled.div`
 `;
 
 export const MainHeader = styled(AntHeader)`
-  background: linear-gradient(to right, #0f3460, #16213e);
+  background: linear-gradient(to right, #1a1a2e, #16213e);
   padding: 0;
   height: 70px;
   line-height: 70px;
@@ -102,7 +102,7 @@ export const LogoText = styled(Text)`
   letter-spacing: 1px;
   
   span {
-    color: #e94560;
+    color: #00bfff;
   }
   
   @media (max-width: 768px) {
@@ -140,16 +140,50 @@ export const NavMenu = styled(Menu)`
     padding: 0 20px;
     margin: 0 5px;
     border-bottom: none !important;
+    position: relative;
+    overflow: visible;
     
     &:hover {
-      color: #e94560;
+      color: #00bfff !important;
       background-color: transparent;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #00bfff;
+        animation: slideIn 0.3s forwards;
+      }
     }
   }
   
   .ant-menu-item-selected {
     background-color: transparent !important;
-    color: #e94560;
+    color: #00bfff;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #00bfff;
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
   
   @media (max-width: 768px) {
@@ -200,13 +234,14 @@ export const MobileMenu = styled(Drawer)`
     font-size: 16px;
     
     &:hover {
-      color: #e94560;
+      color: #FF4B91;
+      background-color: rgba(255, 215, 0, 0.1);
     }
   }
   
   .ant-menu-item-selected {
     background-color: #16213e !important;
-    color: #e94560;
+    color: #FF4B91;
   }
 `;
 
@@ -264,7 +299,7 @@ export const StyledInput = styled(Input)`
 
 export const SearchButton = styled(Button)`
   height: 44px;
-  background-color: #e94560;
+  background-color: #00bfff;
   border: none;
   border-radius: 0 4px 4px 0;
   color: white;
@@ -276,7 +311,7 @@ export const SearchButton = styled(Button)`
 
   &:hover,
   &:focus {
-    background-color: #d13854;
+    background-color: #0099cc;
     color: white;
   }
 
@@ -287,7 +322,7 @@ export const SearchButton = styled(Button)`
 
 export const BannerContainer = styled.div`
   width: 100%;
-  background-color: #16213e;
+  background-color: #1a1a2e;
   padding: 30px 0;
   display: flex;
   flex-direction: column;

@@ -7,8 +7,6 @@ import {
   StarOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
 import {
   PageContainer,
   MoviesContent,
@@ -29,7 +27,7 @@ import {
   EmptyContainer,
   PaginationContainer,
   cardVariants,
-} from "../styles/MoviesPageStyles";
+} from "../../styles/MoviesPageStyles";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -198,8 +196,6 @@ const MoviesPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <HeaderNoSlider />
-
       <MoviesContent>
         <ContentWrapper>
           <PageTitle>Danh sách phim</PageTitle>
@@ -314,8 +310,6 @@ const MoviesPage: React.FC = () => {
           )}
         </ContentWrapper>
       </MoviesContent>
-
-      <Footer />
     </PageContainer>
   );
 };

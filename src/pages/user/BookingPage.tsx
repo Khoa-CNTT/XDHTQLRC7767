@@ -4,14 +4,11 @@ import {
   CalendarOutlined,
   ClockCircleOutlined,
   EnvironmentOutlined,
-  UserOutlined,
   StarOutlined,
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
 import dayjs, { Dayjs } from "dayjs";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   PageContainer,
   BookingContent,
@@ -49,7 +46,7 @@ import {
   ButtonsContainer,
   BackButton,
   NextButton,
-} from "../styles/BookingPageStyles";
+} from "../../styles/BookingPageStyles";
 
 const { Step } = Steps;
 
@@ -210,20 +207,17 @@ const BookingPage: React.FC = () => {
   if (loading) {
     return (
       <PageContainer>
-        <HeaderNoSlider />
         <BookingContent>
           <ContentWrapper style={{ textAlign: "center", padding: "100px 0" }}>
             <Spin size="large" />
           </ContentWrapper>
         </BookingContent>
-        <Footer />
       </PageContainer>
     );
   }
 
   return (
     <PageContainer>
-      <HeaderNoSlider />
       <BookingContent>
         <ContentWrapper>
           <PageTitle>Đặt vé xem phim</PageTitle>
@@ -625,7 +619,6 @@ const BookingPage: React.FC = () => {
           )}
         </ContentWrapper>
       </BookingContent>
-      <Footer />
     </PageContainer>
   );
 };

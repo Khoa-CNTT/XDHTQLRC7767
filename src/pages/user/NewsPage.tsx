@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Pagination, Spin, Tabs, Tag } from "antd";
 import { CalendarOutlined, EyeOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
@@ -20,7 +18,7 @@ const ContentWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 0;
-  
+
   @media (max-width: 768px) {
     width: 90%;
     padding: 30px 0;
@@ -36,23 +34,23 @@ const PageTitle = styled.h1`
 
 const StyledTabs = styled(Tabs)`
   margin-bottom: 30px;
-  
+
   .ant-tabs-nav {
     margin-bottom: 20px;
   }
-  
+
   .ant-tabs-tab {
     padding: 12px 16px;
     font-size: 16px;
   }
-  
+
   @media (max-width: 768px) {
     .ant-tabs-tab {
       padding: 8px 12px;
       font-size: 14px;
     }
   }
-  
+
   @media (max-width: 480px) {
     .ant-tabs-nav-list {
       flex-wrap: wrap;
@@ -308,8 +306,6 @@ const NewsPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <HeaderNoSlider />
-
       <ContentWrapper>
         <PageTitle>Tin tức & Sự kiện</PageTitle>
 
@@ -374,7 +370,6 @@ const NewsPage: React.FC = () => {
         )}
       </ContentWrapper>
 
-      <Footer />
     </PageContainer>
   );
 };

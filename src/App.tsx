@@ -7,21 +7,23 @@ import {
   Navigate,
 } from "react-router-dom";
 import styled from "styled-components";
-import HomePage from "./pages/HomePage";
-import MovieDetailPage from "./pages/MovieDetailPage";
-import MoviesPage from "./pages/MoviesPage";
-import BookingPage from "./pages/BookingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProfilePage";
-import NewsPage from "./pages/NewsPage";
-import PromotionsPage from "./pages/PromotionsPage";
-import ContactPage from "./pages/ContactPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import HomePage from "./pages/user/HomePage";
+import MovieDetailPage from "./pages/user/MovieDetailPage";
+import MoviesPage from "./pages/user/MoviesPage";
+import BookingPage from "./pages/user/BookingPage";
+import LoginPage from "./pages/user/LoginPage";
+import RegisterPage from "./pages/user/RegisterPage";
+import ProfilePage from "./pages/user/ProfilePage";
+import NewsPage from "./pages/user/NewsPage";
+import PromotionsPage from "./pages/user/PromotionsPage";
+import ContactPage from "./pages/user/ContactPage";
+import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
+import CinemaPage from "./pages/user/CinemaPage";
 import { AuthProvider } from "./contexts/AuthContext";
+import UserLayout from "./layouts/UserLayout";
 
 // Admin pages
-import AdminLayout from "./pages/admin/AdminLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import MovieManagement from "./pages/admin/MovieManagement";
 import ShowtimeManagement from "./pages/admin/ShowtimeManagement";
@@ -42,17 +44,83 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Client Routes */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/movies" element={<MoviesPage />} />
-      <Route path="/movie/:id" element={<MovieDetailPage />} />
-      <Route path="/booking/:id" element={<BookingPage />} />
+      <Route
+        path="/"
+        element={
+          <UserLayout>
+            <HomePage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/movies"
+        element={
+          <UserLayout>
+            <MoviesPage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/cinema"
+        element={
+          <UserLayout>
+            <CinemaPage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/movie/:id"
+        element={
+          <UserLayout>
+            <MovieDetailPage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/booking/:id"
+        element={
+          <UserLayout>
+            <BookingPage />
+          </UserLayout>
+        }
+      />
+      {/* Login và Register không sử dụng UserLayout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/news" element={<NewsPage />} />
-      <Route path="/promotions" element={<PromotionsPage />} />
-      <Route path="/contact" element={<ContactPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      
+      <Route
+        path="/profile"
+        element={
+          <UserLayout>
+            <ProfilePage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/news"
+        element={
+          <UserLayout> 
+            <NewsPage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/promotions"
+        element={
+          <UserLayout>
+            <PromotionsPage />
+          </UserLayout>
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <UserLayout>
+            <ContactPage />
+          </UserLayout>
+        }
+      />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>

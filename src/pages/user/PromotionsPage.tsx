@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Pagination, Spin, Tabs, Tag, Button } from "antd";
-import { CalendarOutlined, GiftOutlined } from "@ant-design/icons";
+import { Row, Col, Pagination, Spin, Tabs, Tag, Button } from "antd";
+import { CalendarOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import HeaderNoSlider from "../components/HeaderNoSlider";
-import Footer from "../components/Footer";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
@@ -291,8 +289,6 @@ const PromotionsPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <HeaderNoSlider />
-
       <ContentWrapper>
         <PageTitle>Khuyến mãi & Ưu đãi</PageTitle>
 
@@ -356,8 +352,6 @@ const PromotionsPage: React.FC = () => {
           </>
         )}
       </ContentWrapper>
-
-      <Footer />
     </PageContainer>
   );
 };
