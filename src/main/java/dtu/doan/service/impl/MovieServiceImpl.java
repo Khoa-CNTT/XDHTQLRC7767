@@ -31,7 +31,6 @@ public class MovieServiceImpl implements MovieService {
         return repository.searchMovies(name, director, actor, genreName);
     }
 
-    // UI detail role user
     @Override
     public IMovieDetailDTO getMovieById(Long id) {
         return repository.getMovieById(id);
@@ -100,6 +99,7 @@ public class MovieServiceImpl implements MovieService {
 
     }
 
+    @Transactional
     @Override
     public void deleteMovie(Long id) {
         Movie movie = repository.findById(id).orElse(null);
