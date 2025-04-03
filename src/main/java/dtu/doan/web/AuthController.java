@@ -8,6 +8,7 @@ import dtu.doan.repository.VerificationTokenRepository;
 import dtu.doan.service.impl.MailService;
 import dtu.doan.service.VerificationService;
 import dtu.doan.utils.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping()
 public class AuthController {
 
     @Autowired
@@ -64,6 +65,22 @@ public class AuthController {
         return new ResponseEntity<>(jwt, HttpStatus.OK);
     }
 
+    @GetMapping("/getInfoUser")
+    public ResponseEntity<?> getInfoUser(@RequestHeader("Authorization") String token){
+        try {
+            String jwt = token.substring(7); // Remove "Bearer " prefix
+            String username = jwtUtil.extractUsername(jwt);
+            Account account = accountRepository.findByUsername(username);
+            if (account == null) {
+                return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(account, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Invalid token", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @Transactional
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody AuthRequest authRequest) throws Exception {
         String username = authRequest.getUsername();
