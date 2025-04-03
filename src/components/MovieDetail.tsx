@@ -219,7 +219,7 @@ const StyledTabs = styled(Tabs)`
     height: 3px;
     border-radius: 3px;
   }
-  
+
   .ant-tabs-nav::before {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
@@ -486,7 +486,7 @@ const SectionLabel = styled.div`
 const StyledDivider = styled(Divider)`
   border-color: rgba(255, 255, 255, 0.2);
   margin: 16px 0;
-  
+
   &.section-divider {
     height: 3px;
     border-top-width: 3px;
@@ -500,9 +500,9 @@ const StyledDivider = styled(Divider)`
 
 const SectionHeader = styled.div`
   margin-bottom: 20px;
-  
+
   &::after {
-    content: '';
+    content: "";
     display: block;
     width: 50px;
     height: 3px;

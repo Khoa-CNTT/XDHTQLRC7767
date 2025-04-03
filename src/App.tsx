@@ -29,7 +29,9 @@ import Dashboard from "./pages/admin/Dashboard";
 import MovieManagement from "./pages/admin/MovieManagement";
 import ShowtimeManagement from "./pages/admin/ShowtimeManagement";
 import OrderManagement from "./pages/admin/OrderManagement";
-import UserManagement from "./pages/admin/UserManagement";
+import CustomerManagement from "./pages/admin/CustomerManagement";
+import StaffManagement from "./pages/admin/StaffManagement";
+import ReviewManagement from "./pages/admin/ReviewManagement";
 import ReportManagement from "./pages/admin/ReportManagement";
 import SettingsManagement from "./pages/admin/SettingManagement";
 
@@ -132,7 +134,9 @@ const AppRoutes = () => {
         <Route path="movies" element={<MovieManagement />} />
         <Route path="showtimes" element={<ShowtimeManagement />} />
         <Route path="orders" element={<OrderManagement />} />
-        <Route path="users" element={<UserManagement />} />
+        <Route path="customers" element={<CustomerManagement />} />
+        <Route path="staff" element={<StaffManagement />} />
+        <Route path="reviews" element={<ReviewManagement />} />
         <Route path="reports" element={<ReportManagement />} />
         <Route path="settings" element={<SettingsManagement />} />
       </Route>

@@ -5,6 +5,8 @@ import {
   VideoCameraOutlined,
   ClockCircleOutlined,
   UserOutlined,
+  TeamOutlined,
+  StarOutlined,
   ShoppingCartOutlined,
   BarChartOutlined,
   SettingOutlined,
@@ -32,16 +34,15 @@ const StyledLogo = styled.div`
   overflow: hidden;
 
   h1 {
-    color: #1e3a8a;
     margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    white-space: nowrap;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e3a8a;
     letter-spacing: 0.5px;
-  }
 
-  img {
-    height: 28px;
+    span {
+      color: #3b82f6;
+    }
   }
 `;
 
@@ -180,8 +181,11 @@ const AdminLayout: React.FC = () => {
         }}
       >
         <StyledLogo>
-          <img src="/logo.png" alt="Logo" />
-          {!collapsed && <h1>emilus</h1>}
+          {!collapsed && (
+            <h1>
+              UBAN<span>FLIX</span>
+            </h1>
+          )}
         </StyledLogo>
 
         <CategoryLabel>DASHBOARD</CategoryLabel>
