@@ -21,19 +21,47 @@ const ContentWrapper = styled.div`
   }
 `;
 
-const PageTitle = styled.h1`
-  color: white;
+const PageTitle = styled(motion.div)`
   text-align: center;
-  font-size: 32px;
   margin-bottom: 40px;
+  padding: 20px 0;
+
+  h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: white;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 2px 10px rgba(0, 191, 255, 0.3),
+      0 4px 20px rgba(0, 119, 255, 0.2);
+    margin: 0;
+    padding: 0 20px;
+  }
 
   &:after {
     content: "";
     display: block;
-    width: 100px;
-    height: 3px;
-    background-color: #00bfff;
-    margin: 10px auto;
+    width: 180px;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 191, 255, 0) 0%,
+      rgba(0, 191, 255, 1) 50%,
+      rgba(0, 119, 255, 1) 75%,
+      rgba(0, 119, 255, 0) 100%
+    );
+    margin: 20px auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 191, 255, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2.8rem;
+      letter-spacing: 3px;
+    }
   }
 `;
 
@@ -243,88 +271,100 @@ const CinemaPage: React.FC = () => {
   return (
     <PageContainer>
       <ContentWrapper>
-        <PageTitle>HỆ THỐNG RẠP CHIẾU PHIM</PageTitle>
-
-        <StyledTabs defaultActiveKey="hanoi" centered>
-          <TabPane tab="HÀ NỘI" key="hanoi">
-            <Row gutter={[24, 24]}>
-              {cinemas.hanoi.map((cinema) => (
-                <Col xs={24} sm={12} md={8} key={cinema.id}>
-                  <CinemaCard
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => handleCinemaClick(cinema)}
-                  >
-                    <CinemaImage src={cinema.image} alt={cinema.name} />
-                    <CinemaName>{cinema.name}</CinemaName>
-                    <CinemaInfo>{cinema.address}</CinemaInfo>
-                    <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                    <ViewButton>XEM CHI TIẾT</ViewButton>
-                  </CinemaCard>
-                </Col>
-              ))}
-            </Row>
-          </TabPane>
-
-          <TabPane tab="ĐÀ NẴNG" key="danang">
-            <Row gutter={[24, 24]}>
-              {cinemas.danang.map((cinema) => (
-                <Col xs={24} sm={12} md={8} key={cinema.id}>
-                  <CinemaCard
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => handleCinemaClick(cinema)}
-                  >
-                    <CinemaImage src={cinema.image} alt={cinema.name} />
-                    <CinemaName>{cinema.name}</CinemaName>
-                    <CinemaInfo>{cinema.address}</CinemaInfo>
-                    <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                    <ViewButton>XEM CHI TIẾT</ViewButton>
-                  </CinemaCard>
-                </Col>
-              ))}
-            </Row>
-          </TabPane>
-
-          <TabPane tab="TP. HỒ CHÍ MINH" key="hcmc">
-            <Row gutter={[24, 24]}>
-              {cinemas.hcmc.map((cinema) => (
-                <Col xs={24} sm={12} md={8} key={cinema.id}>
-                  <CinemaCard
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => handleCinemaClick(cinema)}
-                  >
-                    <CinemaImage src={cinema.image} alt={cinema.name} />
-                    <CinemaName>{cinema.name}</CinemaName>
-                    <CinemaInfo>{cinema.address}</CinemaInfo>
-                    <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                    <ViewButton>XEM CHI TIẾT</ViewButton>
-                  </CinemaCard>
-                </Col>
-              ))}
-            </Row>
-          </TabPane>
-        </StyledTabs>
-
-        <StyledModal
-          title={selectedCinema?.name}
-          visible={modalVisible}
-          onCancel={() => setModalVisible(false)}
-          footer={null}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {selectedCinema && (
-            <>
-              <CinemaImage
-                src={selectedCinema.image}
-                alt={selectedCinema.name}
-              />
-              <CinemaInfo>Địa chỉ: {selectedCinema.address}</CinemaInfo>
-              <CinemaInfo>Hotline: {selectedCinema.phone}</CinemaInfo>
-              <CinemaInfo>Số phòng chiếu: {selectedCinema.screens}</CinemaInfo>
-              <CinemaInfo>
-                Tiện ích: {selectedCinema.facilities.join(", ")}
-              </CinemaInfo>
-            </>
-          )}
-        </StyledModal>
+          <PageTitle
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
+          >
+            <h1>HỆ THỐNG RẠP CHIẾU PHIM</h1>
+          </PageTitle>
+          
+          <StyledTabs defaultActiveKey="hanoi" centered>
+            <TabPane tab="HÀ NỘI" key="hanoi">
+              <Row gutter={[24, 24]}>
+                {cinemas.hanoi.map((cinema) => (
+                  <Col xs={24} sm={12} md={8} key={cinema.id}>
+                    <CinemaCard
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => handleCinemaClick(cinema)}
+                    >
+                      <CinemaImage src={cinema.image} alt={cinema.name} />
+                      <CinemaName>{cinema.name}</CinemaName>
+                      <CinemaInfo>{cinema.address}</CinemaInfo>
+                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                      <ViewButton>XEM CHI TIẾT</ViewButton>
+                    </CinemaCard>
+                  </Col>
+                ))}
+              </Row>
+            </TabPane>
+
+            <TabPane tab="ĐÀ NẴNG" key="danang">
+              <Row gutter={[24, 24]}>
+                {cinemas.danang.map((cinema) => (
+                  <Col xs={24} sm={12} md={8} key={cinema.id}>
+                    <CinemaCard
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => handleCinemaClick(cinema)}
+                    >
+                      <CinemaImage src={cinema.image} alt={cinema.name} />
+                      <CinemaName>{cinema.name}</CinemaName>
+                      <CinemaInfo>{cinema.address}</CinemaInfo>
+                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                      <ViewButton>XEM CHI TIẾT</ViewButton>
+                    </CinemaCard>
+                  </Col>
+                ))}
+              </Row>
+            </TabPane>
+
+            <TabPane tab="TP. HỒ CHÍ MINH" key="hcmc">
+              <Row gutter={[24, 24]}>
+                {cinemas.hcmc.map((cinema) => (
+                  <Col xs={24} sm={12} md={8} key={cinema.id}>
+                    <CinemaCard
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => handleCinemaClick(cinema)}
+                    >
+                      <CinemaImage src={cinema.image} alt={cinema.name} />
+                      <CinemaName>{cinema.name}</CinemaName>
+                      <CinemaInfo>{cinema.address}</CinemaInfo>
+                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                      <ViewButton>XEM CHI TIẾT</ViewButton>
+                    </CinemaCard>
+                  </Col>
+                ))}
+              </Row>
+            </TabPane>
+          </StyledTabs>
+
+          <StyledModal
+            title={selectedCinema?.name}
+            visible={modalVisible}
+            onCancel={() => setModalVisible(false)}
+            footer={null}
+          >
+            {selectedCinema && (
+              <>
+                <CinemaImage
+                  src={selectedCinema.image}
+                  alt={selectedCinema.name}
+                />
+                <CinemaInfo>Địa chỉ: {selectedCinema.address}</CinemaInfo>
+                <CinemaInfo>Hotline: {selectedCinema.phone}</CinemaInfo>
+                <CinemaInfo>Số phòng chiếu: {selectedCinema.screens}</CinemaInfo>
+                <CinemaInfo>
+                  Tiện ích: {selectedCinema.facilities.join(", ")}
+                </CinemaInfo>
+              </>
+            )}
+          </StyledModal>
+        </motion.div>
       </ContentWrapper>
     </PageContainer>
   );

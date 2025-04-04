@@ -5,9 +5,9 @@ import { fadeIn, slideInLeft, slideInRight } from "../utils/animations";
 
 // Styled Components
 const DiscountContainer = styled.div`
-  width: 100%;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: 40px 0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,16 +18,52 @@ const DiscountContent = styled.div`
   max-width: 1200px;
 
   @media (max-width: 768px) {
-    width: 90%;
+    width: 95%;
   }
 `;
 
-const DiscountTitle = styled.h2`
+const DiscountTitle = styled(motion.div)`
   text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 30px;
-  color: #00bfff;
+  margin-bottom: 40px;
+  padding: 20px 0;
+
+  h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: white;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 2px 10px rgba(0, 191, 255, 0.3),
+      0 4px 20px rgba(0, 119, 255, 0.2);
+    margin: 0;
+    padding: 0 20px;
+  }
+
+  &:after {
+    content: "";
+    display: block;
+    width: 180px;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 191, 255, 0) 0%,
+      rgba(0, 191, 255, 1) 50%,
+      rgba(0, 119, 255, 1) 75%,
+      rgba(0, 119, 255, 0) 100%
+    );
+    margin: 20px auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 191, 255, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2.8rem;
+      letter-spacing: 3px;
+    }
+  }
 `;
 
 const DiscountGrid = styled.div`
@@ -46,12 +82,13 @@ const DiscountGrid = styled.div`
 `;
 
 const DiscountItem = styled.div`
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
-  background-color: white;
+  background: rgba(22, 33, 62, 0.7);
+  border: 1px solid rgba(0, 191, 255, 0.1);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -59,13 +96,14 @@ const DiscountItem = styled.div`
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0, 191, 255, 0.2);
+    border-color: rgba(0, 191, 255, 0.3);
   }
 `;
 
 const DiscountTextBox = styled.div`
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background-color: white;
+  border-radius: 12px;
+  background: rgba(22, 33, 62, 0.7);
+  border: 1px solid rgba(0, 191, 255, 0.1);
   padding: 25px;
   grid-column: 1;
   grid-row: span 1;
@@ -78,7 +116,8 @@ const DiscountTextBox = styled.div`
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 191, 255, 0.2);
+    border-color: rgba(0, 191, 255, 0.3);
   }
 
   @media (max-width: 1024px) {
@@ -108,12 +147,12 @@ const DiscountName = styled.h3<{ $isRed?: boolean }>`
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
-  color: ${(props) => (props.$isRed ? "#00bfff" : "#1a1a2e")};
+  color: ${(props) => (props.$isRed ? "#00bfff" : "white")};
 `;
 
 const DiscountDescription = styled.p`
   font-size: 14px;
-  color: #666;
+  color: #ccc;
   margin-bottom: 0;
   line-height: 1.5;
 `;
@@ -194,7 +233,13 @@ const Discount: React.FC = () => {
           initial="hidden"
           animate={isVisible ? "visible" : "hidden"}
         >
-          <DiscountTitle>KHUYẾN MÃI & ƯU ĐÃI</DiscountTitle>
+          <DiscountTitle
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
+          >
+            <h1>KHUYẾN MÃI & ƯU ĐÃI</h1>
+          </DiscountTitle>
         </motion.div>
 
         <DiscountGrid>

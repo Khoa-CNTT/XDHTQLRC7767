@@ -171,7 +171,7 @@ const Header: React.FC = () => {
               </Logo>
             </LogoContainer>
 
-            <MainNav>
+            <MainNav className="desktop-nav">
               <NavMenu mode="horizontal" selectedKeys={[getActiveKey()]}>
                 {menuItems.map((item) => (
                   <Menu.Item key={item.key}>

@@ -217,9 +217,19 @@ const AdminLayout: React.FC = () => {
               label: <Link to="/admin/showtimes">Quản lý suất chiếu</Link>,
             },
             {
-              key: "/admin/users",
+              key: "/admin/customers",
               icon: <UserOutlined />,
-              label: <Link to="/admin/users">Quản lý người dùng</Link>,
+              label: <Link to="/admin/customers">Quản lý khách hàng</Link>,
+            },
+            {
+              key: "/admin/staff",
+              icon: <TeamOutlined />,
+              label: <Link to="/admin/staff">Quản lý nhân viên</Link>,
+            },
+            {
+              key: "/admin/reviews",
+              icon: <StarOutlined />,
+              label: <Link to="/admin/reviews">Quản lý đánh giá</Link>,
             },
             {
               key: "/admin/orders",
@@ -279,6 +289,7 @@ const AdminLayout: React.FC = () => {
                   }}
                   icon={<UserOutlined />}
                 />
+                z
                 <Text
                   style={{ marginLeft: 8, fontWeight: 500, color: "#334155" }}
                 >

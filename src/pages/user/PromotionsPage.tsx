@@ -1,355 +1,877 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Pagination, Spin, Tabs, Tag, Button } from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Row, Col, Card, Tag, Pagination, Input, Select, Button } from "antd";
+import {
+  SearchOutlined,
+  FilterOutlined,
+  CalendarOutlined,
+  GiftOutlined,
+  TagOutlined,
+  ThunderboltOutlined,
+  TeamOutlined,
+  CreditCardOutlined,
+} from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
-const { TabPane } = Tabs;
+const { Meta } = Card;
+const { Option } = Select;
 
 // Styled Components
 const PageContainer = styled.div`
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 40px 0;
   min-height: 100vh;
-  background-color: #f5f5f5;
 `;
 
 const ContentWrapper = styled.div`
   width: 80%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 0;
 
   @media (max-width: 768px) {
-    width: 90%;
+    width: 95%;
   }
 `;
 
-const PageTitle = styled.h1`
-  font-size: 28px;
-  margin-bottom: 24px;
-  color: #333;
-  font-weight: 600;
+const PageTitle = styled(motion.div)`
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 0;
+
+  h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: white;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 2px 10px rgba(0, 191, 255, 0.3),
+      0 4px 20px rgba(0, 119, 255, 0.2);
+    margin: 0;
+    padding: 0 20px;
+  }
+
+  &:after {
+    content: "";
+    display: block;
+    width: 180px;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 191, 255, 0) 0%,
+      rgba(0, 191, 255, 1) 50%,
+      rgba(0, 119, 255, 1) 75%,
+      rgba(0, 119, 255, 0) 100%
+    );
+    margin: 20px auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 191, 255, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 2.8rem;
+      letter-spacing: 3px;
+    }
+  }
 `;
 
-const StyledTabs = styled(Tabs)`
+const PageSubtitle = styled(motion.p)`
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  font-size: 16px;
   margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+`;
 
-  .ant-tabs-nav {
-    margin-bottom: 20px;
+const FilterContainer = styled(motion.div)`
+  background: rgba(22, 33, 62, 0.7);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border-left: 4px solid #00bfff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const FilterItem = styled.div`
+  flex: 1;
+  min-width: 200px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+const StyledInput = styled(Input)`
+  background: rgba(13, 20, 38, 0.8) !important;
+  border: 1px solid rgba(0, 191, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: white !important;
+
+  .ant-input {
+    background: transparent !important;
+    color: white !important;
   }
 
-  .ant-tabs-tab {
-    padding: 12px 16px;
-    font-size: 16px;
+  .ant-input-prefix {
+    color: #00bfff !important;
   }
 
-  .ant-tabs-tab-active {
-    font-weight: 600;
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.7) !important;
   }
 
-  .ant-tabs-ink-bar {
-    background-color: #fd6b0a;
-    height: 3px;
+  &:hover,
+  &:focus {
+    border-color: #00bfff !important;
+    box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2) !important;
+  }
+`;
+
+const StyledSelect = styled(Select)`
+  .ant-select-selector {
+    background: rgba(13, 20, 38, 0.8) !important;
+    border: 1px solid rgba(0, 191, 255, 0.3) !important;
+    border-radius: 8px !important;
+    color: white !important;
+  }
+
+  .ant-select-selection-placeholder,
+  .ant-select-selection-item {
+    color: white !important;
+  }
+
+  .ant-select-arrow {
+    color: #00bfff !important;
+  }
+
+  &:hover .ant-select-selector {
+    border-color: #00bfff !important;
+  }
+
+  &.ant-select-focused .ant-select-selector {
+    border-color: #00bfff !important;
+    box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2) !important;
+  }
+`;
+
+const FilterButton = styled(Button)`
+  background: rgba(0, 191, 255, 0.1) !important;
+  border: 1px solid rgba(0, 191, 255, 0.5) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+
+  &:hover {
+    background: rgba(0, 191, 255, 0.2) !important;
+    border-color: #00bfff !important;
+    transform: translateY(-2px);
   }
 `;
 
 const PromotionCard = styled(motion.div)`
-  margin-bottom: 24px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: white;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  .ant-card {
+    height: 100%;
+    background: rgba(22, 33, 62, 0.9);
+    border: none;
+  }
+
+  .ant-card-cover img {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  &:hover .ant-card-cover img {
+    transform: scale(1.05);
+  }
+
+  .ant-card-meta-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .ant-card-meta-description {
+    color: rgba(255, 255, 255, 0.8);
   }
 `;
 
-const PromotionImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+const PromotionBadge = styled.div`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #e94560;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(233, 69, 96, 0.5);
 `;
 
-const PromotionContent = styled.div`
-  padding: 16px;
-  flex: 1;
+const PromotionTags = styled.div`
+  margin: 10px 0;
   display: flex;
-  flex-direction: column;
-`;
-
-const PromotionTitle = styled.h3`
-  font-size: 18px;
-  margin-bottom: 12px;
-  font-weight: 600;
-  color: #333;
-`;
-
-const PromotionDescription = styled.p`
-  color: #666;
-  margin-bottom: 16px;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 5px;
 `;
 
 const PromotionMeta = styled.div`
   display: flex;
   justify-content: space-between;
+  margin: 15px 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+`;
+
+const PromotionDate = styled.span`
+  display: flex;
   align-items: center;
-  color: #999;
-  font-size: 14px;
-  margin-bottom: 16px;
+  gap: 5px;
 `;
 
-const ValidUntil = styled.span`
-  color: #e74c3c;
-  font-weight: 500;
-`;
-
-const PromotionButton = styled(Button)`
-  background-color: #fd6b0a;
-  border-color: #fd6b0a;
+const ViewButton = styled(Button)`
+  background: #00bfff;
   color: white;
+  border: none;
+  border-radius: 20px;
+  width: 100%;
+  margin-top: 10px;
 
-  &:hover,
-  &:focus {
-    background-color: #e05c00;
-    border-color: #e05c00;
-    color: white;
+  &:hover {
+    background: #0099cc;
+    transform: translateY(-2px);
   }
 `;
 
 const PaginationContainer = styled.div`
   margin-top: 40px;
-  display: flex;
-  justify-content: center;
+  text-align: center;
 
-  .ant-pagination-item-active {
-    border-color: #fd6b0a;
+  .ant-pagination-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: transparent;
+
+    a {
+      color: white;
+    }
+
+    &-active {
+      background: #00bfff;
+      border-color: #00bfff;
+
+      a {
+        color: white;
+      }
+    }
   }
 
-  .ant-pagination-item-active a {
-    color: #fd6b0a;
+  .ant-pagination-prev button,
+  .ant-pagination-next button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
   }
 `;
 
-const LoadingContainer = styled.div`
+// Sections
+const FeaturedSection = styled.div`
+  margin-bottom: 40px;
+`;
+
+const SectionTitle = styled.h2`
+  color: white;
+  font-size: 24px;
+  margin-bottom: 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 400px;
+  gap: 10px;
+
+  &:after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0, 191, 255, 0.5), transparent);
+    margin-left: 15px;
+  }
+`;
+
+const FeaturedPromotionCard = styled(motion.div)`
+  display: flex;
+  background: rgba(22, 33, 62, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 191, 255, 0.2);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const FeaturedImageContainer = styled.div`
+  flex: 1;
+  max-width: 50%;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    height: 200px;
+  }
+`;
+
+const FeaturedContent = styled.div`
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const FeaturedTitle = styled.h3`
+  color: white;
+  font-size: 24px;
+  margin-bottom: 15px;
+`;
+
+const FeaturedDescription = styled.p`
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  line-height: 1.6;
+`;
+
+const FeaturedButton = styled(Button)`
+  background: #00bfff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  height: 45px;
+  font-size: 16px;
+  margin-top: auto;
+  width: 200px;
+
+  &:hover {
+    background: #0099cc;
+    transform: translateY(-2px);
+  }
+`;
+
+const CategorySection = styled.div`
+  margin-bottom: 40px;
+`;
+
+const CategoryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+`;
+
+const CategoryCard = styled(motion.div)`
+  background: rgba(22, 33, 62, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid rgba(0, 191, 255, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 191, 255, 0.1);
+    border-color: #00bfff;
+    transform: translateY(-5px);
+  }
+`;
+
+const CategoryIcon = styled.div`
+  font-size: 30px;
+  color: #00bfff;
+  margin-bottom: 15px;
+`;
+
+const CategoryName = styled.h3`
+  color: white;
+  font-size: 16px;
+  margin: 0;
 `;
 
 // Animation variants
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
+const containerVariants = {
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.5,
-      ease: "easeOut",
+      staggerChildren: 0.1,
     },
   },
 };
 
-// Giả lập dữ liệu khuyến mãi
-const mockPromotions = [
-  {
-    id: 1,
-    title: "Mua 2 vé tặng 1 vé xem phim",
-    description:
-      "Khi mua 2 vé xem phim bất kỳ, bạn sẽ được tặng thêm 1 vé miễn phí cho suất chiếu cùng ngày.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/aa76/e900/667798e09b1e6afcce54bd7c1dfefd9d?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=InHv4pYcA8Q6Z2PC~1nwQm0ePlfzBkYDCimQ-1YP2sDYZvQYCHFJ2-v6pZRDvAXSkqOYv5Mndt1kfont5hWqx9t1XFUGGfbQlMvqUa5uZ68dMyfcCZdu1UMcO4YrXn6a43lGpyViJ7fI3zgdJezdMMlLgG-7wwf~OoEmdVQ-lVMwx-I~9YLgA7mlmIZw~zX9vXOz78tq61IGWdteks8SlarkObwlnpY~R7M~5OaOQhlNSFdeXwmAIgL69kmNaya2fPNmSklswubPVEZp3Jx7eqYjxnTc5dFScXcQQtlCs3sZf1gIw9Ua-AdniV4z6tV6ahDUa~W2xkxr98tZhTsA7g__",
-    validUntil: "2023-12-31",
-    category: "ticket",
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+    },
   },
-  {
-    id: 2,
-    title: "Combo bắp nước chỉ 79.000đ",
-    description:
-      "Combo 1 bắp lớn và 2 nước ngọt chỉ với giá 79.000đ, tiết kiệm đến 30% so với mua lẻ.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    validUntil: "2023-11-30",
-    category: "food",
+};
+
+const fadeInUp = {
+  hidden: { y: 30, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+    },
   },
-  {
-    id: 3,
-    title: "Giảm 50.000đ khi đặt vé online",
-    description:
-      "Giảm ngay 50.000đ khi đặt vé xem phim online qua ứng dụng hoặc website UbanFlix Cinema.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/aa76/e900/667798e09b1e6afcce54bd7c1dfefd9d?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=InHv4pYcA8Q6Z2PC~1nwQm0ePlfzBkYDCimQ-1YP2sDYZvQYCHFJ2-v6pZRDvAXSkqOYv5Mndt1kfont5hWqx9t1XFUGGfbQlMvqUa5uZ68dMyfcCZdu1UMcO4YrXn6a43lGpyViJ7fI3zgdJezdMMlLgG-7wwf~OoEmdVQ-lVMwx-I~9YLgA7mlmIZw~zX9vXOz78tq61IGWdteks8SlarkObwlnpY~R7M~5OaOQhlNSFdeXwmAIgL69kmNaya2fPNmSklswubPVEZp3Jx7eqYjxnTc5dFScXcQQtlCs3sZf1gIw9Ua-AdniV4z6tV6ahDUa~W2xkxr98tZhTsA7g__",
-    validUntil: "2023-10-31",
-    category: "ticket",
-  },
-  {
-    id: 4,
-    title: "Giảm 15% khi thanh toán qua VNPAY",
-    description:
-      "Giảm ngay 15% tổng hóa đơn (tối đa 30.000đ) khi thanh toán qua VNPAY-QR tại quầy hoặc khi đặt vé online.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/d224/4e1c/ba8f3aafcae36c6c343e2d425f42cc63?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=ZLdoAE-aWUoz12PiecHAc1YTGvt7JSGa4z6XJ2JTphMlwenXXJfT-b6kEDpoc8GPpftggoXh-DLMcU2PReHkjmv6U5BMFrqU0gKLQYgROOZ7L39zyCfSCvNUHdyqLW-HLLT3Ipx0FEXN6ZQ3faHuSZJdeFUvs8suyOiOMkiQEgnzOFWoUAtLVGAPKpAT4bvkzjICaf3ZJOqlBuor9GmldOjXQIevbArSfKonUFs0UDzhfMS7EytnfYljoMhBi23eg0NqNraYoUdt~LpN62jY6kOguoMyxoGVTQzQLDEXUzTHWHUVn~DDS8Rk5-IqyoEknZfOOwXOHjbv6o09rZLGfg__",
-    validUntil: "2023-12-15",
-    category: "payment",
-  },
-  {
-    id: 5,
-    title: "Ngày hội thành viên - Giảm 40% mọi dịch vụ",
-    description:
-      "Vào ngày 15 hàng tháng, thành viên UbanFlix Cinema được giảm 40% cho tất cả các dịch vụ tại rạp.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    validUntil: "2023-12-31",
-    category: "member",
-  },
-  {
-    id: 6,
-    title: "Sinh nhật vui vẻ - Tặng vé xem phim",
-    description:
-      "Thành viên UbanFlix Cinema được tặng 1 vé xem phim miễn phí trong tháng sinh nhật.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/aa76/e900/667798e09b1e6afcce54bd7c1dfefd9d?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=InHv4pYcA8Q6Z2PC~1nwQm0ePlfzBkYDCimQ-1YP2sDYZvQYCHFJ2-v6pZRDvAXSkqOYv5Mndt1kfont5hWqx9t1XFUGGfbQlMvqUa5uZ68dMyfcCZdu1UMcO4YrXn6a43lGpyViJ7fI3zgdJezdMMlLgG-7wwf~OoEmdVQ-lVMwx-I~9YLgA7mlmIZw~zX9vXOz78tq61IGWdteks8SlarkObwlnpY~R7M~5OaOQhlNSFdeXwmAIgL69kmNaya2fPNmSklswubPVEZp3Jx7eqYjxnTc5dFScXcQQtlCs3sZf1gIw9Ua-AdniV4z6tV6ahDUa~W2xkxr98tZhTsA7g__",
-    validUntil: "2023-12-31",
-    category: "member",
-  },
-  {
-    id: 7,
-    title: "Ưu đãi học sinh, sinh viên",
-    description:
-      "Giảm 20% giá vé khi xuất trình thẻ học sinh, sinh viên vào các ngày trong tuần (trừ cuối tuần và ngày lễ).",
-    image:
-      "https://s3-alpha-sig.figma.com/img/d224/4e1c/ba8f3aafcae36c6c343e2d425f42cc63?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=ZLdoAE-aWUoz12PiecHAc1YTGvt7JSGa4z6XJ2JTphMlwenXXJfT-b6kEDpoc8GPpftggoXh-DLMcU2PReHkjmv6U5BMFrqU0gKLQYgROOZ7L39zyCfSCvNUHdyqLW-HLLT3Ipx0FEXN6ZQ3faHuSZJdeFUvs8suyOiOMkiQEgnzOFWoUAtLVGAPKpAT4bvkzjICaf3ZJOqlBuor9GmldOjXQIevbArSfKonUFs0UDzhfMS7EytnfYljoMhBi23eg0NqNraYoUdt~LpN62jY6kOguoMyxoGVTQzQLDEXUzTHWHUVn~DDS8Rk5-IqyoEknZfOOwXOHjbv6o09rZLGfg__",
-    validUntil: "2023-12-31",
-    category: "ticket",
-  },
-  {
-    id: 8,
-    title: "Combo gia đình tiết kiệm",
-    description:
-      "Combo 4 vé xem phim + 2 bắp lớn + 4 nước ngọt với giá chỉ 499.000đ, tiết kiệm đến 25%.",
-    image:
-      "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    validUntil: "2023-11-30",
-    category: "food",
-  },
-];
+};
 
 const PromotionsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [promotions, setPromotions] = useState<any[]>([]);
   const [filteredPromotions, setFilteredPromotions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
 
-  // Xử lý khi thay đổi tab
-  const handleTabChange = (key: string) => {
-    setActiveTab(key);
+  // Mock data
+  const promotionsData = [
+    {
+      id: "1",
+      title: "Mua 1 Tặng 1 Vào Thứ Tư Hàng Tuần",
+      image: "https://i.imgur.com/3gQT5hY.jpg",
+      description:
+        "Áp dụng cho tất cả các suất chiếu vào thứ Tư hàng tuần. Mua 1 vé tặng 1 vé cùng loại.",
+      date: "01/10/2023 - 31/12/2023",
+      category: "Giảm giá vé",
+      tags: ["Mua 1 tặng 1", "Thứ Tư"],
+      isHot: true,
+    },
+    {
+      id: "2",
+      title: "Combo Bắp Nước Siêu Tiết Kiệm",
+      image: "https://i.imgur.com/JXFHOiM.jpg",
+      description:
+        "Combo 1 bắp lớn + 2 nước lớn chỉ với 99.000đ, tiết kiệm đến 30%.",
+      date: "15/10/2023 - 15/11/2023",
+      category: "Ưu đãi bắp nước",
+      tags: ["Combo", "Bắp nước"],
+      isHot: false,
+    },
+    {
+      id: "3",
+      title: "Sinh Nhật Thành Viên - Tặng Vé Xem Phim",
+      image: "https://i.imgur.com/8yqDSGC.jpg",
+      description:
+        "Thành viên UBANFLIX được tặng 1 vé xem phim miễn phí trong tháng sinh nhật.",
+      date: "01/01/2023 - 31/12/2023",
+      category: "Thành viên",
+      tags: ["Sinh nhật", "Vé miễn phí"],
+      isHot: true,
+    },
+    {
+      id: "4",
+      title: "Ưu Đãi Học Sinh, Sinh Viên",
+      image: "https://i.imgur.com/KYgANZU.jpg",
+      description:
+        "Giảm 20% giá vé cho học sinh, sinh viên vào các ngày trong tuần (trừ cuối tuần và ngày lễ).",
+      date: "01/09/2023 - 31/05/2024",
+      category: "Giảm giá vé",
+      tags: ["Học sinh", "Sinh viên"],
+      isHot: false,
+    },
+    {
+      id: "5",
+      title: "Khuyến Mãi Thanh Toán Qua ZaloPay",
+      image: "https://i.imgur.com/qJPjvUF.jpg",
+      description: "Giảm ngay 30K khi thanh toán từ 150K qua ví ZaloPay.",
+      date: "01/11/2023 - 30/11/2023",
+      category: "Thanh toán",
+      tags: ["ZaloPay", "Giảm 30K"],
+      isHot: true,
+    },
+    {
+      id: "6",
+      title: "Ưu Đãi Dành Cho Chủ Thẻ Ngân Hàng VCB",
+      image: "https://i.imgur.com/vXuEWZV.jpg",
+      description: "Giảm 50K cho hóa đơn từ 300K khi thanh toán bằng thẻ VCB.",
+      date: "15/10/2023 - 15/12/2023",
+      category: "Thanh toán",
+      tags: ["Ngân hàng", "VCB"],
+      isHot: false,
+    },
+    {
+      id: "7",
+      title: "Đặt Vé Online - Nhận Quà Liền Tay",
+      image: "https://i.imgur.com/8GDSG7X.jpg",
+      description:
+        "Đặt vé online qua ứng dụng UBANFLIX, nhận ngay phiếu giảm giá bắp nước.",
+      date: "01/11/2023 - 30/11/2023",
+      category: "Đặt vé online",
+      tags: ["Online", "Quà tặng"],
+      isHot: false,
+    },
+    {
+      id: "8",
+      title: "Ưu Đãi Ngày Độc Thân 11.11",
+      image: "https://i.imgur.com/5KWkQxP.jpg",
+      description:
+        "Giảm 50% giá vé thứ 2 khi mua 2 vé cùng lúc vào ngày 11/11/2023.",
+      date: "11/11/2023",
+      category: "Sự kiện đặc biệt",
+      tags: ["11.11", "Độc thân"],
+      isHot: true,
+    },
+    {
+      id: "9",
+      title: "Khuyến Mãi Black Friday",
+      image: "https://i.imgur.com/JKTdS5N.jpg",
+      description:
+        "Giảm đến 50% cho tất cả các loại vé vào ngày Black Friday 24/11/2023.",
+      date: "24/11/2023 - 26/11/2023",
+      category: "Sự kiện đặc biệt",
+      tags: ["Black Friday", "Giảm 50%"],
+      isHot: true,
+    },
+    {
+      id: "10",
+      title: "Ưu Đãi Dành Cho Gia Đình",
+      image: "https://i.imgur.com/Lc9EnXV.jpg",
+      description:
+        "Combo gia đình 4 vé + 2 bắp lớn + 4 nước chỉ 599K, áp dụng cuối tuần.",
+      date: "01/10/2023 - 31/12/2023",
+      category: "Combo gia đình",
+      tags: ["Gia đình", "Cuối tuần"],
+      isHot: false,
+    },
+  ];
+
+  // Categories
+  const categories = [
+    { id: "all", name: "Tất cả", icon: <GiftOutlined /> },
+    { id: "Giảm giá vé", name: "Giảm giá vé", icon: <TagOutlined /> },
+    {
+      id: "Ưu đãi bắp nước",
+      name: "Ưu đãi bắp nước",
+      icon: <ThunderboltOutlined />,
+    },
+    { id: "Thành viên", name: "Thành viên", icon: <TeamOutlined /> },
+    { id: "Thanh toán", name: "Thanh toán", icon: <CreditCardOutlined /> },
+    {
+      id: "Sự kiện đặc biệt",
+      name: "Sự kiện đặc biệt",
+      icon: <CalendarOutlined />,
+    },
+  ];
+
+  // Featured promotion
+  const featuredPromotion = {
+    id: "special1",
+    title: "KHUYẾN MÃI ĐẶC BIỆT: GIẢM 50% CHO SUẤT CHIẾU ĐẦU TIÊN",
+    image: "https://i.imgur.com/AvmwQ5D.jpg",
+    description:
+      "Áp dụng cho tất cả các suất chiếu sớm nhất trong ngày, từ thứ Hai đến thứ Sáu. Giảm ngay 50% giá vé khi đặt online qua ứng dụng hoặc website UBANFLIX Cinema. Số lượng vé có hạn, nhanh tay đặt ngay!",
+    date: "01/11/2023 - 31/12/2023",
+    category: "Giảm giá vé",
+    tags: ["Suất sớm", "Giảm 50%"],
+    isHot: true,
+  };
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setPromotions(promotionsData);
+      setFilteredPromotions(promotionsData);
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    filterPromotions();
+  }, [searchText, selectedCategory, promotions]);
+
+  const filterPromotions = () => {
+    let result = [...promotions];
+
+    if (searchText) {
+      result = result.filter(
+        (promo) =>
+          promo.title.toLowerCase().includes(searchText.toLowerCase()) ||
+          promo.description.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    if (selectedCategory && selectedCategory !== "all") {
+      result = result.filter((promo) => promo.category === selectedCategory);
+    }
+
+    setFilteredPromotions(result);
     setCurrentPage(1);
   };
 
-  // Lọc khuyến mãi theo tab
-  useEffect(() => {
-    setLoading(true);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-    // Giả lập API call
-    setTimeout(() => {
-      let filtered = [...mockPromotions];
+  const handleResetFilters = () => {
+    setSearchText("");
+    setSelectedCategory(null);
+    setFilteredPromotions(promotions);
+  };
 
-      if (activeTab !== "all") {
-        filtered = filtered.filter((promo) => promo.category === activeTab);
-      }
+  const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId === "all" ? null : categoryId);
+  };
 
-      setFilteredPromotions(filtered);
-      setLoading(false);
-    }, 500);
-  }, [activeTab]);
-
-  // Phân trang
-  const paginatedPromotions = filteredPromotions.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  // Get current promotions for pagination
+  const getCurrentPromotions = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredPromotions.slice(startIndex, startIndex + pageSize);
   };
 
   return (
     <PageContainer>
       <ContentWrapper>
-        <PageTitle>Khuyến mãi & Ưu đãi</PageTitle>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <PageTitle
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
+          >
+            <h1>KHUYẾN MÃI & ƯU ĐÃI</h1>
+          </PageTitle>
+          <PageSubtitle>
+            Khám phá ngay hàng trăm ưu đãi hấp dẫn dành riêng cho bạn tại
+            UBANFLIX Cinema
+          </PageSubtitle>
+        </motion.div>
 
-        <StyledTabs activeKey={activeTab} onChange={handleTabChange}>
-          <TabPane tab="Tất cả" key="all" />
-          <TabPane tab="Vé xem phim" key="ticket" />
-          <TabPane tab="Bắp nước" key="food" />
-          <TabPane tab="Thành viên" key="member" />
-          <TabPane tab="Thanh toán" key="payment" />
-        </StyledTabs>
+        <FilterContainer
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <FilterRow>
+            <FilterItem>
+              <StyledInput
+                placeholder="Tìm kiếm khuyến mãi"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </FilterItem>
+            <FilterItem>
+              <StyledSelect
+                placeholder="Danh mục"
+                style={{ width: "100%" }}
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                allowClear
+              >
+                <Option value="all">Tất cả</Option>
+                <Option value="Giảm giá vé">Giảm giá vé</Option>
+                <Option value="Ưu đãi bắp nước">Ưu đãi bắp nước</Option>
+                <Option value="Thành viên">Thành viên</Option>
+                <Option value="Thanh toán">Thanh toán</Option>
+                <Option value="Đặt vé online">Đặt vé online</Option>
+                <Option value="Sự kiện đặc biệt">Sự kiện đặc biệt</Option>
+                <Option value="Combo gia đình">Combo gia đình</Option>
+              </StyledSelect>
+            </FilterItem>
+            <FilterItem>
+              <FilterButton
+                icon={<FilterOutlined />}
+                onClick={handleResetFilters}
+                style={{ width: "100%" }}
+              >
+                Xóa bộ lọc
+              </FilterButton>
+            </FilterItem>
+          </FilterRow>
+        </FilterContainer>
 
-        {loading ? (
-          <LoadingContainer>
-            <Spin size="large" />
-          </LoadingContainer>
-        ) : (
-          <>
-            <Row gutter={[24, 24]}>
-              {paginatedPromotions.map((promo, index) => (
-                <Col xs={24} sm={12} lg={8} key={promo.id}>
-                  <PromotionCard
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <PromotionImage src={promo.image} alt={promo.title} />
-                    <PromotionContent>
-                      <PromotionTitle>{promo.title}</PromotionTitle>
-                      <PromotionDescription>
-                        {promo.description}
-                      </PromotionDescription>
-                      <PromotionMeta>
-                        <span>
-                          <CalendarOutlined /> Có hiệu lực đến:
-                        </span>
-                        <ValidUntil>{formatDate(promo.validUntil)}</ValidUntil>
-                      </PromotionMeta>
-                      <Link to={`/promotions/${promo.id}`}>
-                        <PromotionButton type="primary" block>
-                          Xem chi tiết
-                        </PromotionButton>
-                      </Link>
-                    </PromotionContent>
-                  </PromotionCard>
-                </Col>
+        {!searchText && !selectedCategory && (
+          <FeaturedSection>
+            <SectionTitle>
+              <ThunderboltOutlined /> Khuyến Mãi Đặc Biệt
+            </SectionTitle>
+            <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+              <FeaturedPromotionCard>
+                <FeaturedImageContainer>
+                  <img
+                    src={featuredPromotion.image}
+                    alt={featuredPromotion.title}
+                  />
+                </FeaturedImageContainer>
+                <FeaturedContent>
+                  <FeaturedTitle>{featuredPromotion.title}</FeaturedTitle>
+                  <FeaturedDescription>
+                    {featuredPromotion.description}
+                  </FeaturedDescription>
+                  <PromotionTags>
+                    {featuredPromotion.tags.map((tag, index) => (
+                      <Tag
+                        key={index}
+                        color="#00bfff"
+                        style={{ marginBottom: "5px" }}
+                      >
+                        {tag}
+                      </Tag>
+                    ))}
+                  </PromotionTags>
+                  <PromotionDate>
+                    <CalendarOutlined /> {featuredPromotion.date}
+                  </PromotionDate>
+                  <FeaturedButton>XEM CHI TIẾT</FeaturedButton>
+                </FeaturedContent>
+              </FeaturedPromotionCard>
+            </motion.div>
+          </FeaturedSection>
+        )}
+
+        {!searchText && !selectedCategory && (
+          <CategorySection>
+            <SectionTitle>
+              <TagOutlined /> Danh Mục Khuyến Mãi
+            </SectionTitle>
+            <CategoryGrid>
+              {categories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => handleCategoryClick(category.id)}
+                >
+                  <CategoryIcon>{category.icon}</CategoryIcon>
+                  <CategoryName>{category.name}</CategoryName>
+                </CategoryCard>
               ))}
-            </Row>
+            </CategoryGrid>
+          </CategorySection>
+        )}
 
-            {filteredPromotions.length > pageSize && (
-              <PaginationContainer>
-                <Pagination
-                  current={currentPage}
-                  total={filteredPromotions.length}
-                  pageSize={pageSize}
-                  onChange={setCurrentPage}
-                  showSizeChanger={false}
-                />
-              </PaginationContainer>
-            )}
-          </>
+        <SectionTitle>
+          <GiftOutlined /> Tất Cả Khuyến Mãi
+        </SectionTitle>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <Row gutter={[24, 24]}>
+            {getCurrentPromotions().map((promotion) => (
+              <Col xs={24} sm={12} md={8} key={promotion.id}>
+                <motion.div variants={itemVariants}>
+                  <PromotionCard
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {promotion.isHot && <PromotionBadge>HOT</PromotionBadge>}
+                    <Card
+                      hoverable
+                      cover={
+                        <img alt={promotion.title} src={promotion.image} />
+                      }
+                      bordered={false}
+                    >
+                      <Meta
+                        title={promotion.title}
+                        description={
+                          <>
+                            <p>{promotion.description}</p>
+                            <PromotionTags>
+                              {promotion.tags.map((tag, index) => (
+                                <Tag
+                                  key={index}
+                                  color="#00bfff"
+                                  style={{ marginBottom: "5px" }}
+                                >
+                                  {tag}
+                                </Tag>
+                              ))}
+                            </PromotionTags>
+                            <PromotionMeta>
+                              <PromotionDate>
+                                <CalendarOutlined /> {promotion.date}
+                              </PromotionDate>
+                            </PromotionMeta>
+                            <ViewButton>XEM CHI TIẾT</ViewButton>
+                          </>
+                        }
+                      />
+                    </Card>
+                  </PromotionCard>
+                </motion.div>
+              </Col>
+            ))}
+          </Row>
+        </motion.div>
+
+        {filteredPromotions.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              textAlign: "center",
+              padding: "40px 0",
+              color: "white",
+            }}
+          >
+            <h3>Không tìm thấy khuyến mãi phù hợp</h3>
+            <p>Vui lòng thử lại với từ khóa khác hoặc xóa bộ lọc</p>
+          </motion.div>
+        )}
+
+        {filteredPromotions.length > pageSize && (
+          <PaginationContainer>
+            <Pagination
+              current={currentPage}
+              total={filteredPromotions.length}
+              pageSize={pageSize}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </PaginationContainer>
         )}
       </ContentWrapper>
     </PageContainer>

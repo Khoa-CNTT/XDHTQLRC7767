@@ -36,10 +36,13 @@ export const TopBarLeft = styled.div`
   display: flex;
   gap: 20px;
   align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   
   @media (max-width: 576px) {
     gap: 10px;
-    font-size: 12px;
+    font-size: 13px;
   }
 `;
 
@@ -47,9 +50,20 @@ export const TopBarRight = styled.div`
   display: flex;
   gap: 20px;
   align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  
+  a {
+    transition: color 0.3s ease;
+    &:hover {
+      color: #00bfff !important;
+    }
+  }
   
   @media (max-width: 576px) {
     gap: 10px;
+    font-size: 13px;
   }
 `;
 
@@ -130,64 +144,47 @@ export const MainNav = styled.div`
 export const NavMenu = styled(Menu)`
   background: transparent;
   border: none;
-  color: white;
-  font-size: 16px;
-  display: flex;
-  justify-content: center;
   
   .ant-menu-item {
     color: white;
-    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 25px;
     margin: 0 5px;
-    border-bottom: none !important;
     position: relative;
-    overflow: visible;
+    
+    a {
+      color: inherit;
+    }
     
     &:hover {
       color: #00bfff !important;
-      background-color: transparent;
+      background: transparent !important;
+      
+      a {
+        color: #00bfff !important;
+      }
+    }
+    
+    &.ant-menu-item-selected {
+      color: #00bfff !important;
+      background: transparent !important;
+      font-weight: 600;
+      
+      a {
+        color: #00bfff !important;
+      }
       
       &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background-color: #00bfff;
-        animation: slideIn 0.3s forwards;
+        border-bottom: 2px solid #00bfff !important;
       }
     }
   }
-  
-  .ant-menu-item-selected {
-    background-color: transparent !important;
-    color: #00bfff;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background-color: #00bfff;
-    }
-  }
-  
-  @keyframes slideIn {
-    from {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    display: none;
+
+  @media (min-width: 768px) {
+    display: flex !important;
   }
 `;
 
@@ -232,16 +229,20 @@ export const MobileMenu = styled(Drawer)`
   .ant-menu-item {
     padding: 16px 24px !important;
     font-size: 16px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     
     &:hover {
-      color: #FF4B91;
-      background-color: rgba(255, 215, 0, 0.1);
+      color: #00bfff;
+      background-color: rgba(0, 191, 255, 0.1);
     }
-  }
-  
-  .ant-menu-item-selected {
-    background-color: #16213e !important;
-    color: #FF4B91;
+    
+    &.ant-menu-item-selected {
+      background-color: rgba(0, 191, 255, 0.15) !important;
+      color: #00bfff;
+      font-weight: 600;
+    }
   }
 `;
 
@@ -393,12 +394,14 @@ export const RightButton = styled(SliderButton)`
   right: 20px;
 `;
 
-export const ThumbnailsContainer = styled.div`
+export const SmallThumbnailsContainer = styled.div`
   display: flex;
-  gap: 15px;
+  gap: 10px;
   justify-content: center;
+  margin-top: 20px;
+  width: 100%;
   
-  @media (max-width: 768px) {
+  @media (max-width: 576px) {
     display: none;
   }
 `;
@@ -426,18 +429,6 @@ export const ThumbnailImage = styled.img`
 
   &:hover {
     transform: scale(1.05);
-  }
-`;
-
-export const SmallThumbnailsContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-  width: 100%;
-  
-  @media (max-width: 576px) {
-    display: none;
   }
 `;
 
