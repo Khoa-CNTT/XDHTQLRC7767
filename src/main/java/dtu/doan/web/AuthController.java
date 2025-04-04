@@ -1,13 +1,15 @@
 package dtu.doan.web;
 
 import dtu.doan.dto.AuthRequest;
+import dtu.doan.dto.RegisterRequest;
 import dtu.doan.model.Account;
 import dtu.doan.model.Customer;
 import dtu.doan.model.VerificationToken;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.VerificationTokenRepository;
-import dtu.doan.service.VerificationService;
+import dtu.doan.service.CustomerService;
+import dtu.doan.service.impl.VerificationService;
 import dtu.doan.service.impl.MailService;
 import dtu.doan.utils.JwtUtil;
 import jakarta.transaction.Transactional;
@@ -24,7 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping()
+@RequestMapping
 public class AuthController {
 
     @Autowired
@@ -52,6 +54,9 @@ public class AuthController {
     private VerificationTokenRepository verificationTokenRepository;
 
     @Autowired
+    private CustomerService customerService;
+
+    @Autowired
     private CustomerRepository customerRepository;
 
     @PostMapping("/authenticate")
@@ -63,11 +68,20 @@ public class AuthController {
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
         }
-
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
-        if (userDetails == null) {
+        Account account = accountRepository.findByUsername(authRequest.getUsername());
+        if (account == null) {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }
+        if (!account.getIsEnable()) {
+            return new ResponseEntity<>("Account is disabled", HttpStatus.FORBIDDEN);
+        }
+        if (!account.getIsVerify()) {
+            return new ResponseEntity<>("Account is not verified", HttpStatus.FORBIDDEN);
+        }
+        if (account.getIsDelete()) {
+            return new ResponseEntity<>("Account is deleted", HttpStatus.FORBIDDEN);
+        }
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
         return new ResponseEntity<>(jwt, HttpStatus.OK);
     }
@@ -79,7 +93,11 @@ public class AuthController {
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
                 String username = userDetails.getUsername();
-//                Customer customer = customerRepository.findBy()
+                Customer customer = customerService.getCustomerByEmail(username);
+                if (customer == null) {
+                    return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+                }
+                return new ResponseEntity<>(customer, HttpStatus.OK);
             }
 
 //            String jwt = token.substring(7); // Remove "Bearer " prefix
@@ -96,8 +114,8 @@ public class AuthController {
 
     @Transactional
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody AuthRequest authRequest) throws Exception {
-        String username = authRequest.getUsername();
+    public ResponseEntity<?> signup(@RequestBody RegisterRequest request) throws Exception {
+        String username = request.getEmail();
         if (!username.matches("^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             return new ResponseEntity<>("Invalid email format", HttpStatus.BAD_REQUEST);
         }
@@ -107,14 +125,17 @@ public class AuthController {
         Account account = new Account();
         Customer customer = new Customer();
         account.setUsername(username);
-        account.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+        account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setIsEnable(true);
         account.setIsDelete(false);
         account.setIsVerify(false);
         account.setRole("USER");
         Account newAccount = accountRepository.save(account);
         customer.setAccount(newAccount);
-//        customer.set
+        customer.setEmail(newAccount.getUsername());
+        customer.setFullName(request.getFullName());
+        customer.setPhoneNumber(request.getPhoneNumber());
+        customerRepository.save(customer);
         String token = verificationService.createVerificationTokenForUser(account);
         mailService.sendVerificationEmail(username, token);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -131,7 +152,6 @@ public class AuthController {
             if (verificationToken == null) {
                 return ResponseEntity.badRequest().body("Token không tồn tại");
             }
-
             Account user = verificationToken.getUser();
             if (user.getIsVerify()) {
                 return ResponseEntity.badRequest().body("Tài khoản đã được xác thực trước đó");

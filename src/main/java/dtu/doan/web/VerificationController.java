@@ -4,7 +4,7 @@ import dtu.doan.model.Account;
 import dtu.doan.model.VerificationToken;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.VerificationTokenRepository;
-import dtu.doan.service.VerificationService;
+import dtu.doan.service.impl.VerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,4 +1,4 @@
-package dtu.doan.service;
+package dtu.doan.service.impl;
 
 import dtu.doan.model.VerificationToken;
 import dtu.doan.model.Account;

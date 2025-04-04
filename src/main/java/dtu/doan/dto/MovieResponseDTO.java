@@ -1,7 +1,6 @@
 package dtu.doan.dto;
 
 import dtu.doan.model.Genre;
-import dtu.doan.model.Movie;
 import lombok.Data;
 
 import java.util.List;

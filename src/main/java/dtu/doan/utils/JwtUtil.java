@@ -18,7 +18,13 @@ public class JwtUtil {
 
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        Claims claims = Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
+//        return extractClaim(token, Claims::getSubject);
     }
 
     public Date extractExpiration(String token) {
@@ -38,8 +44,9 @@ public class JwtUtil {
                 .getBody();
     }
 
-    private Key getSigningKey() {
-        return Keys.secretKeyFor(SignatureAlgorithm.HS256); // Tạo key đủ mạnh tự động
+    private String getSigningKey() {
+        System.out.println(Keys.secretKeyFor(SignatureAlgorithm.HS256));
+        return "588024c"; // Tạo key đủ mạnh tự động
     }
 
     private Boolean isTokenExpired(String token) {
