@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -53,17 +56,25 @@ public class SecurityConfig {
 //        return http.build();
 
         http
-//                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173")); // Add allowed origins
+                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                    corsConfiguration.setAllowCredentials(true);
+                    return corsConfiguration;
+                }))
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+//                        .csrf(csrf -> csrf.disable())
 //                .authorizeHttpRequests((auth) -> auth
-//                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**").permitAll()
-//                        .anyRequest().authenticated()
+//                        .anyRequest().permitAll()
 //                        )
 //                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-        //                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((auth) -> auth
-                        .anyRequest().permitAll()
-                        )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

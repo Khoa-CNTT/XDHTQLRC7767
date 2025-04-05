@@ -18,7 +18,7 @@ public class Chair {
     private String name;
     private String type;
     private String status;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
     @OneToOne

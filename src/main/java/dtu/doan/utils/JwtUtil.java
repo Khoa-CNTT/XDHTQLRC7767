@@ -6,7 +6,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,8 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "K28LuByzUNNXf4F3Xa8JSgChChTv2ItjYA05biUo";
+    private static final String SECRET_KEY = "K28LuByzUNNXf4F3Xa8JSgChChTv2ItjYA05biUo@";
+    SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
 
     public String extractUsername(String token) {
@@ -44,9 +46,8 @@ public class JwtUtil {
                 .getBody();
     }
 
-    private String getSigningKey() {
-        System.out.println(Keys.secretKeyFor(SignatureAlgorithm.HS256));
-        return "588024c"; // Tạo key đủ mạnh tự động
+    private SecretKey getSigningKey() {
+        return key;
     }
 
     private Boolean isTokenExpired(String token) {
@@ -61,9 +62,9 @@ public class JwtUtil {
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject) // username
-                .setIssuedAt(new Date(System.currentTimeMillis())) // thời gian tạo token
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Hết hạn sau 10 tiếng
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(SignatureAlgorithm.HS256, getSigningKey())
                 .compact();
     }
