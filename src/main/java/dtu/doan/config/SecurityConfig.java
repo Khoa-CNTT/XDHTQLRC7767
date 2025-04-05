@@ -53,13 +53,17 @@ public class SecurityConfig {
 //        return http.build();
 
         http
-                .csrf(csrf -> csrf.disable())
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests((auth) -> auth
+//                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**").permitAll()
+//                        .anyRequest().authenticated()
+//                        )
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        //                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                         )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
