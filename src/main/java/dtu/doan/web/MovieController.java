@@ -1,5 +1,6 @@
 package dtu.doan.web;
 
+import dtu.doan.dto.IMovieBookingDTO;
 import dtu.doan.dto.IMovieDetailDTO;
 import dtu.doan.dto.MovieRequestDTO;
 import dtu.doan.dto.MovieResponseDTO;
@@ -65,6 +66,16 @@ public class MovieController {
         }
 
     }
+
+    @GetMapping("/booking/{id}")
+    public ResponseEntity<IMovieBookingDTO> getMovieBooking(@PathVariable("id") Long id) {
+        IMovieBookingDTO dto = service.getMovieByIDToBookTicket(id);
+        if (dto == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dto);
+    }
+
 
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getMovieDtl(@PathVariable Long id) {

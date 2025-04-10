@@ -59,7 +59,7 @@ public class AuthController {
     @Autowired
     private CustomerRepository customerRepository;
 
-    @PostMapping("/authenticate")
+        @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
         try {
             authenticationManager.authenticate(

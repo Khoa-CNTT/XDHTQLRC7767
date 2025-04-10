@@ -1,9 +1,7 @@
 package dtu.doan.service;
 
 
-import dtu.doan.dto.IMovieDetailDTO;
-import dtu.doan.dto.MovieRequestDTO;
-import dtu.doan.dto.MovieResponseDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.Movie;
 
 import java.util.List;
@@ -18,4 +16,5 @@ public interface MovieService {
     void deleteMovie(Long id);
 
     MovieResponseDTO getMovieDtl(Long id);
+    IMovieBookingDTO getMovieByIDToBookTicket(Long id);
 }

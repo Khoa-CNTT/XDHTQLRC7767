@@ -1,5 +1,10 @@
 package dtu.doan.service;
 
 
+import dtu.doan.model.Room;
+
+import java.util.List;
+
 public interface RoomService  {
+    List<Room> findAllRooms();
 }

@@ -19,7 +19,7 @@ public class Room {
     private String type;
     private int capacity;
     private String status;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
 }

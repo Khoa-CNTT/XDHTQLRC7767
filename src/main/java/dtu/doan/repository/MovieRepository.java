@@ -1,5 +1,6 @@
 package dtu.doan.repository;
 
+import dtu.doan.dto.IMovieBookingDTO;
 import dtu.doan.dto.IMovieDetailDTO;
 import dtu.doan.dto.MovieResponseDTO;
 import dtu.doan.model.Movie;
@@ -46,4 +47,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             "GROUP BY mv.id", nativeQuery = true)
     IMovieDetailDTO getMovieById(Long movieId);
 
+
+    @Query("SELECT mv.id, mv.name AS name, mv.description AS description, mv.imageUrl AS imageUrl, " +
+            "mv.duration AS duration, mv.releaseYear AS releaseYear, mv.rating AS rating " +
+            "FROM Movie mv WHERE mv.id = :id AND mv.isDelete = false")
+    IMovieBookingDTO getMovieToBookTicket(@Param("id") Long id);
 }

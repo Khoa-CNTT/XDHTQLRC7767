@@ -1,8 +1,6 @@
 package dtu.doan.service.impl;
 
-import dtu.doan.dto.IMovieDetailDTO;
-import dtu.doan.dto.MovieRequestDTO;
-import dtu.doan.dto.MovieResponseDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.Genre;
 import dtu.doan.model.Movie;
 import dtu.doan.model.MovieGenre;
@@ -134,5 +132,10 @@ public class MovieServiceImpl implements MovieService {
             return movieResponseDTO;
         }
         return null;
+    }
+
+    @Override
+    public IMovieBookingDTO getMovieByIDToBookTicket(Long id) {
+        return repository.getMovieToBookTicket(id);
     }
 }
