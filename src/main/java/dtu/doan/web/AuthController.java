@@ -3,6 +3,7 @@ package dtu.doan.web;
 import dtu.doan.dto.AuthRequest;
 import dtu.doan.dto.ChangePasswordRequest;
 import dtu.doan.dto.RegisterRequest;
+import dtu.doan.dto.SaveNewPasswordRequest;
 import dtu.doan.model.Account;
 import dtu.doan.model.Customer;
 import dtu.doan.model.VerificationToken;
@@ -141,7 +142,7 @@ public class AuthController {
     }
 
     // Xac thuc email sau khi dang ki
-    @GetMapping("/confirm")
+    @PostMapping("/confirm")
     public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
         try {
             if (!verificationService.validateVerificationToken(token)) {
@@ -228,7 +229,7 @@ public class AuthController {
 
 
     // Xac thuc email
-    @GetMapping("/resend")
+    @PostMapping("/resend-verify-email")
     public ResponseEntity<?> resendVerificationToken(@RequestParam("email") String email) {
         try {
             Account account = accountRepository.findByUsername(email);
@@ -262,8 +263,10 @@ public class AuthController {
             if (account == null) {
                 return ResponseEntity.badRequest().body("Email không tồn tại trong hệ thống");
             }
-
-
+            VerificationToken verificationToken = verificationTokenRepository.findVerificationTokenByUser(account);
+            if (verificationToken != null) {
+                verificationTokenRepository.delete(verificationToken);
+            }
             // Generate a token for password reset
             String token = verificationService.createVerificationTokenForUser(account);
 
@@ -277,9 +280,9 @@ public class AuthController {
     }
 
     @PostMapping("/save-new-password")
-    public ResponseEntity<?> saveNewPassword(@RequestParam("token") String token, @RequestParam("newPassword") String newPassword) {
+    public ResponseEntity<?> saveNewPassword(@RequestBody SaveNewPasswordRequest request) {
         try {
-            VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+            VerificationToken verificationToken = verificationTokenRepository.findByToken(request.getToken());
             if (verificationToken == null) {
                 return ResponseEntity.badRequest().body("Invalid or expired token");
             }
@@ -289,11 +292,9 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("No account associated with this token");
             }
 
-            // Update the password
-            account.setPassword(passwordEncoder.encode(newPassword));
+            account.setPassword(passwordEncoder.encode(request.getNewPassword()));
             accountRepository.save(account);
 
-            // Delete the token after successful password reset
             verificationTokenRepository.delete(verificationToken);
 
             return ResponseEntity.ok("Password updated successfully");
