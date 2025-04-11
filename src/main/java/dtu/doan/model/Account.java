@@ -20,4 +20,5 @@ public class Account {
     private Boolean isEnable;
     private String role;
     private Boolean isVerify;
+    private String loginType;
 }

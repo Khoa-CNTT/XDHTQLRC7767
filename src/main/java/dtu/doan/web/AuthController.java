@@ -9,8 +9,8 @@ import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.VerificationTokenRepository;
 import dtu.doan.service.CustomerService;
-import dtu.doan.service.impl.VerificationService;
 import dtu.doan.service.impl.MailService;
+import dtu.doan.service.impl.VerificationService;
 import dtu.doan.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class AuthController {
     @Autowired
     private CustomerRepository customerRepository;
 
-        @PostMapping("/authenticate")
+    @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
         try {
             authenticationManager.authenticate(
@@ -99,13 +99,6 @@ public class AuthController {
                 }
                 return new ResponseEntity<>(customer, HttpStatus.OK);
             }
-
-//            String jwt = token.substring(7); // Remove "Bearer " prefix
-//            String username = jwtUtil.extractUsername(jwt);
-//            Account account = accountRepository.findByUsername(username);
-//            if (account == null) {
-//                return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
-//            }
             return new ResponseEntity<>(null, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Invalid token", HttpStatus.UNAUTHORIZED);
@@ -120,7 +113,7 @@ public class AuthController {
             return new ResponseEntity<>("Invalid email format", HttpStatus.BAD_REQUEST);
         }
         if (accountRepository.findByUsername(username) != null) {
-            return new ResponseEntity<>("Username already exists", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Email already exists", HttpStatus.CONFLICT);
         }
         Account account = new Account();
         Customer customer = new Customer();
@@ -130,6 +123,7 @@ public class AuthController {
         account.setIsDelete(false);
         account.setIsVerify(false);
         account.setRole("USER");
+        account.setLoginType("NORMAL");
         Account newAccount = accountRepository.save(account);
         customer.setAccount(newAccount);
         customer.setEmail(newAccount.getUsername());
@@ -144,26 +138,86 @@ public class AuthController {
     // Xac thuc email sau khi dang ki
     @GetMapping("/confirm")
     public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
-        if (!verificationService.validateVerificationToken(token)) {
-            return ResponseEntity.badRequest().body("Token không hợp lệ hoặc đã hết hạn");
-        }
         try {
+            if (!verificationService.validateVerificationToken(token)) {
+                return ResponseEntity.badRequest().body("❌ Hết hạn thời gian xác thực");
+            }
+
             VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
             if (verificationToken == null) {
-                return ResponseEntity.badRequest().body("Token không tồn tại");
+                return ResponseEntity.badRequest().body("❌ Token không tồn tại");
             }
+
             Account user = verificationToken.getUser();
-            if (user.getIsVerify()) {
-                return ResponseEntity.badRequest().body("Tài khoản đã được xác thực trước đó");
+            if (user == null) {
+                return ResponseEntity.badRequest().body("❌ Không tìm thấy tài khoản liên kết với token");
+            }
+
+            if (Boolean.TRUE.equals(user.getIsVerify())) {
+                return ResponseEntity.badRequest().body("⚠️ Tài khoản đã được xác thực trước đó");
             }
 
             user.setIsVerify(true);
             accountRepository.save(user);
-
             verificationTokenRepository.delete(verificationToken);
-            return ResponseEntity.ok("Xác thực email thành công");
+
+            String successPage = """
+                    <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>Xác thực thành công</title>
+                            <style>
+                                body {
+                                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                    background-color: #f4f4f4;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: center;
+                                    height: 100vh;
+                                    margin: 0;
+                                }
+                                .container {
+                                    background-color: white;
+                                    padding: 40px;
+                                    border-radius: 12px;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                                    text-align: center;
+                                }
+                                h2 {
+                                    color: #28a745;
+                                }
+                                a.button {
+                                    margin-top: 20px;
+                                    display: inline-block;
+                                    padding: 12px 24px;
+                                    background-color: #28a745;
+                                    color: white;
+                                    text-decoration: none;
+                                    border-radius: 8px;
+                                    font-weight: bold;
+                                    transition: background-color 0.3s;
+                                }
+                                a.button:hover {
+                                    background-color: #218838;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h2>✅ Xác thực email thành công!</h2>
+                                <p>Bạn có thể đăng nhập bằng cách nhấn nút bên dưới.</p>
+                                <a href="http://localhost:5173/login" class="button">Đăng nhập</a>
+                            </div>
+                        </body>
+                    </html>
+                    """;
+
+
+            return ResponseEntity.ok().header("Content-Type", "text/html").body(successPage);
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi xác thực email: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("❌ Lỗi xác thực email: " + e.getMessage());
         }
     }
 
@@ -203,10 +257,42 @@ public class AuthController {
             if (account == null) {
                 return ResponseEntity.badRequest().body("Email không tồn tại trong hệ thống");
             }
-            mailService.sendResetPasswordEmail(email);
+
+            // Generate a token for password reset
+            String token = verificationService.createVerificationTokenForUser(account);
+
+            // Send the reset password email with the token
+            mailService.sendResetPasswordEmail(email, token);
+
             return ResponseEntity.ok("Email hướng dẫn đặt lại mật khẩu đã được gửi");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Lỗi khi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/save-new-password")
+    public ResponseEntity<?> saveNewPassword(@RequestParam("token") String token, @RequestParam("newPassword") String newPassword) {
+        try {
+            VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
+            if (verificationToken == null) {
+                return ResponseEntity.badRequest().body("Invalid or expired token");
+            }
+
+            Account account = verificationToken.getUser();
+            if (account == null) {
+                return ResponseEntity.badRequest().body("No account associated with this token");
+            }
+
+            // Update the password
+            account.setPassword(passwordEncoder.encode(newPassword));
+            accountRepository.save(account);
+
+            // Delete the token after successful password reset
+            verificationTokenRepository.delete(verificationToken);
+
+            return ResponseEntity.ok("Password updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error updating password: " + e.getMessage());
         }
     }
 }
