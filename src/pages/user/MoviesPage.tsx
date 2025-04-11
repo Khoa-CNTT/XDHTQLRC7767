@@ -223,6 +223,7 @@ const MovieInfo = styled.div`
 
 const MovieTags = styled.div`
   margin-bottom: 15px;
+  height: 60px;
 `;
 
 const ButtonContainer = styled.div`

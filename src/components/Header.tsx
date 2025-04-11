@@ -9,7 +9,9 @@ import {
   SearchOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
-import { useAuth } from "../contexts/AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { logout } from "../redux/slices/authSlice";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   StyledHeader,
@@ -47,7 +49,10 @@ import {
 } from "../styles/HeaderStyles";
 
 const Header: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -78,6 +83,11 @@ const Header: React.FC = () => {
     { key: "news", label: "Tin Tức", link: "/news" },
   ];
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
+
   const userMenu = (
     <Menu>
       <Menu.Item
@@ -87,22 +97,8 @@ const Header: React.FC = () => {
       >
         Quản lý tài khoản
       </Menu.Item>
-      <Menu.Item
-        key="settings"
-        icon={<SettingOutlined />}
-        onClick={() => navigate("/settings")}
-      >
-        Cài đặt
-      </Menu.Item>
       <Menu.Divider />
-      <Menu.Item
-        key="logout"
-        icon={<LogoutOutlined />}
-        onClick={() => {
-          logout();
-          navigate("/");
-        }}
-      >
+      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
     </Menu>
@@ -144,7 +140,7 @@ const Header: React.FC = () => {
             </TopBarLeft>
             <TopBarRight>
               {isAuthenticated ? (
-                <div>Xin chào, {user?.name}</div>
+                <div>Xin chào, {user?.fullName}</div>
               ) : (
                 <>
                   <Link to="/login" style={{ color: "white" }}>
@@ -185,8 +181,8 @@ const Header: React.FC = () => {
               {isAuthenticated ? (
                 <Dropdown overlay={userMenu} placement="bottomRight">
                   <div style={{ cursor: "pointer" }}>
-                    <Avatar icon={<UserOutlined />} />
-                    <UserName>{user?.name}</UserName>
+                    <Avatar src={user?.avatar} icon={<UserOutlined />} />
+                    <UserName>{user?.fullName}</UserName>
                   </div>
                 </Dropdown>
               ) : (
@@ -227,52 +223,35 @@ const Header: React.FC = () => {
               </SearchIconWrapper>
               <StyledInput
                 placeholder="Tìm kiếm phim..."
-                onPressEnter={(e) =>
-                  handleSearch((e.target as HTMLInputElement).value)
-                }
-              />
-              <SearchButton
-                className="search-button"
-                icon={<SearchOutlined />}
-                onClick={() => {
-                  const inputElement = document.querySelector(
-                    ".ant-input"
-                  ) as HTMLInputElement;
-                  if (inputElement) {
-                    handleSearch(inputElement.value);
-                  }
-                }}
+                onPressEnter={(e) => handleSearch(e.currentTarget.value)}
               />
             </SearchInputWrapper>
+            <SearchButton onClick={() => handleSearch("")}>
+              TÌM KIẾM
+            </SearchButton>
           </SearchBarContent>
         </SearchBar>
+
+        <BannerContainer>
+          <BannerContent>
+            <MainBanner>
+              <BannerImage src={bannerImages[currentSlide]} alt="Banner" />
+              <LeftButton icon={<LeftOutlined />} onClick={prevSlide} />
+              <RightButton icon={<RightOutlined />} onClick={nextSlide} />
+            </MainBanner>
+            <SmallThumbnailsContainer>
+              {thumbnailImages.map((image, index) => (
+                <SmallThumbnail key={index}>
+                  <SmallThumbnailImage
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                  />
+                </SmallThumbnail>
+              ))}
+            </SmallThumbnailsContainer>
+          </BannerContent>
+        </BannerContainer>
       </StyledHeader>
-
-      <BannerContainer>
-        <BannerContent>
-          <MainBanner>
-            <BannerImage src={bannerImages[currentSlide]} alt="Banner" />
-            <LeftButton className="slider-button" onClick={prevSlide}>
-              <LeftOutlined />
-            </LeftButton>
-            <RightButton className="slider-button" onClick={nextSlide}>
-              <RightOutlined />
-            </RightButton>
-          </MainBanner>
-
-          <SmallThumbnailsContainer>
-            {thumbnailImages.map((img, index) => (
-              <SmallThumbnail
-                className="small-thumbnail"
-                key={index}
-                onClick={() => setCurrentSlide(index % bannerImages.length)}
-              >
-                <SmallThumbnailImage src={img} alt={`Thumbnail ${index + 1}`} />
-              </SmallThumbnail>
-            ))}
-          </SmallThumbnailsContainer>
-        </BannerContent>
-      </BannerContainer>
     </>
   );
 };

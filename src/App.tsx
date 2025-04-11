@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Layout } from "antd";
 import {
   BrowserRouter as Router,
@@ -19,13 +19,18 @@ import PromotionsPage from "./pages/user/PromotionsPage";
 import ContactPage from "./pages/user/ContactPage";
 import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
 import CinemaPage from "./pages/user/CinemaPage";
-import { AuthProvider } from "./contexts/AuthContext";
 import UserLayout from "./layouts/UserLayout";
 import InvoicePage from "./pages/user/InvoicePage";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import PrivateRoute from "./components/PrivateRoute";
+import GuestRoute from "./components/GuestRoute";
+import Dashboard from "./pages/admin/Dashboard";
+import EmailVerificationPage from "./pages/user/EmailVerificationPage";
+import LoadingScreen from "./components/common/LoadingScreen";
 
 // Admin pages
 import AdminLayout from "./layouts/AdminLayout";
-import Dashboard from "./pages/admin/Dashboard";
 import MovieManagement from "./pages/admin/MovieManagement";
 import ShowtimeManagement from "./pages/admin/ShowtimeManagement";
 import OrderManagement from "./pages/admin/OrderManagement";
@@ -34,6 +39,9 @@ import StaffManagement from "./pages/admin/StaffManagement";
 import ReviewManagement from "./pages/admin/ReviewManagement";
 import ReportManagement from "./pages/admin/ReportManagement";
 import SettingsManagement from "./pages/admin/SettingManagement";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserInfoRequest } from "./redux/slices/authSlice";
+import { RootState } from "./redux/store";
 
 const StyledLayout = styled(Layout)`
   min-height: 100vh;
@@ -41,6 +49,26 @@ const StyledLayout = styled(Layout)`
   margin: 0;
   padding: 0;
 `;
+
+const AppContent = () => {
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    // Kiểm tra token và lấy thông tin user khi khởi động
+    dispatch(getUserInfoRequest());
+  }, []);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <StyledLayout>
+      <AppRoutes />
+    </StyledLayout>
+  );
+};
 
 // Bỏ bắt buộc đăng nhập để xem UI
 const AppRoutes = () => {
@@ -82,24 +110,57 @@ const AppRoutes = () => {
       <Route
         path="/booking/:id"
         element={
-          <UserLayout>
-            <BookingPage />
-          </UserLayout>
+          <PrivateRoute>
+            <UserLayout>
+              <BookingPage />
+            </UserLayout>
+          </PrivateRoute>
         }
       />
-      <Route path="/invoice" element={<InvoicePage />} />
+      <Route
+        path="/invoice"
+        element={
+          <PrivateRoute>
+            <InvoicePage />
+          </PrivateRoute>
+        }
+      />
 
-      {/* Login và Register không sử dụng UserLayout */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      {/* Guest Routes - Chỉ cho phép truy cập khi chưa đăng nhập */}
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <GuestRoute>
+            <RegisterPage />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <GuestRoute>
+            <ForgotPasswordPage />
+          </GuestRoute>
+        }
+      />
+      <Route path="/verify-email" element={<EmailVerificationPage />} />
 
       <Route
         path="/profile"
         element={
-          <UserLayout>
-            <ProfilePage />
-          </UserLayout>
+          <PrivateRoute>
+            <UserLayout>
+              <ProfilePage />
+            </UserLayout>
+          </PrivateRoute>
         }
       />
       <Route
@@ -128,7 +189,14 @@ const AppRoutes = () => {
       />
 
       {/* Admin Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute>
+            <AdminLayout />
+          </PrivateRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="movies" element={<MovieManagement />} />
@@ -148,13 +216,11 @@ const AppRoutes = () => {
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
+    <Provider store={store}>
       <Router>
-        <StyledLayout>
-          <AppRoutes />
-        </StyledLayout>
+        <AppContent />
       </Router>
-    </AuthProvider>
+    </Provider>
   );
 };
 

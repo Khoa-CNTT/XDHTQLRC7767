@@ -157,6 +157,7 @@ export const NavMenu = styled(Menu)`
     
     a {
       color: inherit;
+      display: block;
     }
     
     &:hover {
@@ -183,7 +184,11 @@ export const NavMenu = styled(Menu)`
     }
   }
 
-  @media (min-width: 768px) {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+
+  @media (min-width: 769px) {
     display: flex !important;
   }
 `;

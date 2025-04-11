@@ -19,7 +19,9 @@ import {
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../redux/store";
+import { updateUserStart } from "../../redux/slices/authSlice";
 
 const ProfileContainer = styled(motion.div)`
   padding: 20px;
@@ -101,33 +103,26 @@ const PointsLabel = styled.div`
 `;
 
 const UserProfile: React.FC = () => {
-  const { user, updateUserProfile } = useAuth();
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((state: RootState) => state.auth);
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const onFinish = async (values: any) => {
-    setLoading(true);
     try {
-      // Format date if needed
       if (values.birthday) {
         values.birthday = values.birthday.format("YYYY-MM-DD");
       }
-
-      await updateUserProfile(values);
-      message.success("Cập nhật thông tin thành công!");
+      dispatch(updateUserStart(values));
       setIsEditing(false);
     } catch (error) {
       message.error("Có lỗi xảy ra khi cập nhật thông tin");
-    } finally {
-      setLoading(false);
     }
   };
 
   const toggleEdit = () => {
     setIsEditing(!isEditing);
     if (!isEditing) {
-      // Reset form with current user data when entering edit mode
       form.setFieldsValue({
         ...user,
         birthday: user?.birthday ? dayjs(user.birthday) : null,
@@ -187,9 +182,8 @@ const UserProfile: React.FC = () => {
                 showUploadList={false}
                 beforeUpload={() => false}
                 onChange={(info) => {
-                  // Handle avatar upload
                   if (info.file.status !== "uploading") {
-                    // Handle the file here
+                    // Handle avatar upload later
                   }
                 }}
               >
@@ -206,44 +200,46 @@ const UserProfile: React.FC = () => {
         </motion.div>
 
         <Row gutter={24}>
-          <Col xs={24} md={12}>
+          <Col span={12}>
             <motion.div variants={itemVariants}>
               <Form.Item
-                name="name"
                 label="Họ và tên"
-                rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
-              >
-                <Input disabled={!isEditing} />
-              </Form.Item>
-            </motion.div>
-          </Col>
-          <Col xs={24} md={12}>
-            <motion.div variants={itemVariants}>
-              <Form.Item
-                name="email"
-                label="Email"
+                name="fullName"
                 rules={[
-                  { required: true, message: "Vui lòng nhập email" },
-                  { type: "email", message: "Email không hợp lệ" },
+                  { required: true, message: "Vui lòng nhập họ và tên!" },
                 ]}
               >
                 <Input disabled={!isEditing} />
               </Form.Item>
             </motion.div>
           </Col>
+          <Col span={12}>
+            <motion.div variants={itemVariants}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email!" },
+                  { type: "email", message: "Email không hợp lệ!" },
+                ]}
+              >
+                <Input disabled />
+              </Form.Item>
+            </motion.div>
+          </Col>
         </Row>
 
         <Row gutter={24}>
-          <Col xs={24} md={12}>
+          <Col span={12}>
             <motion.div variants={itemVariants}>
               <Form.Item
-                name="phone"
                 label="Số điện thoại"
+                name="phoneNumber"
                 rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại" },
+                  { required: true, message: "Vui lòng nhập số điện thoại!" },
                   {
                     pattern: /^[0-9]{10}$/,
-                    message: "Số điện thoại không hợp lệ",
+                    message: "Số điện thoại không hợp lệ!",
                   },
                 ]}
               >
@@ -251,12 +247,12 @@ const UserProfile: React.FC = () => {
               </Form.Item>
             </motion.div>
           </Col>
-          <Col xs={24} md={12}>
+          <Col span={12}>
             <motion.div variants={itemVariants}>
-              <Form.Item name="birthday" label="Ngày sinh">
+              <Form.Item label="Ngày sinh" name="birthday">
                 <DatePicker
-                  format="DD/MM/YYYY"
                   style={{ width: "100%" }}
+                  format="DD/MM/YYYY"
                   disabled={!isEditing}
                 />
               </Form.Item>
@@ -265,30 +261,33 @@ const UserProfile: React.FC = () => {
         </Row>
 
         <motion.div variants={itemVariants}>
-          <Form.Item name="address" label="Địa chỉ">
-            <Input.TextArea rows={3} disabled={!isEditing} />
+          <Form.Item label="Địa chỉ" name="address">
+            <Input.TextArea disabled={!isEditing} rows={3} />
           </Form.Item>
         </motion.div>
 
         <motion.div variants={itemVariants}>
           <ButtonContainer>
-            {isEditing ? (
-              <SaveButton
+            {!isEditing ? (
+              <Button
                 type="primary"
-                htmlType="submit"
-                icon={<SaveOutlined />}
-                loading={loading}
-              >
-                Lưu thông tin
-              </SaveButton>
-            ) : (
-              <EditButton
-                type="default"
                 icon={<EditOutlined />}
                 onClick={toggleEdit}
               >
-                Chỉnh sửa
-              </EditButton>
+                Chỉnh sửa thông tin
+              </Button>
+            ) : (
+              <>
+                <SaveButton
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  htmlType="submit"
+                  loading={loading}
+                >
+                  Lưu thay đổi
+                </SaveButton>
+                <EditButton onClick={toggleEdit}>Hủy</EditButton>
+              </>
             )}
           </ButtonContainer>
         </motion.div>

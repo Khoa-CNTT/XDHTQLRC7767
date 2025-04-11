@@ -10,6 +10,9 @@ import {
   FacebookFilled,
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
+import { loginRequest } from "../../redux/slices/authSlice";
+import { RootState } from "../../redux/store";
 
 const { Title, Text } = Typography;
 
@@ -182,32 +185,25 @@ const StyledDivider = styled(Divider)`
 `;
 
 const LoginPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  const dispatch = useDispatch();
+  const { loading, error, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
 
-  // Hiệu ứng khi trang load
   useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelector(".login-card")?.classList.add("visible");
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
-  const onFinish = (values: any) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Login values:", values);
-      message.success({
-        content: "Đăng nhập thành công!",
-        style: {
-          marginTop: "20vh",
-        },
-      });
-      setLoading(false);
-      // navigate("/");
-    }, 1500);
+  const onFinish = (values: { email: string; password: string }) => {
+    dispatch(
+      loginRequest({
+        username: values.email.trim().toLowerCase(),
+        password: values.password,
+      })
+    );
   };
 
   const handleGoogleLogin = () => {
@@ -217,7 +213,6 @@ const LoginPage: React.FC = () => {
         marginTop: "20vh",
       },
     });
-    // Implement Google login logic
   };
 
   const handleFacebookLogin = () => {
@@ -227,7 +222,6 @@ const LoginPage: React.FC = () => {
         marginTop: "20vh",
       },
     });
-    // Implement Facebook login logic
   };
 
   return (
@@ -247,9 +241,7 @@ const LoginPage: React.FC = () => {
         </Title>
 
         <Form
-          form={form}
           name="login_form"
-          initialValues={{ remember: true }}
           onFinish={onFinish}
           layout="vertical"
           size="large"
@@ -341,6 +333,12 @@ const LoginPage: React.FC = () => {
             </Link>
           </Text>
         </div>
+
+        {error && (
+          <div style={{ textAlign: "center", marginTop: 16, color: "#ff4d4f" }}>
+            {error}
+          </div>
+        )}
       </StyledCard>
     </FullPageContainer>
   );

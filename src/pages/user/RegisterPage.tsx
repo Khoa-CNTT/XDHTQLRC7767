@@ -9,8 +9,11 @@ import {
   EyeInvisibleOutlined,
   GoogleOutlined,
   FacebookFilled,
+  PhoneOutlined,
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
+import { useDispatch } from "react-redux";
+import { registerStart } from "../../redux/slices/authSlice";
 
 const { Title, Text } = Typography;
 
@@ -154,7 +157,8 @@ const StyledInput = styled(Input)`
   border: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
   }
@@ -167,7 +171,8 @@ const StyledPasswordInput = styled(Input.Password)`
   border: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
   }
@@ -184,36 +189,39 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
 
-  // Hiệu ứng khi trang load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      document.querySelector('.register-card')?.classList.add('visible');
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const onFinish = async (values: {
+    name: string;
+    email: string;
+    password: string;
+    confirm: string;
+    phoneNumber: string;
+  }) => {
+    try {
+      setLoading(true);
 
-  const onFinish = (values: any) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Register values:", values);
-      message.success({
-        content: "Đăng ký thành công! Vui lòng đăng nhập.",
-        style: {
-          marginTop: '20vh',
-        },
-      });
+      // Dispatch action đăng ký với redux-saga
+      dispatch(
+        registerStart({
+          fullName: values.name.trim(),
+          email: values.email.trim().toLowerCase(),
+          password: values.password,
+          phoneNumber: values.phoneNumber,
+        })
+      );
+    } catch (error: any) {
+      message.error("Có lỗi xảy ra khi đăng ký!");
+    } finally {
       setLoading(false);
-      navigate("/login");
-    }, 1500);
+    }
   };
 
   const handleGoogleSignup = () => {
     message.info({
       content: "Đang kết nối với Google...",
       style: {
-        marginTop: '20vh',
+        marginTop: "20vh",
       },
     });
     // Implement Google signup logic
@@ -223,7 +231,7 @@ const RegisterPage: React.FC = () => {
     message.info({
       content: "Đang kết nối với Facebook...",
       style: {
-        marginTop: '20vh',
+        marginTop: "20vh",
       },
     });
     // Implement Facebook signup logic
@@ -232,10 +240,19 @@ const RegisterPage: React.FC = () => {
   return (
     <FullPageContainer>
       <StyledCard className="register-card">
-        <Title level={2} style={{ textAlign: "center", marginBottom: 30, background: 'linear-gradient(45deg, #ff416c, #ff4b2b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <Title
+          level={2}
+          style={{
+            textAlign: "center",
+            marginBottom: 30,
+            background: "linear-gradient(45deg, #ff416c, #ff4b2b)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
           Đăng ký
         </Title>
-        
+
         <Form
           form={form}
           name="register_form"
@@ -248,9 +265,9 @@ const RegisterPage: React.FC = () => {
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
           >
-            <StyledInput 
-              prefix={<UserOutlined style={{ color: '#ff416c' }} />} 
-              placeholder="Họ tên" 
+            <StyledInput
+              prefix={<UserOutlined style={{ color: "#ff416c" }} />}
+              placeholder="Họ tên"
             />
           </Form.Item>
 
@@ -258,12 +275,28 @@ const RegisterPage: React.FC = () => {
             name="email"
             rules={[
               { required: true, message: "Vui lòng nhập email!" },
-              { type: "email", message: "Email không hợp lệ!" }
+              { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
-            <StyledInput 
-              prefix={<MailOutlined style={{ color: '#ff416c' }} />} 
-              placeholder="Email" 
+            <StyledInput
+              prefix={<MailOutlined style={{ color: "#ff416c" }} />}
+              placeholder="Email"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="phoneNumber"
+            rules={[
+              { required: true, message: "Vui lòng nhập số điện thoại!" },
+              {
+                pattern: /^(0|\+84)[3|5|7|8|9][0-9]{8}$/,
+                message: "Số điện thoại không hợp lệ!",
+              },
+            ]}
+          >
+            <StyledInput
+              prefix={<PhoneOutlined style={{ color: "#ff416c" }} />}
+              placeholder="Số điện thoại"
             />
           </Form.Item>
 
@@ -271,37 +304,51 @@ const RegisterPage: React.FC = () => {
             name="password"
             rules={[
               { required: true, message: "Vui lòng nhập mật khẩu!" },
-              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" }
+              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
             ]}
             hasFeedback
           >
             <StyledPasswordInput
-              prefix={<LockOutlined style={{ color: '#ff416c' }} />}
+              prefix={<LockOutlined style={{ color: "#ff416c" }} />}
               placeholder="Mật khẩu"
-              iconRender={visible => (visible ? <EyeTwoTone twoToneColor="#ff416c" /> : <EyeInvisibleOutlined />)}
+              iconRender={(visible) =>
+                visible ? (
+                  <EyeTwoTone twoToneColor="#ff416c" />
+                ) : (
+                  <EyeInvisibleOutlined />
+                )
+              }
             />
           </Form.Item>
 
           <Form.Item
             name="confirm"
-            dependencies={['password']}
+            dependencies={["password"]}
             hasFeedback
             rules={[
               { required: true, message: "Vui lòng xác nhận mật khẩu!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
+                  if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!")
+                  );
                 },
               }),
             ]}
           >
             <StyledPasswordInput
-              prefix={<LockOutlined style={{ color: '#ff416c' }} />}
+              prefix={<LockOutlined style={{ color: "#ff416c" }} />}
               placeholder="Xác nhận mật khẩu"
-              iconRender={visible => (visible ? <EyeTwoTone twoToneColor="#ff416c" /> : <EyeInvisibleOutlined />)}
+              iconRender={(visible) =>
+                visible ? (
+                  <EyeTwoTone twoToneColor="#ff416c" />
+                ) : (
+                  <EyeInvisibleOutlined />
+                )
+              }
             />
           </Form.Item>
 
@@ -321,14 +368,21 @@ const RegisterPage: React.FC = () => {
           <Text type="secondary">Hoặc đăng ký với</Text>
         </StyledDivider>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 30 }}>
-          <SocialButton 
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+            marginBottom: 30,
+          }}
+        >
+          <SocialButton
             onClick={handleGoogleSignup}
             icon={<GoogleOutlined style={{ color: "#DB4437" }} />}
           >
             Google
           </SocialButton>
-          <SocialButton 
+          <SocialButton
             onClick={handleFacebookSignup}
             icon={<FacebookFilled style={{ color: "#4267B2" }} />}
           >

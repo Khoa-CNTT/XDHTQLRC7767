@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, Result } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
+import { useDispatch } from "react-redux";
+import { forgotPasswordStart } from "../../redux/slices/authSlice";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -153,6 +155,7 @@ const ForgotPasswordPage: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
 
   // Hiệu ứng khi trang load
   useEffect(() => {
@@ -162,16 +165,16 @@ const ForgotPasswordPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { email: string }) => {
     setLoading(true);
     setEmail(values.email);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Reset password for:", values.email);
-      setIsSubmitted(true);
-      setLoading(false);
-    }, 1500);
+    // Dispatch forgot password action
+    dispatch(forgotPasswordStart(values.email.trim().toLowerCase()));
+
+    // Show success state
+    setIsSubmitted(true);
+    setLoading(false);
   };
 
   return (
