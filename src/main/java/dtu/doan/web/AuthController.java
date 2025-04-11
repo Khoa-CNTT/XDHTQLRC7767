@@ -1,6 +1,7 @@
 package dtu.doan.web;
 
 import dtu.doan.dto.AuthRequest;
+import dtu.doan.dto.ChangePasswordRequest;
 import dtu.doan.dto.RegisterRequest;
 import dtu.doan.model.Account;
 import dtu.doan.model.Customer;
@@ -8,6 +9,7 @@ import dtu.doan.model.VerificationToken;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.VerificationTokenRepository;
+import dtu.doan.service.AccountService;
 import dtu.doan.service.CustomerService;
 import dtu.doan.service.impl.MailService;
 import dtu.doan.service.impl.VerificationService;
@@ -58,6 +60,9 @@ public class AuthController {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private AccountService accountService;
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
@@ -258,6 +263,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Email không tồn tại trong hệ thống");
             }
 
+
             // Generate a token for password reset
             String token = verificationService.createVerificationTokenForUser(account);
 
@@ -293,6 +299,25 @@ public class AuthController {
             return ResponseEntity.ok("Password updated successfully");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error updating password: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                String username = userDetails.getUsername();
+
+                accountService.changePassword(username, request.getOldPassword(), request.getNewPassword(), request.getConfirmPassword());
+                return ResponseEntity.ok("Password changed successfully");
+            }
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error changing password", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
