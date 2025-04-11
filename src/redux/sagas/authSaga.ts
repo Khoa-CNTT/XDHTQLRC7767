@@ -22,11 +22,14 @@ import {
     User,
     RegisterPayload,
     ChangePasswordPayload,
+    resetPasswordStart,
+    resetPasswordSuccess,
+    resetPasswordFailure,
 } from '../slices/authSlice';
-import { message } from 'antd';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { LoginPayload, authService } from '../../services/authService';
 import axiosInstance from '../../utils/axiosConfig';
+import { notificationUtils } from '../../utils/notificationConfig';
 
 // API calls
 const api = {
@@ -40,6 +43,11 @@ const api = {
         axiosInstance.post(`/forgot-password?email=${encodeURIComponent(email)}`),
     login: (data: LoginPayload) =>
         axiosInstance.post('/authenticate', data),
+    resetPassword: (data: { token: string; newPassword: string }) =>
+        axiosInstance.post('/save-new-password', {
+            token: data.token,
+            newPassword: data.newPassword
+        }),
 };
 
 // Get user info saga
@@ -49,30 +57,20 @@ function* getUserInfoSaga(): Generator<any, void, any> {
         yield put(getUserInfoSuccess(response));
     } catch (error: any) {
         yield put(getUserInfoFailure(error.response?.data?.message || 'Không thể lấy thông tin người dùng'));
-        message.error('Không thể lấy thông tin người dùng');
     }
 }
 
 // Register saga
 function* registerSaga(action: PayloadAction<RegisterPayload>): Generator<any, void, any> {
     try {
-        message.loading({ content: 'Đang xử lý đăng ký...', key: 'register' });
         const result = yield call(api.register, action.payload);
         yield put(registerSuccess(result.data));
-        message.success({
-            content: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.',
-            key: 'register',
-            duration: 5
-        });
+        notificationUtils.registerSuccess();
         window.location.href = '/verify-email';
     } catch (error: any) {
         const errorMessage = error.response?.data?.message || 'Đăng ký thất bại';
         yield put(registerFailure(errorMessage));
-        message.error({
-            content: errorMessage,
-            key: 'register',
-            duration: 3
-        });
+        notificationUtils.registerError(errorMessage);
     }
 }
 
@@ -81,24 +79,29 @@ function* loginSaga(action: PayloadAction<LoginPayload>): Generator<any, void, a
     try {
         const response = yield call(api.login, action.payload);
         if (response.data) {
-            // Lưu token vào localStorage và cập nhật header
             localStorage.setItem('token', response.data);
-            axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data}`;
-
-            // Lấy thông tin user
             const userInfo = yield call(authService.getInfoUser);
-
             yield put(loginSuccess({
                 token: response.data,
                 user: userInfo
             }));
-            message.success('Đăng nhập thành công!');
         } else {
             throw new Error('Token không hợp lệ');
         }
     } catch (error: any) {
-        yield put(loginFailure(error.response?.data?.message || 'Đăng nhập thất bại'));
-        message.error(error.response?.data?.message || 'Đăng nhập thất bại');
+        localStorage.removeItem('token');
+        const errorMessage = error.response?.data || 'Đăng nhập thất bại';
+        // Kiểm tra nếu tài khoản chưa verify
+        if (errorMessage === 'Account is not verified') {
+            // Lưu email vào localStorage để hiển thị trên trang verify
+            localStorage.setItem('pendingVerificationEmail', action.payload.username);
+            yield put(loginFailure(errorMessage));
+            // Chuyển hướng đến trang verify email
+            window.location.href = '/verify-email';
+            return;
+        }
+
+        yield put(loginFailure(errorMessage));
     }
 }
 
@@ -107,10 +110,10 @@ function* updateUserSaga(action: PayloadAction<Partial<User>>): Generator<any, v
     try {
         const result = yield call(api.updateUser, action.payload);
         yield put(updateUserSuccess(result.data));
-        message.success('Cập nhật thông tin thành công!');
+        notificationUtils.updateProfileSuccess();
     } catch (error: any) {
         yield put(updateUserFailure(error.response?.data?.message || 'Cập nhật thông tin thất bại'));
-        message.error(error.response?.data?.message || 'Cập nhật thông tin thất bại');
+        notificationUtils.updateProfileError(error.response?.data?.message);
     }
 }
 
@@ -119,32 +122,42 @@ function* changePasswordSaga(action: PayloadAction<ChangePasswordPayload>): Gene
     try {
         yield call(api.changePassword, action.payload);
         yield put(changePasswordSuccess());
-        message.success('Đổi mật khẩu thành công!');
+        notificationUtils.successMessage('Thành công', 'Mật khẩu đã được thay đổi');
     } catch (error: any) {
-        yield put(changePasswordFailure(error.response?.data?.message || 'Đổi mật khẩu thất bại'));
-        message.error(error.response?.data?.message || 'Đổi mật khẩu thất bại');
+        const errorMessage = error.response?.data?.message || 'Đổi mật khẩu thất bại';
+        yield put(changePasswordFailure(errorMessage));
+        notificationUtils.errorMessage('Thất bại', errorMessage);
     }
 }
 
 // Forgot password saga
 function* forgotPasswordSaga(action: PayloadAction<string>): Generator<any, void, any> {
     try {
-        message.loading({ content: 'Đang xử lý yêu cầu...', key: 'forgotPassword' });
         yield call(api.forgotPassword, action.payload);
         yield put(forgotPasswordSuccess());
-        message.success({
-            content: 'Đã gửi email khôi phục mật khẩu!',
-            key: 'forgotPassword',
-            duration: 5
-        });
+        notificationUtils.successMessage(
+            'Thành công',
+            'Email khôi phục mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn.'
+        );
     } catch (error: any) {
         const errorMessage = error.response?.data?.message || 'Không thể gửi yêu cầu khôi phục mật khẩu';
         yield put(forgotPasswordFailure(errorMessage));
-        message.error({
-            content: errorMessage,
-            key: 'forgotPassword',
-            duration: 3
-        });
+        notificationUtils.errorMessage('Thất bại', errorMessage);
+    }
+}
+
+// Reset password saga
+function* resetPasswordSaga(action: PayloadAction<{ token: string; newPassword: string }>): Generator<any, void, any> {
+    try {
+        yield call(api.resetPassword, action.payload);
+        yield put(resetPasswordSuccess());
+        notificationUtils.successMessage(
+            'Thành công',
+            'Mật khẩu đã được đặt lại. Vui lòng đăng nhập lại.'
+        );
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 'Không thể đặt lại mật khẩu';
+        yield put(resetPasswordFailure(errorMessage));
     }
 }
 
@@ -152,9 +165,9 @@ function* forgotPasswordSaga(action: PayloadAction<string>): Generator<any, void
 function* logoutSaga(): Generator<any, void, any> {
     try {
         yield call(authService.logout);
-        message.success('Đã đăng xuất!');
     } catch (error) {
         console.error('Logout error:', error);
+        notificationUtils.errorMessage('Thất bại', 'Không thể đăng xuất');
     }
 }
 
@@ -166,5 +179,6 @@ export default function* authSaga() {
     yield takeEvery(updateUserStart.type, updateUserSaga);
     yield takeEvery(changePasswordStart.type, changePasswordSaga);
     yield takeEvery(forgotPasswordStart.type, forgotPasswordSaga);
+    yield takeEvery(resetPasswordStart.type, resetPasswordSaga);
     yield takeEvery(logout.type, logoutSaga);
 }

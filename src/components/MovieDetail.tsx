@@ -30,7 +30,6 @@ import {
   StarFilled,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
-import { useAuth } from "../contexts/AuthContext";
 
 const { TabPane } = Tabs;
 const { TextArea } = Input;
@@ -523,7 +522,6 @@ const MovieDetail: React.FC = () => {
   const [userRating, setUserRating] = useState(0);
   const [comments, setComments] = useState<any[]>([]);
   const [form] = Form.useForm();
-  const { user } = useAuth();
 
   // Custom Comment component
   const CustomComment = ({
@@ -729,9 +727,8 @@ const MovieDetail: React.FC = () => {
 
     const newComment = {
       id: comments.length + 1,
-      author: user?.name || "Người dùng ẩn danh",
+      author: "Người dùng ẩn danh",
       avatar:
-        user?.avatar ||
         "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
       content: commentValue,
       datetime: formattedDate,

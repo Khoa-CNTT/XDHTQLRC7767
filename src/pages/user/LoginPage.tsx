@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Input, Button, Divider, message, Card, Typography } from "antd";
 import {
   UserOutlined,
@@ -185,18 +185,10 @@ const StyledDivider = styled(Divider)`
 `;
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
+  const { loading, error } = useSelector(
+    (state: RootState) => state.auth.login
   );
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-    }
-  }, [isAuthenticated, navigate]);
-
   const onFinish = (values: { email: string; password: string }) => {
     dispatch(
       loginRequest({
@@ -205,6 +197,18 @@ const LoginPage: React.FC = () => {
       })
     );
   };
+
+  // Hiển thị thông báo lỗi nếu có
+  useEffect(() => {
+    if (error) {
+      message.error({
+        content: error,
+        style: {
+          marginTop: "20vh",
+        },
+      });
+    }
+  }, [error]);
 
   const handleGoogleLogin = () => {
     message.info({
@@ -292,7 +296,7 @@ const LoginPage: React.FC = () => {
               block
               loading={loading}
             >
-              Đăng nhập
+              {loading ? "Đang xử lý..." : "Đăng nhập"}
             </GlowingButton>
           </Form.Item>
         </Form>
@@ -333,12 +337,6 @@ const LoginPage: React.FC = () => {
             </Link>
           </Text>
         </div>
-
-        {error && (
-          <div style={{ textAlign: "center", marginTop: 16, color: "#ff4d4f" }}>
-            {error}
-          </div>
-        )}
       </StyledCard>
     </FullPageContainer>
   );

@@ -13,22 +13,80 @@ export interface User {
     isVerified?: boolean;
 }
 
-interface AuthState {
+export interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     token: string | null;
-    loading: boolean;
-    error: string | null;
-    verificationCode: string | null;
+    userInfo: {
+        loading: boolean;
+        error: string | null;
+    };
+    login: {
+        loading: boolean;
+        error: string | null;
+    };
+    register: {
+        loading: boolean;
+        error: string | null;
+        verificationCode: string | null;
+    };
+    changePassword: {
+        loading: boolean;
+        error: string | null;
+        isSuccess: boolean;
+    };
+    updateProfile: {
+        loading: boolean;
+        error: string | null;
+    };
+    forgotPassword: {
+        loading: boolean;
+        error: string | null;
+    };
+    resetPassword: {
+        loading: boolean;
+        error: string | null;
+        isSuccess: boolean;
+    };
+    activeTab: string;
 }
 
 const initialState: AuthState = {
     user: null,
     isAuthenticated: !!localStorage.getItem('token'),
     token: localStorage.getItem('token'),
-    loading: true,
-    error: null,
-    verificationCode: null,
+    userInfo: {
+        loading: false,
+        error: null,
+    },
+    login: {
+        loading: false,
+        error: null,
+    },
+    register: {
+        loading: false,
+        error: null,
+        verificationCode: null,
+    },
+    changePassword: {
+        loading: false,
+        error: null,
+        isSuccess: false,
+    },
+    updateProfile: {
+        loading: false,
+        error: null,
+    },
+    forgotPassword: {
+        loading: false,
+        error: null,
+    },
+    resetPassword: {
+        loading: false,
+        error: null,
+        isSuccess: false,
+    },
+    activeTab: "1"
 };
 
 export interface RegisterPayload {
@@ -39,8 +97,9 @@ export interface RegisterPayload {
 }
 
 export interface ChangePasswordPayload {
-    currentPassword: string;
+    oldPassword: string;
     newPassword: string;
+    confirmPassword: string;
 }
 
 const authSlice = createSlice({
@@ -49,33 +108,33 @@ const authSlice = createSlice({
     reducers: {
         // Register actions
         registerStart: (state, action: PayloadAction<RegisterPayload>) => {
-            state.loading = true;
-            state.error = null;
+            state.register.loading = true;
+            state.register.error = null;
         },
         registerSuccess: (state, action: PayloadAction<{ user: User; verificationCode: string }>) => {
-            state.loading = false;
+            state.register.loading = false;
             state.user = action.payload.user;
-            state.verificationCode = action.payload.verificationCode;
+            state.register.verificationCode = action.payload.verificationCode;
         },
         registerFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.register.loading = false;
+            state.register.error = action.payload;
         },
 
         // Get user info actions
         getUserInfoRequest: (state) => {
-            state.loading = true;
-            state.error = null;
+            state.userInfo.loading = true;
+            state.userInfo.error = null;
         },
         getUserInfoSuccess: (state, action: PayloadAction<User>) => {
-            state.loading = false;
+            state.userInfo.loading = false;
             state.user = action.payload;
             state.isAuthenticated = true;
-            state.error = null;
+            state.userInfo.error = null;
         },
         getUserInfoFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.userInfo.loading = false;
+            state.userInfo.error = action.payload;
             state.isAuthenticated = false;
             state.user = null;
             state.token = null;
@@ -84,59 +143,86 @@ const authSlice = createSlice({
 
         // Login actions
         loginRequest: (state, action: PayloadAction<LoginPayload>) => {
-            state.loading = true;
-            state.error = null;
+            state.login.loading = true;
+            state.login.error = null;
         },
         loginSuccess: (state, action) => {
             state.isAuthenticated = true;
             state.token = action.payload.token;
             state.user = action.payload.user;
-            state.loading = false;
-            state.error = null;
+            state.login.loading = false;
+            state.login.error = null;
         },
         loginFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.login.loading = false;
+            state.login.error = action.payload;
         },
 
         // Update user actions
         updateUserStart: (state, action: PayloadAction<Partial<User>>) => {
-            state.loading = true;
-            state.error = null;
+            state.updateProfile.loading = true;
+            state.updateProfile.error = null;
         },
         updateUserSuccess: (state, action: PayloadAction<User>) => {
-            state.loading = false;
+            state.updateProfile.loading = false;
             state.user = action.payload;
         },
         updateUserFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.updateProfile.loading = false;
+            state.updateProfile.error = action.payload;
         },
 
         // Change password actions
         changePasswordStart: (state, action: PayloadAction<ChangePasswordPayload>) => {
-            state.loading = true;
-            state.error = null;
+            state.changePassword.loading = true;
+            state.changePassword.error = null;
+            state.changePassword.isSuccess = false;
         },
         changePasswordSuccess: (state) => {
-            state.loading = false;
+            state.changePassword.loading = false;
+            state.changePassword.error = null;
+            state.changePassword.isSuccess = true;
         },
         changePasswordFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.changePassword.loading = false;
+            state.changePassword.error = action.payload;
+            state.changePassword.isSuccess = false;
         },
 
         // Forgot password actions
         forgotPasswordStart: (state, action: PayloadAction<string>) => {
-            state.loading = true;
-            state.error = null;
+            state.forgotPassword.loading = true;
+            state.forgotPassword.error = null;
         },
         forgotPasswordSuccess: (state) => {
-            state.loading = false;
+            state.forgotPassword.loading = false;
         },
         forgotPasswordFailure: (state, action: PayloadAction<string>) => {
-            state.loading = false;
-            state.error = action.payload;
+            state.forgotPassword.loading = false;
+            state.forgotPassword.error = action.payload;
+        },
+
+        // Reset password actions
+        resetPasswordStart: (state, action: PayloadAction<{ token: string; newPassword: string }>) => {
+            state.resetPassword.loading = true;
+            state.resetPassword.error = null;
+            state.resetPassword.isSuccess = false;
+        },
+        resetPasswordSuccess: (state) => {
+            state.resetPassword.loading = false;
+            state.resetPassword.error = null;
+            state.resetPassword.isSuccess = true;
+        },
+        resetPasswordFailure: (state, action: PayloadAction<string>) => {
+            state.resetPassword.loading = false;
+            state.resetPassword.error = action.payload;
+            state.resetPassword.isSuccess = false;
+        },
+
+        // Set active tab action
+        setActiveTab: (state, action: PayloadAction<string>) => {
+            state.activeTab = action.payload;
+            state.changePassword.isSuccess = false;
         },
 
         // Logout action
@@ -144,8 +230,9 @@ const authSlice = createSlice({
             state.user = null;
             state.token = null;
             state.isAuthenticated = false;
-            state.loading = false;
-            state.error = null;
+            state.userInfo.loading = false;
+            state.userInfo.error = null;
+            state.activeTab = "1";
             localStorage.removeItem('token');
         },
     },
@@ -170,7 +257,11 @@ export const {
     forgotPasswordStart,
     forgotPasswordSuccess,
     forgotPasswordFailure,
+    resetPasswordStart,
+    resetPasswordSuccess,
+    resetPasswordFailure,
     logout,
+    setActiveTab,
 } = authSlice.actions;
 
 export default authSlice.reducer; 

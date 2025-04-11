@@ -1,8 +1,8 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import { Spin } from "antd";
 import styled from "styled-components";
+import { useSelector } from "react-redux";
 
 const LoadingContainer = styled.div`
   display: flex;
@@ -17,7 +17,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
   const location = useLocation();
 
   if (isLoading) {

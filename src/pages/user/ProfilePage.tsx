@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Layout, Tabs } from "antd";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -6,8 +6,8 @@ import UserProfile from "../../components/profile/UserProfile";
 import TicketHistory from "../../components/profile/TicketHistory";
 import PointHistory from "../../components/profile/PointHistory";
 import PasswordChange from "../../components/profile/PasswordChange";
-import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -73,20 +73,14 @@ const StyledTabs = styled(Tabs)`
 `;
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState("1");
-  const navigate = useNavigate();
-
-  // Comment phần kiểm tra đăng nhập
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     message.error("Bạn cần đăng nhập để xem trang này");
-  //     navigate("/login");
-  //   }
-  // }, [isAuthenticated, navigate]);
+  const dispatch = useDispatch();
+  const { activeTab, user } = useSelector((state: RootState) => state.auth);
 
   const handleTabChange = (key: string) => {
-    setActiveTab(key);
+    // Chỉ thay đổi tab khi người dùng click
+    if (key !== activeTab) {
+      dispatch({ type: "auth/setActiveTab", payload: key });
+    }
   };
 
   const containerVariants = {
@@ -112,8 +106,8 @@ const ProfilePage: React.FC = () => {
           <ProfileHeader>
             <ProfileTitle>Quản lý tài khoản</ProfileTitle>
             <ProfileSubtitle>
-              Xin chào, {user?.name || "Khách"}! Quản lý thông tin và hoạt động
-              của bạn tại đây.
+              Xin chào, {user?.fullName || "Khách"}! Quản lý thông tin và hoạt
+              động của bạn tại đây.
             </ProfileSubtitle>
           </ProfileHeader>
 

@@ -9,6 +9,7 @@ import {
   Col,
   message,
   DatePicker,
+  Space,
 } from "antd";
 import {
   UserOutlined,
@@ -104,7 +105,10 @@ const PointsLabel = styled.div`
 
 const UserProfile: React.FC = () => {
   const dispatch = useDispatch();
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector(
+    (state: RootState) => state.auth.updateProfile
+  );
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -167,11 +171,11 @@ const UserProfile: React.FC = () => {
       <ProfileForm
         form={form}
         layout="vertical"
+        onFinish={onFinish}
         initialValues={{
           ...user,
           birthday: user?.birthday ? dayjs(user.birthday) : null,
         }}
-        onFinish={onFinish}
       >
         <motion.div variants={itemVariants}>
           <AvatarContainer>
@@ -267,29 +271,20 @@ const UserProfile: React.FC = () => {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <ButtonContainer>
-            {!isEditing ? (
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={toggleEdit}
-              >
+          <Form.Item>
+            {isEditing ? (
+              <Space>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {loading ? "Đang cập nhật..." : "Lưu thay đổi"}
+                </Button>
+                <Button onClick={() => setIsEditing(false)}>Hủy</Button>
+              </Space>
+            ) : (
+              <Button type="primary" onClick={toggleEdit}>
                 Chỉnh sửa thông tin
               </Button>
-            ) : (
-              <>
-                <SaveButton
-                  type="primary"
-                  icon={<SaveOutlined />}
-                  htmlType="submit"
-                  loading={loading}
-                >
-                  Lưu thay đổi
-                </SaveButton>
-                <EditButton onClick={toggleEdit}>Hủy</EditButton>
-              </>
             )}
-          </ButtonContainer>
+          </Form.Item>
         </motion.div>
       </ProfileForm>
     </ProfileContainer>

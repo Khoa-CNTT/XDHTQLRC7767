@@ -12,8 +12,9 @@ import {
   PhoneOutlined,
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { registerStart } from "../../redux/slices/authSlice";
+import { RootState } from "../../redux/store";
 
 const { Title, Text } = Typography;
 
@@ -186,10 +187,11 @@ const StyledDivider = styled(Divider)`
 `;
 
 const RegisterPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [form] = Form.useForm();
   const dispatch = useDispatch();
+  const { loading, error } = useSelector(
+    (state: RootState) => state.auth.register
+  );
 
   const onFinish = async (values: {
     name: string;
@@ -198,23 +200,15 @@ const RegisterPage: React.FC = () => {
     confirm: string;
     phoneNumber: string;
   }) => {
-    try {
-      setLoading(true);
-
-      // Dispatch action đăng ký với redux-saga
-      dispatch(
-        registerStart({
-          fullName: values.name.trim(),
-          email: values.email.trim().toLowerCase(),
-          password: values.password,
-          phoneNumber: values.phoneNumber,
-        })
-      );
-    } catch (error: any) {
-      message.error("Có lỗi xảy ra khi đăng ký!");
-    } finally {
-      setLoading(false);
-    }
+    // Dispatch action đăng ký với redux-saga
+    dispatch(
+      registerStart({
+        fullName: values.name.trim(),
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+        phoneNumber: values.phoneNumber,
+      })
+    );
   };
 
   const handleGoogleSignup = () => {
@@ -254,7 +248,6 @@ const RegisterPage: React.FC = () => {
         </Title>
 
         <Form
-          form={form}
           name="register_form"
           onFinish={onFinish}
           layout="vertical"
@@ -359,7 +352,7 @@ const RegisterPage: React.FC = () => {
               block
               loading={loading}
             >
-              Đăng ký
+              {loading ? "Đang xử lý..." : "Đăng ký"}
             </GlowingButton>
           </Form.Item>
         </Form>

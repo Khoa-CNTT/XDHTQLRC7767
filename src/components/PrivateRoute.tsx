@@ -1,49 +1,37 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import LoadingScreen from "./common/LoadingScreen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getUserInfoRequest } from "../redux/slices/authSlice";
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-  requireAuth?: boolean;
-}
-
-const PrivateRoute: React.FC<PrivateRouteProps> = ({
-  children,
-  requireAuth = true,
-}) => {
-  const { isAuthenticated, loading } = useSelector(
-    (state: RootState) => state.auth
+const PrivateRoute = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { loading: userInfoLoading } = useSelector(
+    (state: RootState) => state.auth.userInfo
   );
   const location = useLocation();
   const dispatch = useDispatch();
+  const [isCheckingToken, setIsCheckingToken] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token && !isAuthenticated) {
       dispatch(getUserInfoRequest());
+    } else {
+      setIsCheckingToken(false);
     }
   }, [dispatch, isAuthenticated]);
 
-  if (loading) {
+  if (isCheckingToken || userInfoLoading) {
     return <LoadingScreen />;
   }
 
-  // Nếu route yêu cầu xác thực và user chưa đăng nhập
-  if (requireAuth && !isAuthenticated) {
-    // Redirect to login page with return url
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Nếu route không yêu cầu xác thực và user đã đăng nhập
-  if (!requireAuth && isAuthenticated) {
-    // Redirect to home page
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
+  return <Outlet />;
 };
 
 export default PrivateRoute;

@@ -6,7 +6,6 @@ import {
   PhoneOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { useAuth } from "../../contexts/AuthContext";
 import {
   AuthContainer,
   AuthCard,

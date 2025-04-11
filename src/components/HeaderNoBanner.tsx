@@ -171,6 +171,7 @@ const HeaderNoBanner: React.FC = () => {
             <Menu mode="vertical" selectedKeys={[getActiveKey()]}>
               {menuItems.map((item) => (
                 <Menu.Item
+                  style={{ color: "#fff" }}
                   key={item.key}
                   onClick={() => {
                     navigate(item.link);
@@ -184,6 +185,7 @@ const HeaderNoBanner: React.FC = () => {
                 <>
                   <Menu.Divider />
                   <Menu.Item
+                    style={{ color: "#fff" }}
                     key="profile"
                     onClick={() => {
                       navigate("/profile");
@@ -193,6 +195,7 @@ const HeaderNoBanner: React.FC = () => {
                     Quản lý tài khoản
                   </Menu.Item>
                   <Menu.Item
+                    style={{ color: "#fff" }}
                     key="logout"
                     onClick={() => {
                       handleLogout();

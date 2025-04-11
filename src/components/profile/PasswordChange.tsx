@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { Form, Input, Button, message, Alert } from "antd";
-import { LockOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import React, { useEffect } from "react";
+import { Form, Input, Button, notification, Spin } from "antd";
+import { LockOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import { useAuth } from "../../contexts/AuthContext";
+import { changePasswordStart } from "../../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useNavigate } from "react-router-dom";
 
 const PasswordContainer = styled(motion.div)`
   padding: 20px;
@@ -27,29 +30,13 @@ const SubmitButton = styled(Button)`
   border-color: #fd6b0a;
   height: 40px;
   width: 100%;
-  
-  &:hover, &:focus {
+
+  &:hover,
+  &:focus {
     background-color: #e05c00;
     border-color: #e05c00;
   }
 `;
-
-const SuccessMessage = styled(motion.div)`
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f6ffed;
-  border: 1px solid #b7eb8f;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-`;
-
-const SuccessIcon = styled(CheckCircleOutlined)`
-  color: #52c41a;
-  font-size: 18px;
-  margin-right: 10px;
-`;
-
 const PasswordRequirements = styled.div`
   margin-bottom: 20px;
   padding: 15px;
@@ -74,57 +61,81 @@ const RequirementItem = styled.li`
 `;
 
 const PasswordChange: React.FC = () => {
-  const { changePassword } = useAuth();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const { loading, error, isSuccess } = useSelector(
+    (state: RootState) => state.auth.changePassword
+  );
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { loading: userInfoLoading } = useSelector(
+    (state: RootState) => state.auth.userInfo
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Reset form chỉ khi đổi mật khẩu thành công
+  useEffect(() => {
+    if (isSuccess) {
+      form.resetFields();
+    }
+  }, [isSuccess, form]);
+
+  if (userInfoLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Spin size="large" tip="Đang tải thông tin..." />
+      </div>
+    );
+  }
 
   const onFinish = async (values: any) => {
     if (values.newPassword !== values.confirmPassword) {
-      message.error("Mật khẩu mới không khớp!");
+      notification.error({
+        message: "Lỗi",
+        description: "Mật khẩu mới không khớp!",
+      });
       return;
     }
-    
-    setLoading(true);
-    try {
-      await changePassword(values.currentPassword, values.newPassword);
-      setSuccess(true);
-      form.resetFields();
-      message.success("Đổi mật khẩu thành công!");
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại!");
-    } finally {
-      setLoading(false);
-    }
+
+    dispatch(
+      changePasswordStart({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      })
+    );
   };
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { duration: 0.4 }
-    }
-  };
-
-  const successVariants = {
-    hidden: { opacity: 0, height: 0 },
-    visible: { 
-      opacity: 1, 
-      height: 'auto',
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.4 },
+    },
   };
 
   return (
@@ -136,39 +147,39 @@ const PasswordChange: React.FC = () => {
       <motion.div variants={itemVariants}>
         <PasswordTitle>Đổi mật khẩu</PasswordTitle>
       </motion.div>
-      
+
       <motion.div variants={itemVariants}>
         <PasswordRequirements>
           <RequirementTitle>Yêu cầu mật khẩu:</RequirementTitle>
           <RequirementList>
             <RequirementItem>Ít nhất 8 ký tự</RequirementItem>
-            <RequirementItem>Bao gồm ít nhất 1 chữ cái viết hoa</RequirementItem>
+            <RequirementItem>
+              Bao gồm ít nhất 1 chữ cái viết hoa
+            </RequirementItem>
             <RequirementItem>Bao gồm ít nhất 1 chữ số</RequirementItem>
-            <RequirementItem>Bao gồm ít nhất 1 ký tự đặc biệt (như @, #, $, ...)</RequirementItem>
+            <RequirementItem>
+              Bao gồm ít nhất 1 ký tự đặc biệt (như @, #, $, ...)
+            </RequirementItem>
           </RequirementList>
         </PasswordRequirements>
       </motion.div>
-      
-      <PasswordForm
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-      >
+
+      <PasswordForm form={form} layout="vertical" onFinish={onFinish}>
         <motion.div variants={itemVariants}>
           <Form.Item
-            name="currentPassword"
+            name="oldPassword"
             label="Mật khẩu hiện tại"
             rules={[
-              { required: true, message: "Vui lòng nhập mật khẩu hiện tại" }
+              { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
             ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="Nhập mật khẩu hiện tại" 
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập mật khẩu hiện tại"
             />
           </Form.Item>
         </motion.div>
-        
+
         <motion.div variants={itemVariants}>
           <Form.Item
             name="newPassword"
@@ -176,19 +187,21 @@ const PasswordChange: React.FC = () => {
             rules={[
               { required: true, message: "Vui lòng nhập mật khẩu mới" },
               { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự" },
-              { 
-                pattern: /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                message: "Mật khẩu phải có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt"
-              }
+              {
+                pattern:
+                  /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                message:
+                  "Mật khẩu phải có ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt",
+              },
             ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="Nhập mật khẩu mới" 
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập mật khẩu mới"
             />
           </Form.Item>
         </motion.div>
-        
+
         <motion.div variants={itemVariants}>
           <Form.Item
             name="confirmPassword"
@@ -197,48 +210,33 @@ const PasswordChange: React.FC = () => {
               { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
+                  if (!value || getFieldValue("newPassword") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!")
+                  );
                 },
               }),
             ]}
           >
-            <Input.Password 
-              prefix={<LockOutlined />} 
-              placeholder="Xác nhận mật khẩu mới" 
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Xác nhận mật khẩu mới"
             />
           </Form.Item>
         </motion.div>
-        
+
         <motion.div variants={itemVariants}>
           <Form.Item>
-            <SubmitButton 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-            >
-              Đổi mật khẩu
+            <SubmitButton type="primary" htmlType="submit" loading={loading}>
+              {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
             </SubmitButton>
           </Form.Item>
         </motion.div>
       </PasswordForm>
-      
-      {success && (
-        <motion.div
-          variants={successVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <SuccessMessage>
-            <SuccessIcon />
-            <span>Mật khẩu của bạn đã được thay đổi thành công!</span>
-          </SuccessMessage>
-        </motion.div>
-      )}
     </PasswordContainer>
   );
 };
 
-export default PasswordChange; 
+export default PasswordChange;

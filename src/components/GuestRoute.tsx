@@ -1,17 +1,14 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import LoadingScreen from "./common/LoadingScreen";
 import { useEffect } from "react";
 import { getUserInfoRequest } from "../redux/slices/authSlice";
 
-interface GuestRouteProps {
-  children: React.ReactNode;
-}
-
-const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector(
-    (state: RootState) => state.auth
+const GuestRoute = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { loading: userInfoLoading } = useSelector(
+    (state: RootState) => state.auth.userInfo
   );
   const location = useLocation();
   const dispatch = useDispatch();
@@ -23,7 +20,7 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
     }
   }, [dispatch, isAuthenticated]);
 
-  if (loading) {
+  if (userInfoLoading) {
     return <LoadingScreen />;
   }
 
@@ -33,7 +30,7 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
     return <Navigate to={from} replace />;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 };
 
 export default GuestRoute;

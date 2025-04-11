@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Layout, Typography, Menu, Button, Drawer, Input } from "antd";
+import { Layout, Typography, Menu, Button, Drawer, Input, Image } from "antd";
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
@@ -25,6 +25,11 @@ export const TopBarContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
+  @media (min-width: 768px) and (max-width: 1200px) {
+    width: 90%;
+    font-size: 14px;
+  }
   
   @media (max-width: 768px) {
     width: 95%;
@@ -85,6 +90,10 @@ export const HeaderContent = styled.div`
   justify-content: space-between;
   align-items: center;
   
+  @media (min-width: 768px) and (max-width: 1200px) {
+    width: 90%;
+  }
+  
   @media (max-width: 768px) {
     width: 95%;
   }
@@ -119,6 +128,10 @@ export const LogoText = styled(Text)`
     color: #00bfff;
   }
   
+  @media (min-width: 768px) and (max-width: 1200px) {
+    font-size: 20px;
+  }
+  
   @media (max-width: 768px) {
     font-size: 20px;
   }
@@ -139,57 +152,76 @@ export const MainNav = styled.div`
   @media (max-width: 768px) {
     display: none;
   }
+
+  &.desktop-nav {
+    @media (min-width: 769px) {
+      display: flex !important;
+    }
+  }
 `;
 
 export const NavMenu = styled(Menu)`
   background: transparent;
   border: none;
+  display: flex;
+  justify-content: center;
+  width: 100%;
   
-  .ant-menu-item {
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0 25px;
-    margin: 0 5px;
-    position: relative;
-    
-    a {
-      color: inherit;
-      display: block;
-    }
-    
-    &:hover {
-      color: #00bfff !important;
-      background: transparent !important;
+  &&& {
+    .ant-menu-item {
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 25px;
+      margin: 0 5px;
+      position: relative;
       
       a {
+        color: white !important;
+        display: block;
+      }
+      
+      &:hover {
         color: #00bfff !important;
+        background: transparent !important;
+        
+        a {
+          color: #00bfff !important;
+        }
+      }
+      
+      &.ant-menu-item-selected {
+        color: #00bfff !important;
+        background: transparent !important;
+        font-weight: 600;
+        
+        a {
+          color: #00bfff !important;
+        }
+        
+        &::after {
+          border-bottom: 2px solid #00bfff !important;
+        }
       }
     }
-    
-    &.ant-menu-item-selected {
-      color: #00bfff !important;
-      background: transparent !important;
-      font-weight: 600;
-      
-      a {
-        color: #00bfff !important;
-      }
-      
-      &::after {
-        border-bottom: 2px solid #00bfff !important;
+  }
+
+  @media (min-width: 768px) and (max-width: 1200px) {
+    &&& {
+      .ant-menu-item {
+        font-size: 14px;
+        padding: 0 15px;
+        margin: 0 2px;
       }
     }
   }
 
   @media (max-width: 768px) {
-    display: none !important;
-  }
-
-  @media (min-width: 769px) {
-    display: flex !important;
+    &:not(.ant-menu-vertical) {
+      display: none;
+    }
   }
 `;
 
@@ -220,33 +252,72 @@ export const MobileMenuButton = styled(Button)`
 `;
 
 export const MobileMenu = styled(Drawer)`
+  .ant-drawer-content-wrapper {
+    width: 250px !important;
+  }
+
+  .ant-drawer-header {
+    background: #1a1a2e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .ant-drawer-title {
+      color: #00bfff;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .ant-drawer-close {
+      color: white;
+      &:hover {
+        color: #00bfff;
+      }
+    }
+  }
+
   .ant-drawer-body {
     padding: 0;
-    background-color: #1a1a2e;
-  }
-  
-  .ant-menu {
-    background-color: #1a1a2e;
-    color: white;
-    border-right: none;
-  }
-  
-  .ant-menu-item {
-    padding: 16px 24px !important;
-    font-size: 16px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    
-    &:hover {
-      color: #00bfff;
-      background-color: rgba(0, 191, 255, 0.1);
-    }
-    
-    &.ant-menu-item-selected {
-      background-color: rgba(0, 191, 255, 0.15) !important;
-      color: #00bfff;
-      font-weight: 600;
+    background: #1a1a2e;
+
+    .ant-menu {
+      background: transparent;
+      border: none;
+      color: white;
+
+      .ant-menu-item {
+        margin: 0;
+        padding: 16px 24px;
+        height: auto;
+        line-height: 1.5;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: white !important;
+
+        a {
+          color: white !important;
+          text-decoration: none;
+        }
+
+        &:hover {
+          color: #00bfff !important;
+          background: rgba(0, 191, 255, 0.1);
+          
+          a {
+            color: #00bfff !important;
+          }
+        }
+
+        &.ant-menu-item-selected {
+          color: #00bfff !important;
+          background: rgba(0, 191, 255, 0.15);
+          font-weight: 600;
+          
+          a {
+            color: #00bfff !important;
+          }
+        }
+      }
     }
   }
 `;
@@ -455,4 +526,9 @@ export const SmallThumbnailImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-`; 
+`;
+
+export const LogoImage = styled(Image)`
+  height: 40px;
+  margin-right: 10px;
+`;

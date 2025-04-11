@@ -57,12 +57,24 @@ const StyledButton = styled(Button)`
 `;
 
 const EmailVerification: React.FC = () => {
+  const email = localStorage.getItem("pendingVerificationEmail");
+
   return (
     <Container>
       <StyledResult
         icon={<MailOutlined style={{ color: "#3287d6" }} />}
         title="Xác thực email của bạn"
-        subTitle="Chúng tôi đã gửi một email xác thực đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư đến và làm theo hướng dẫn để hoàn tất quá trình đăng ký."
+        subTitle={
+          <>
+            Chúng tôi đã gửi một email xác thực đến địa chỉ{" "}
+            <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến và làm theo
+            hướng dẫn để hoàn tất quá trình xác thực tài khoản.
+            <br />
+            <br />
+            Nếu bạn không nhận được email, vui lòng kiểm tra thư mục spam hoặc
+            liên hệ với chúng tôi để được hỗ trợ.
+          </>
+        }
         extra={[
           <StyledButton type="primary" key="login">
             <Link to="/login">Đến trang đăng nhập</Link>

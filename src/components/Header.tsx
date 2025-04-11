@@ -191,25 +191,53 @@ const Header: React.FC = () => {
             </UserSection>
 
             <MobileMenuButton
-              icon={<MenuOutlined />}
+              type="text"
               onClick={() => setMobileMenuVisible(true)}
-            />
+            >
+              <MenuOutlined />
+            </MobileMenuButton>
 
             <MobileMenu
               title="Menu"
               placement="left"
+              closable={true}
               onClose={() => setMobileMenuVisible(false)}
-              visible={mobileMenuVisible}
+              open={mobileMenuVisible}
             >
-              <Menu mode="vertical" selectedKeys={[getActiveKey()]}>
+              <Menu
+                mode="vertical"
+                selectedKeys={[getActiveKey()]}
+                style={{ background: "transparent", border: "none" }}
+              >
                 {menuItems.map((item) => (
                   <Menu.Item
+                    style={{ color: "#fff" }}
                     key={item.key}
                     onClick={() => setMobileMenuVisible(false)}
                   >
                     <Link to={item.link}>{item.label}</Link>
                   </Menu.Item>
                 ))}
+                <Menu.Item
+                  style={{ color: "#fff" }}
+                  key="profile"
+                  onClick={() => {
+                    navigate("/profile");
+                    setMobileMenuVisible(false);
+                  }}
+                >
+                  Quản lý tài khoản
+                </Menu.Item>
+                <Menu.Item
+                  style={{ color: "#fff" }}
+                  key="logout"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuVisible(false);
+                  }}
+                >
+                  Đăng xuất
+                </Menu.Item>
               </Menu>
             </MobileMenu>
           </HeaderContent>

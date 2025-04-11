@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, Result } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { forgotPasswordStart } from "../../redux/slices/authSlice";
+import { RootState } from "../../redux/store";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -151,11 +152,13 @@ const StyledLink = styled(Link)`
 `;
 
 const ForgotPasswordPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [form] = Form.useForm();
   const dispatch = useDispatch();
+  const { loading, error } = useSelector(
+    (state: RootState) => state.auth.forgotPassword
+  );
 
   // Hiệu ứng khi trang load
   useEffect(() => {
@@ -166,15 +169,9 @@ const ForgotPasswordPage: React.FC = () => {
   }, []);
 
   const onFinish = (values: { email: string }) => {
-    setLoading(true);
     setEmail(values.email);
-
-    // Dispatch forgot password action
     dispatch(forgotPasswordStart(values.email.trim().toLowerCase()));
-
-    // Show success state
     setIsSubmitted(true);
-    setLoading(false);
   };
 
   return (
@@ -233,7 +230,7 @@ const ForgotPasswordPage: React.FC = () => {
                   block
                   loading={loading}
                 >
-                  Gửi liên kết đặt lại mật khẩu
+                  {loading ? "Đang xử lý..." : "Gửi yêu cầu"}
                 </GlowingButton>
               </Form.Item>
             </Form>

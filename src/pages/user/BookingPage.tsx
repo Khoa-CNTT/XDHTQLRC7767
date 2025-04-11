@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSelector } from "react-redux";
 import {
   PageContainer,
   BookingContent,
@@ -101,7 +101,7 @@ const VIP_PRICE = 120000; // 120k VND
 const BookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [movie, setMovie] = useState<any>(null);

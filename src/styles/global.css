@@ -66,4 +66,97 @@
 
 .ant-menu-item:hover::after {
   width: 100%;
+}
+
+/* Responsive font sizes */
+:root {
+  font-size: 16px; /* Base font size */
+}
+
+/* Mobile phones */
+@media screen and (max-width: 480px) {
+  :root {
+    font-size: 14px;
+  }
+  .ant-typography {
+    font-size: 0.9rem !important;
+  }
+  h1.ant-typography {
+    font-size: 1.5rem !important;
+  }
+  h2.ant-typography {
+    font-size: 1.3rem !important;
+  }
+  h3.ant-typography {
+    font-size: 1.1rem !important;
+  }
+  .ant-menu-item {
+    font-size: 0.9rem !important;
+  }
+  .ant-btn {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Tablets */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  :root {
+    font-size: 15px;
+  }
+  .ant-typography {
+    font-size: 0.95rem !important;
+  }
+  h1.ant-typography {
+    font-size: 1.7rem !important;
+  }
+  h2.ant-typography {
+    font-size: 1.5rem !important;
+  }
+  h3.ant-typography {
+    font-size: 1.3rem !important;
+  }
+  .ant-menu-item {
+    font-size: 0.95rem !important;
+  }
+  .ant-btn {
+    font-size: 0.95rem !important;
+  }
+}
+
+/* Small laptops */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    font-size: 15.5px;
+  }
+  .ant-typography {
+    font-size: 1rem !important;
+  }
+  h1.ant-typography {
+    font-size: 1.8rem !important;
+  }
+  h2.ant-typography {
+    font-size: 1.6rem !important;
+  }
+  h3.ant-typography {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* Larger screens */
+@media screen and (min-width: 1025px) {
+  :root {
+    font-size: 16px;
+  }
+  .ant-typography {
+    font-size: 1rem !important;
+  }
+  h1.ant-typography {
+    font-size: 2rem !important;
+  }
+  h2.ant-typography {
+    font-size: 1.7rem !important;
+  }
+  h3.ant-typography {
+    font-size: 1.5rem !important;
+  }
 } 
