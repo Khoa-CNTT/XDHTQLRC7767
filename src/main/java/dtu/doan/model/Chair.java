@@ -21,6 +21,5 @@ public class Chair {
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
-    @OneToOne
-    private Ticket tickets;
+
 }
