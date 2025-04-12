@@ -1,24 +1,28 @@
 package dtu.doan.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import dtu.doan.model.Ticket;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_payment;
-    @ManyToOne
-    @NotNull
-    private Ticket ticket;
-    @NotNull
-    @DateTimeFormat
-    private Date date;
-    @NotNull
-    private Float total_money;
+    private Long id;
+
+    private int amount;
+
+    private String status; // Ví dụ: PENDING, SUCCESS, FAILED
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date paymentTime;
+
+    @OneToMany(mappedBy = "payment")
+    @JsonBackReference
+    private List<Ticket> tickets; // Một payment có thể có nhiều vé
 }

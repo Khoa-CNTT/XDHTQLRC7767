@@ -9,5 +9,7 @@ import java.util.List;
 
 @Service
 public interface ShowTimeService  {
-    List<ShowTime> findShowTimeByDateAndCinemaAddress( String date, Long id,Long id_movies);
+    List<ShowTime> findAllChairByShowTimeId( String date, Long id,Long id_movies);
+    ShowTime findShowTimeByID(Long id);
+
 }

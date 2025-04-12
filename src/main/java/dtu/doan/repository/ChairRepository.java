@@ -10,10 +10,12 @@ import java.util.List;
 
 @Repository
 public interface ChairRepository extends JpaRepository<Chair, Long> {
-    @Query(value ="SELECT c.* \n" +
-            "FROM chair c\n" +
-            "INNER JOIN room r ON c.room_id = r.id\n" +
-            "INNER JOIN show_time st ON st.room_id = r.id\n" +
-            "WHERE st.id = ?1 and; " ,nativeQuery = true)
-      List<Chair> findAllChairByRoomIDAndShowTimeID(Long showTimeId);
+    @Query(value ="SELECT c.* " +
+            "FROM chair c " +
+            "INNER JOIN room r ON c.room_id = r.id " +
+            "INNER JOIN show_time st ON st.room_id = r.id " +
+            "WHERE st.id = ?1", nativeQuery = true)
+    List<Chair> findAllChairByShowTimeId(Long showTimeId);
+
+
 }

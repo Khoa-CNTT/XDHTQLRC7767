@@ -13,7 +13,12 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     @Autowired
     private ShowTimeRepository showTimeRepository;
     @Override
-    public List<ShowTime> findShowTimeByDateAndCinemaAddress(String date, Long id,Long idMovies) {
+    public List<ShowTime> findAllChairByShowTimeId(String date, Long id,Long idMovies) {
         return showTimeRepository.findShowTimeByDateAndCinemaAddress(date,id,idMovies);
+    }
+
+    @Override
+    public ShowTime findShowTimeByID(Long id) {
+        return showTimeRepository.findShowTimeById(id);
     }
 }

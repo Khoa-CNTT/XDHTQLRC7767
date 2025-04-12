@@ -1,4 +1,3 @@
-
 spring:
   application:
     name: DOAN
@@ -28,3 +27,4 @@ spring:
           starttls:
             enable: true
             required: true
+

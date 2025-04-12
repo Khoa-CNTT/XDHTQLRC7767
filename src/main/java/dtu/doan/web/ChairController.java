@@ -20,7 +20,7 @@ public class ChairController {
     private ChairService chairService;
     @GetMapping("/{id}")
     public ResponseEntity<List<Chair>> findChairByIDShowTime(@PathVariable(value = "id")Long id){
-        List<Chair> chairListByIdShowTime = chairService.findAllChairByRoomIDAndShowTimeID(id);
+        List<Chair> chairListByIdShowTime = chairService.findAllChairByShowTimeId(id);
         if (chairListByIdShowTime == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

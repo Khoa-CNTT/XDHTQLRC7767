@@ -19,7 +19,7 @@ public class ShowTimeController {
     public ResponseEntity<List<ShowTime>> getShowTimesByDateAndCinema(@RequestParam(required = false) String date,
                                                                       @RequestParam(required = false) Long cinema_id,
                                                                       @RequestParam(required = false) Long id_movies){
-        List<ShowTime> showTimes = showTimeService.findShowTimeByDateAndCinemaAddress(date, cinema_id,id_movies);
+        List<ShowTime> showTimes = showTimeService.findAllChairByShowTimeId(date, cinema_id,id_movies);
         return new ResponseEntity<>(showTimes, HttpStatus.OK);
     }
 
