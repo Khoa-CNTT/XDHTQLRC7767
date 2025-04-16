@@ -1,4 +1,4 @@
-package dtu.doan;
+package dtu.doan.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

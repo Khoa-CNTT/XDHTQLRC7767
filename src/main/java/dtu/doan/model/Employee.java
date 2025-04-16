@@ -29,7 +29,6 @@ public class Employee {
     @DateTimeFormat()
     @NotNull
     private Date birthday;
-    @NotNull
     private String email;
     private Boolean isActivated;
     @NotNull
@@ -45,4 +44,8 @@ public class Employee {
     @NotNull
     private Position position;
     private Boolean isDelete;
+    private String username;
+    private String password;
+    private String role;
+
 }

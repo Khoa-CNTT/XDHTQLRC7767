@@ -65,6 +65,16 @@ public class AuthController {
     @Autowired
     private AccountService accountService;
 
+
+    @PostMapping("/login-admin")
+    public ResponseEntity<?> loginAdmin(@RequestBody AuthRequest authRequest){
+        try{
+            return null;
+        }catch (Exception e){
+            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
         try {
