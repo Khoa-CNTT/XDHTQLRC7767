@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Layout, App as AntApp } from "antd";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import {
   BrowserRouter as Router,
   Routes,
@@ -29,6 +30,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import EmailVerificationPage from "./pages/user/EmailVerificationPage";
 import LoadingScreen from "./components/common/LoadingScreen";
 import ResetPasswordPage from "./pages/user/ResetPasswordPage";
+import AdminLogin from "./pages/admin/Login";
 
 // Admin pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -99,6 +101,8 @@ const AppRoutes = () => {
         <Route path="/forget-password" element={<ResetPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
+        {/* Admin Login Route */}
+        <Route path="/admin/login" element={<AdminLogin />} />
       </Route>
 
       {/* Protected Routes - Yêu cầu đăng nhập */}
@@ -111,7 +115,7 @@ const AppRoutes = () => {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="movies" element={<MovieManagement />} />
           <Route path="showtimes" element={<ShowtimeManagement />} />
@@ -131,13 +135,15 @@ const AppRoutes = () => {
 
 const App: React.FC = () => {
   return (
-    <AntApp>
-      <Provider store={store}>
-        <Router>
-          <AppContent />
-        </Router>
-      </Provider>
-    </AntApp>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AntApp>
+        <Provider store={store}>
+          <Router>
+            <AppContent />
+          </Router>
+        </Provider>
+      </AntApp>
+    </GoogleOAuthProvider>
   );
 };
 

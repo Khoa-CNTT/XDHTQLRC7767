@@ -55,10 +55,6 @@ export const StyledButton = styled(Button)`
   border: none !important;
   border-radius: 4px !important;
   font-size: 16px !important;
-  
-  &:hover, &:focus {
-    background-color: #e05c00 !important;
-  }
 `;
 
 export const StyledDivider = styled(Divider)`
@@ -76,10 +72,6 @@ export const SwitchLink = styled.a`
   color: #FD6B0A;
   font-weight: bold;
   margin-left: 5px;
-  
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 export const ErrorMessage = styled.div`

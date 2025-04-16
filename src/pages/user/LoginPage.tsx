@@ -13,21 +13,10 @@ import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
+import { GoogleLogin } from "@react-oauth/google";
+import { authService } from "../../services/authService";
 
 const { Title, Text } = Typography;
-
-// Hiệu ứng gradient background
-const gradientAnimation = keyframes`
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-`;
 
 // Hiệu ứng float
 const float = keyframes`
@@ -50,7 +39,6 @@ const FullPageContainer = styled.div`
   align-items: center;
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
-  animation: ${gradientAnimation} 15s ease infinite;
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -186,9 +174,11 @@ const StyledDivider = styled(Divider)`
 
 const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error } = useSelector(
     (state: RootState) => state.auth.login
   );
+
   const onFinish = (values: { email: string; password: string }) => {
     dispatch(
       loginRequest({
@@ -210,22 +200,14 @@ const LoginPage: React.FC = () => {
     }
   }, [error]);
 
-  const handleGoogleLogin = () => {
-    message.info({
-      content: "Đang kết nối với Google...",
-      style: {
-        marginTop: "20vh",
-      },
-    });
-  };
-
-  const handleFacebookLogin = () => {
-    message.info({
-      content: "Đang kết nối với Facebook...",
-      style: {
-        marginTop: "20vh",
-      },
-    });
+  const handleGoogleLogin = async (credentialResponse: any) => {
+    try {
+      await authService.loginWithGoogle(credentialResponse);
+      message.success("Đăng nhập thành công!");
+      navigate("/");
+    } catch (error) {
+      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+    }
   };
 
   return (
@@ -243,7 +225,6 @@ const LoginPage: React.FC = () => {
         >
           Đăng nhập
         </Title>
-
         <Form
           name="login_form"
           onFinish={onFinish}
@@ -320,7 +301,7 @@ const LoginPage: React.FC = () => {
             Google
           </SocialButton>
           <SocialButton
-            onClick={handleFacebookLogin}
+            onClick={handleGoogleLogin}
             icon={<FacebookFilled style={{ color: "#4267B2" }} />}
           >
             Facebook
