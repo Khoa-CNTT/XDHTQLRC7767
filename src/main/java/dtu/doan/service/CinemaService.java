@@ -12,4 +12,5 @@ public interface CinemaService {
     Page<Cinema> pageCinemas(String location,Pageable pageable);
     Cinema findById(String id);
     List<Cinema> cinemas();
+    List<Cinema> cinemasByMovie(Long id);
 }

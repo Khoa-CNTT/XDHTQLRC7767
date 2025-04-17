@@ -4,6 +4,7 @@ import dtu.doan.dto.TicketRequestDTO;
 import dtu.doan.dto.TicketResponeDTO;
 import dtu.doan.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,4 +26,10 @@ public class TicketController {
         List<TicketResponeDTO> tickets = ticketService.saveTickets(ticketRequestDTO);
         return ResponseEntity.ok(tickets);
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTicketStatus(@PathVariable Long id) {
+        ticketService.updateTicketStatus(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

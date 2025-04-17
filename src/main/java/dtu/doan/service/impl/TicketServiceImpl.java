@@ -57,7 +57,6 @@ public class TicketServiceImpl implements TicketService {
 
             // Trả về DTO
             TicketResponeDTO res = new TicketResponeDTO();
-            res.setUsed(savedTicket.getUsed());
             res.setType(savedTicket.getType());
             res.setDate(savedTicket.getDate());
             res.setShowTime(savedTicket.getShowTime());
@@ -71,6 +70,10 @@ public class TicketServiceImpl implements TicketService {
         return ticketResponeList;
     }
 
+    @Override
+    public void updateTicketStatus(Long id) {
+        ticketRepository.updateTicketStatusById(id);
+    }
 
 
 }
