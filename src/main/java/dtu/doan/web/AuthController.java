@@ -102,6 +102,33 @@ public class AuthController {
         return new ResponseEntity<>(jwt, HttpStatus.OK);
     }
 
+    @PostMapping("/login/employee")
+    public ResponseEntity<?> employeeLogin(@RequestBody AuthRequest authRequest) throws Exception {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        }
+        Account account = accountRepository.findByUsername(authRequest.getUsername());
+        if (account == null) {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+        if (!account.getIsEnable()) {
+            return new ResponseEntity<>("Account is disabled", HttpStatus.FORBIDDEN);
+        }
+        if (!account.getIsVerify()) {
+            return new ResponseEntity<>("Account is not verified", HttpStatus.FORBIDDEN);
+        }
+        if (account.getIsDelete()) {
+            return new ResponseEntity<>("Account is deleted", HttpStatus.FORBIDDEN);
+        }
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+        return new ResponseEntity<>(jwt, HttpStatus.OK);
+    }
+
     @GetMapping("/getInfoUser")
     public ResponseEntity<?> getInfoUser() {
         try {
@@ -123,7 +150,7 @@ public class AuthController {
 
     @Transactional
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody RegisterRequest request) throws Exception {
+    public ResponseEntity<?> signup(@RequestBody RegisterRequest request)  {
         String username = request.getEmail();
         if (!username.matches("^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             return new ResponseEntity<>("Invalid email format", HttpStatus.BAD_REQUEST);
@@ -331,5 +358,7 @@ public class AuthController {
             return new ResponseEntity<>("Error changing password", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 }
 

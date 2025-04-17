@@ -16,11 +16,12 @@ import java.util.Date;
 },uniqueConstraints = {
         @UniqueConstraint(columnNames = "email"),
         @UniqueConstraint(columnNames = "phoneNumber"),
+        @UniqueConstraint(columnNames = "username")
 })
 public class Employee {
     @Id
-    @Column(columnDefinition = ("varchar(45)"))
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @NotNull
     private String fullName;
     private String image;
@@ -44,8 +45,7 @@ public class Employee {
     @NotNull
     private Position position;
     private Boolean isDelete;
-    private String username;
-    private String password;
-    private String role;
-
+    @OneToOne
+    @JoinColumn(name = "username")
+    private Account username;
 }
