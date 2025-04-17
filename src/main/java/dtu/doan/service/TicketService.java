@@ -9,4 +9,5 @@ import java.util.List;
 public interface TicketService  {
 
     List<TicketResponeDTO> saveTickets(TicketRequestDTO dto);
+    void updateTicketStatus(Long id);
 }

@@ -16,9 +16,9 @@ public class ShowTimeController {
     private ShowTimeService showTimeService;
 
     @GetMapping("")
-    public ResponseEntity<List<ShowTime>> getShowTimesByDateAndCinema(@RequestParam(required = false) String date,
-                                                                      @RequestParam(required = false) Long cinema_id,
-                                                                      @RequestParam(required = false) Long id_movies){
+    public ResponseEntity<List<ShowTime>> getShowTimesByDateAndCinema(@RequestParam(required = false,defaultValue = "") String date,
+                                                                      @RequestParam(required = false,defaultValue = "") Long cinema_id,
+                                                                      @RequestParam(required = false,defaultValue = "") Long id_movies){
         List<ShowTime> showTimes = showTimeService.findAllChairByShowTimeId(date, cinema_id,id_movies);
         return new ResponseEntity<>(showTimes, HttpStatus.OK);
     }

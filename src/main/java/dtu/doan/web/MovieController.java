@@ -1,9 +1,6 @@
 package dtu.doan.web;
 
-import dtu.doan.dto.IMovieBookingDTO;
-import dtu.doan.dto.IMovieDetailDTO;
-import dtu.doan.dto.MovieRequestDTO;
-import dtu.doan.dto.MovieResponseDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.Movie;
 import dtu.doan.service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +65,7 @@ public class MovieController {
     }
 
     @GetMapping("/booking/{id}")
-    public ResponseEntity<IMovieBookingDTO> getMovieBooking(@PathVariable("id") Long id) {
+    public ResponseEntity<?> getMovieBooking(@PathVariable("id") Long id) {
         IMovieBookingDTO dto = service.getMovieByIDToBookTicket(id);
         if (dto == null) {
             return ResponseEntity.notFound().build();

@@ -55,21 +55,21 @@ public class SecurityConfig {
 //
 //        return http.build();
 
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration corsConfiguration = new CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173")); // Add allowed origins
-                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-                    corsConfiguration.setAllowCredentials(true);
-                    return corsConfiguration;
-                }))
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**","/save-new-password","/resend-verify-email").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(cors -> cors.configurationSource(request -> {
+//                    CorsConfiguration corsConfiguration = new CorsConfiguration();
+//                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173")); // Add allowed origins
+//                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//                    corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+//                    corsConfiguration.setAllowCredentials(true);
+//                    return corsConfiguration;
+//                }))
+//                .authorizeHttpRequests((auth) -> auth
+//                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**","/save-new-password","/resend-verify-email").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 //                        .csrf(csrf -> csrf.disable())
 //                .authorizeHttpRequests((auth) -> auth
 //                        .anyRequest().permitAll()

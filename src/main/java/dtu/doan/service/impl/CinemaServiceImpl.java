@@ -30,5 +30,10 @@ public class CinemaServiceImpl implements CinemaService {
         return cinemaRepository.findAll();
     }
 
+    @Override
+    public List<Cinema> cinemasByMovie(Long id) {
+        return cinemaRepository.findCinemasByMovieId(id);
+    }
+
 
 }
