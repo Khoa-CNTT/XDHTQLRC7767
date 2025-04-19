@@ -15,7 +15,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int amount;
+    private Long amount;
 
     private String status; // Ví dụ: PENDING, SUCCESS, FAILED
 

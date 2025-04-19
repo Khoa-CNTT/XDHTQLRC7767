@@ -31,7 +31,7 @@ public class TicketServiceImpl implements TicketService {
         // Tạo payment trước
         Payment payment = new Payment();
         payment.setStatus("success");
-        payment.setAmount(50000 * dto.getChairs().size()); // Hoặc tính theo tổng
+        payment.setAmount((dto.getPrice())); // Hoặc tính theo tổng
         payment.setPaymentTime(new Date());
         payment = paymentRepository.save(payment);
 

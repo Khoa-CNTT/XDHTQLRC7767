@@ -41,6 +41,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         ShowTimeChairDTO dto = new ShowTimeChairDTO();
         dto.setId(showTime.getId());
         dto.setStartTime(showTime.getStartTime());
+        dto.setPricePerShowTime(showTime.getPricePerShowTime());
         dto.setEndTime(showTime.getEndTime());
         dto.setDate(showTime.getDate());
         dto.setStatus(showTime.getStatus());

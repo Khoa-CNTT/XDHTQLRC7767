@@ -21,6 +21,7 @@ public class ShowTime {
     private Long id;
     private String startTime;
     private String endTime;
+    private Long pricePerShowTime;
     @DateTimeFormat
     private Date date;
     private String status;

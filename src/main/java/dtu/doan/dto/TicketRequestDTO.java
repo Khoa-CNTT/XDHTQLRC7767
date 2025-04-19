@@ -20,6 +20,7 @@ import java.util.List;
 public class TicketRequestDTO {
     private String type;
     private Date date;
+    private Long price;
     private ShowTime showTime;
     private List<Chair> chairs;
     private Customer customer;

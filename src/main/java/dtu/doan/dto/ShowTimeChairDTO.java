@@ -17,6 +17,7 @@ public class ShowTimeChairDTO {
     Long id;
     private String startTime;
     private String endTime;
+    private Long pricePerShowTime;
     private Date date;
     private String status;
     private Movie movie;
