@@ -16,4 +16,9 @@ public class RoomServiceImpl implements RoomService {
     public List<Room> findAllRooms() {
         return roomRepository.findAll();
     }
+
+    @Override
+    public List<Room> findAllRoomsByCinema(Long cinemaId) {
+        return roomRepository.findRoomsByCinemaId(cinemaId);
+    }
 }

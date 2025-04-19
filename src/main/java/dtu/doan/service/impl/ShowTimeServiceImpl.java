@@ -6,6 +6,7 @@ import dtu.doan.service.ShowTimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -20,5 +21,10 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     @Override
     public ShowTime findShowTimeByID(Long id) {
         return showTimeRepository.findShowTimeById(id);
+    }
+
+    @Override
+    public List<ShowTime> searchShowTimes(String movieName, String roomName, Date date) {
+        return showTimeRepository.searchShowTimes(movieName,roomName,date);
     }
 }

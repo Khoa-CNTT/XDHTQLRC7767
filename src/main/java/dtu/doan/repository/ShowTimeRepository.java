@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public interface ShowTimeRepository extends JpaRepository<ShowTime,Long> {
+public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     @Query("SELECT st FROM ShowTime st " +
             "JOIN st.room r " +
             "JOIN r.cinema c " +
@@ -23,5 +23,13 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime,Long> {
 
     @Query("SELECT s FROM ShowTime s WHERE s.id = :id")
     ShowTime findShowTimeById(@Param("id") Long id);
+
+    @Query("SELECT s FROM ShowTime s " +
+            "WHERE (:movieName IS NULL OR LOWER(s.movie.name) LIKE LOWER(CONCAT('%', :movieName, '%'))) " +
+            "AND (:roomName IS NULL OR LOWER(s.room.name) LIKE LOWER(CONCAT('%', :roomName, '%'))) " +
+            "AND (:date IS NULL OR s.date = :date)")
+    List<ShowTime> searchShowTimes(@Param("movieName") String movieName,
+                                   @Param("roomName") String roomName,
+                                   @Param("date") Date date);
 
 }
