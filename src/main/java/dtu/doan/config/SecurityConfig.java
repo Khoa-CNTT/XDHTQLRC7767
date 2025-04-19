@@ -1,6 +1,7 @@
 package dtu.doan.config;
 
 import dtu.doan.filter.JwtRequestFilter;
+import dtu.doan.service.impl.CustomOAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,8 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    @Autowired
+    private CustomOAuth2SuccessHandler successHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -66,15 +69,25 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**","/save-new-password","/resend-verify-email").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/",
+                                "/authenticate",
+                                "/signup",
+                                "/password-reset/**",
+                                "/confirm/**",
+                                "/forgot-password/**",
+                                "/save-new-password",
+                                "/resend-verify-email",
+                                "/api/movies/now-showing",
+                                "/api/movies/upcoming",
+                                "/api/movies/detail/{id}"
+                        ).permitAll()
+                        .requestMatchers("/api/**").authenticated()
                 )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-//                        .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests((auth) -> auth
-//                        .anyRequest().permitAll()
-//                        )
-//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth
+                        .successHandler(successHandler)
+                );
         return http.build();
     }
 

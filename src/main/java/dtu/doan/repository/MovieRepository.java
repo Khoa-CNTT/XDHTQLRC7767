@@ -2,15 +2,14 @@ package dtu.doan.repository;
 
 import dtu.doan.dto.IMovieBookingDTO;
 import dtu.doan.dto.IMovieDetailDTO;
-import dtu.doan.dto.MovieResponseDTO;
 import dtu.doan.model.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
@@ -52,4 +51,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             "mv.duration AS duration, mv.releaseYear AS releaseYear, mv.rating AS rating " +
             "FROM Movie mv WHERE mv.id = :id AND mv.isDelete = false")
     IMovieBookingDTO getMovieToBookTicket(@Param("id") Long id);
+
+    List<Movie> findByReleaseDateBeforeAndIsDeleteFalse(LocalDate currentDate);
+    List<Movie> findByReleaseDateAfterAndIsDeleteFalse(LocalDate currentDate);
+
+    List<Movie> findByStatusAndIsDeleteFalse(int status);
+
+
 }

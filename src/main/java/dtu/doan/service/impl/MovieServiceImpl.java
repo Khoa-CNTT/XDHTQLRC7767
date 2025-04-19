@@ -12,8 +12,11 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieServiceImpl implements MovieService {
@@ -138,4 +141,32 @@ public class MovieServiceImpl implements MovieService {
     public IMovieBookingDTO getMovieByIDToBookTicket(Long id) {
         return repository.getMovieToBookTicket(id);
     }
+
+    @Override
+    public List<MovieHomeResponseDTO> getNowShowingMovies() {
+        return repository.findByStatusAndIsDeleteFalse(1)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MovieHomeResponseDTO> getUpcomingMovies() {
+        return  repository.findByStatusAndIsDeleteFalse(0)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private MovieHomeResponseDTO mapToDTO(Movie movie) {
+        MovieHomeResponseDTO dto = new MovieHomeResponseDTO();
+        dto.setId(movie.getId());
+        dto.setTitle(movie.getName());
+        dto.setDuration(movie.getDuration() + " PHÚT");
+        dto.setReleaseDate(movie.getReleaseDate().isBefore(LocalDate.now()) ? "ĐANG CHIẾU" : "SẮP CHIẾU");
+        dto.setImage(movie.getImageUrl());
+        return dto;
+    }
+
+
 }
