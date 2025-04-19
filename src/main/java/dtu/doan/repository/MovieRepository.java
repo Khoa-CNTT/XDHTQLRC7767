@@ -48,8 +48,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     IMovieDetailDTO getMovieById(Long movieId);
 
 
-    @Query("SELECT mv.id, mv.name AS name, mv.description AS description, mv.imageUrl AS imageUrl, " +
+    @Query("SELECT mv.id AS id, mv.name AS name, mv.description AS description, mv.imageUrl AS imageUrl, " +
             "mv.duration AS duration, mv.releaseYear AS releaseYear, mv.rating AS rating " +
             "FROM Movie mv WHERE mv.id = :id AND mv.isDelete = false")
     IMovieBookingDTO getMovieToBookTicket(@Param("id") Long id);
+
 }
