@@ -4,7 +4,6 @@ package dtu.doan.dto;
 import dtu.doan.model.Position;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -33,4 +32,5 @@ public class RegisterEmployeeRq {
 
     private String role;
     private Position position;
+    private String department;
 }

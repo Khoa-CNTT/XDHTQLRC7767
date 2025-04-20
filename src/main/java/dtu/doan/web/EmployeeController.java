@@ -42,7 +42,7 @@ public class EmployeeController {
         account.setIsEnable(true);
         account.setIsDelete(false);
         account.setIsVerify(true);
-        account.setRole("EMPLOYEE");
+        account.setRole(request.getRole());
         account.setLoginType("NORMAL");
 
         Account newAccount = accountRepository.save(account);
@@ -59,6 +59,7 @@ public class EmployeeController {
         employee.setPosition(request.getPosition());
         employee.setIsDelete(false);
         employee.setUsername(newAccount);
+        employee.setDepartment(request.getDepartment());
 
         service.saveEmployee(employee);
 

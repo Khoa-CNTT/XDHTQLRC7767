@@ -48,16 +48,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests((auth) -> auth
-//                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**","/confirm/**","/forgot-password/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
@@ -82,12 +72,12 @@ public class SecurityConfig {
                                 "/api/movies/upcoming",
                                 "/api/movies/detail/{id}"
                         ).permitAll()
-                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth
-                        .successHandler(successHandler)
-                );
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+//                .oauth2Login(oauth -> oauth
+//                        .successHandler(successHandler)
+//                );
         return http.build();
     }
 
