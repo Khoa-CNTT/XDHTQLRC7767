@@ -4,6 +4,8 @@ import dtu.doan.dto.ShowListCreatedResponeDTO;
 import dtu.doan.dto.ShowListDTO;
 import dtu.doan.dto.ShowTimeWithChairsDTO;
 import dtu.doan.model.ShowTime;
+import dtu.doan.model.ShowTime;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

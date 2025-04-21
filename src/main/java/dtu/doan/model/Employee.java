@@ -48,4 +48,5 @@ public class Employee {
     @OneToOne
     @JoinColumn(name = "username")
     private Account username;
+    private String department;
 }

@@ -11,6 +11,8 @@ import java.util.List;
 
 @Repository
 public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
+
+
     @Query("SELECT st FROM ShowTime st " +
             "JOIN st.room r " +
             "JOIN r.cinema c " +
@@ -19,9 +21,11 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "AND c.id = :id " +
             "AND mv.id = :idmovies " +
             "AND st.status = 'dang_mo_ban'")
-    List<ShowTime> findShowTimeByDateAndCinemaAddress(@Param("date") String date,
-                                                      @Param("id") Long id,
-                                                      @Param("idmovies") Long id_movies);
+    List<ShowTime> findShowTimeByDateAndCinemaAddress(
+            @Param("date") String date,
+            @Param("id") Long id,
+            @Param("idmovies") Long id_movies);
+
 
     @Query("SELECT s FROM ShowTime s WHERE s.id = :id")
     ShowTime findShowTimeById(@Param("id") Long id);

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChairServiceImpl implements ChairService {
@@ -16,5 +17,11 @@ public class ChairServiceImpl implements ChairService {
     public List<Chair> findAllChairByShowTimeId(Long showTimeId) {
         return chairRepository.findAllChairViewByShowTimeId(showTimeId);
     }
+
+    @Override
+    public Optional<Chair> findChairById(Long id) {
+        return chairRepository.findById(id);
+    }
+
 
 }

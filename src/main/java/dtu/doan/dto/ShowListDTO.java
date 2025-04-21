@@ -17,5 +17,5 @@ public class ShowListDTO {
     private LocalDate showDate;
     private Long pricePerShowTime;
     private LocalTime startTime;
-
+    private LocalTime endTime;
 }

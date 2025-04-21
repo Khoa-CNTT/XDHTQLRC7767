@@ -144,6 +144,7 @@ public class AuthController {
             }
             return new ResponseEntity<>(null, HttpStatus.OK);
         } catch (Exception e) {
+            e.getMessage();
             return new ResponseEntity<>("Invalid token", HttpStatus.UNAUTHORIZED);
         }
     }
@@ -361,4 +362,3 @@ public class AuthController {
 
 
 }
-

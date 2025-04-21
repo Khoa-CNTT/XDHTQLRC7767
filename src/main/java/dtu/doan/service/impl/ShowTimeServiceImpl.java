@@ -20,6 +20,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import dtu.doan.model.ShowTime;
+import dtu.doan.repository.ShowTimeRepository;
+import dtu.doan.service.ShowTimeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
 @Transactional
 @Service
 public class ShowTimeServiceImpl implements ShowTimeService {
@@ -44,7 +52,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
     @Override
     public List<ShowTime> searchShowTimes(String movieName, String roomName, Date date) {
-        return showTimeRepository.searchShowTimes(movieName, roomName, date);
+        return List.of();
     }
 
     @Override
@@ -112,27 +120,4 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         return result;
     }
-
-//    @Override
-//    public ShowListCreatedResponeDTO update(Long id, ShowListDTO showListDTO) {
-//        ShowTime showTime = showTimeRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("ShowTime not found with id: " + id));
-//
-//        Movie movie = movieRepository.getById(showListDTO.getMovieId());
-//        Room room = roomRepository.getById(showListDTO.getRoomId());
-//
-//        showTime.setStartTime(showListDTO.getStartTime());
-//        showTime.setEndTime(showListDTO.getEndTime());
-//        showTime.setPricePerShowTime(showListDTO.getPricePerShowTime());
-//        showTime.setDate(showListDTO.getShowDate());
-//        showTime.setMovie(movie);
-//        showTime.setRoom(room);
-//        // Nếu muốn cho phép update status thì set thêm: showTime.setStatus(...)
-//
-//        ShowTime updated = showTimeRepository.save(showTime);
-//
-//        return new ShowListCreatedResponeDTO(updated);
-//    }
-
-
 }

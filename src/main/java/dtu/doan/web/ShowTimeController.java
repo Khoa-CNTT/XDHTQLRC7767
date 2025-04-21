@@ -5,6 +5,9 @@ import dtu.doan.dto.ShowListDTO;
 import dtu.doan.dto.ShowTimeWithChairsDTO;
 import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
+import dtu.doan.model.ShowTime;
+import dtu.doan.service.ShowTimeService;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,4 +59,4 @@ public class ShowTimeController {
     }
     
 
-}
+    }

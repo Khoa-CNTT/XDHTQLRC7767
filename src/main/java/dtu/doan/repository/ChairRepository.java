@@ -1,6 +1,7 @@
 package dtu.doan.repository;
 
 import dtu.doan.model.Chair;
+import dtu.doan.model.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,9 +15,6 @@ public interface ChairRepository extends JpaRepository<Chair, Long> {
             "INNER JOIN show_time st ON st.room_id = r.id " +
             "WHERE st.id = ?1", nativeQuery = true)
     List<Chair> findAllChairViewByShowTimeId(Long showTimeId);
-
-
-
 
 
 }
