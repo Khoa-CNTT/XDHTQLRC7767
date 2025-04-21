@@ -37,7 +37,7 @@ export default function Scanner() {
 
   const sendDataToServer = async (ticketId) => {
     try {
-      const response = await fetch(`http://192.168.15.108:8080/api/tickets/${ticketId}`, {
+      const response = await fetch(`http://192.168.15.108:8080/api/tickets/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -52,9 +52,9 @@ export default function Scanner() {
         } else {
           Alert.alert(
             "✅ Ticket is valid",
-            `🎟 Booking Code: ${result.bookingCode}\n🎬 Movie: ${result.movieName}\n🕒 Showtime: ${result.showtime}\n💺 Seat(s): ${result.seatNumbers}\n🏢 Theater: ${result.theaterName}\n📧 Email: ${result.email}`
+            `🎟 Booking Code: ${result.id}\n🎬 Movie: ${result.showTime.movie.name}\n🕒 Showtime: ${result.showtime.startTime}\n💺 Seat(s): ${result.showtime.room.chairs}\n🏢 Theater: ${result.showtime.room.name}\n📧 Email: ${result.customer.email}`
           );
-          await fetch(`http://192.168.15.108:8080/update-ticketstatus/${ticketId}`, {
+          await fetch(`http://192.168.15.108:8080/${id}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export default function Scanner() {
             try {
               const jsonData = JSON.parse(data);
               console.log(jsonData);
-              await sendDataToServer(jsonData.idTicket);
+              await sendDataToServer(jsonData.id);
             } catch {
               Alert.alert("Invalid QR Code", "The scanned QR is not valid JSON");
             }
