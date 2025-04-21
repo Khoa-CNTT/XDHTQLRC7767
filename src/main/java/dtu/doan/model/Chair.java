@@ -11,7 +11,7 @@ import java.util.Set;
         @Index(name = "idx_type", columnList = "type"),
         @Index(name = "idx_status", columnList = "status"),
 })
-public class Chair {
+public class  Chair {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

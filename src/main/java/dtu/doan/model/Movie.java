@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -37,5 +38,6 @@ public class Movie {
     @OneToMany(mappedBy = "movie")
     @JsonIgnore
     private Set<MovieGenre> movieGenres;
-
+    private LocalDate releaseDate;
+    private int status;
 }

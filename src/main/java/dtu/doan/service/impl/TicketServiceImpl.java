@@ -5,6 +5,7 @@ import dtu.doan.dto.TicketResponeDTO;
 import dtu.doan.model.*;
 import dtu.doan.repository.*;
 import dtu.doan.service.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ public class TicketServiceImpl implements TicketService {
     ShowTimeRepository showTimeRepository;
     @Autowired
     BookingService bookingService;
+
+    @Transactional
     @Override
     public List<TicketResponeDTO> saveTickets(TicketRequestDTO dto) {
         // Tạo payment trước
@@ -73,6 +76,11 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void updateTicketStatus(Long id) {
         ticketRepository.updateTicketStatusById(id);
+    }
+
+    @Override
+    public Ticket getTicketByid(Long id) {
+        return ticketRepository.getById(id);
     }
 
 

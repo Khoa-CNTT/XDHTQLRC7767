@@ -66,7 +66,8 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**", "/forgot-password/**","/save-new-password","/resend-verify-email").permitAll()
+                        .requestMatchers("/", "/authenticate", "/signup", "/password-reset/**", "/confirm/**",
+                                "/forgot-password/**","/save-new-password","/resend-verify-email","api/showtime//{id}/with-chairs","api/tickets/{id}").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

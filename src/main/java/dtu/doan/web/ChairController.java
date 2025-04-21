@@ -16,14 +16,5 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chairs")
 public class ChairController {
-    @Autowired
-    private ChairService chairService;
-    @GetMapping("/{id}")
-    public ResponseEntity<List<Chair>> findChairByIDShowTime(@PathVariable(value = "id")Long id){
-        List<Chair> chairListByIdShowTime = chairService.findAllChairByShowTimeId(id);
-        if (chairListByIdShowTime == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok().body(chairListByIdShowTime);
-    }
+
 }

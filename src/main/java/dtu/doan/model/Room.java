@@ -1,6 +1,9 @@
 package dtu.doan.model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.Set;
 
 @Data
 @Entity
@@ -22,4 +25,7 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
+    @JsonBackReference
+    @OneToMany(mappedBy = "room")
+    private Set<Chair> chairs;
 }

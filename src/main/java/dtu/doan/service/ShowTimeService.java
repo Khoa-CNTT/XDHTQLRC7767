@@ -1,8 +1,9 @@
 package dtu.doan.service;
 
-import dtu.doan.dto.ShowTimeChairDTO;
+import dtu.doan.dto.ShowListCreatedResponeDTO;
+import dtu.doan.dto.ShowListDTO;
+import dtu.doan.dto.ShowTimeWithChairsDTO;
 import dtu.doan.model.ShowTime;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,6 +18,7 @@ public interface ShowTimeService {
     List<ShowTime> searchShowTimes(String movieName,
                                    String roomName,
                                    Date date);
-
-    ShowTimeChairDTO convertToDTO(ShowTime showTime);
+     ShowTimeWithChairsDTO getShowTimeWithChairs(Long showTimeId);
+     ShowListCreatedResponeDTO create(ShowListDTO showListDTO);
+//    ShowListCreatedResponeDTO update(Long id, ShowListDTO showListDTO);
 }

@@ -1,10 +1,10 @@
 package dtu.doan.web;
 
-import dtu.doan.dto.ShowTimeChairDTO;
-import dtu.doan.model.Chair;
+import dtu.doan.dto.ShowListCreatedResponeDTO;
+import dtu.doan.dto.ShowListDTO;
+import dtu.doan.dto.ShowTimeWithChairsDTO;
 import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,14 +38,22 @@ public class ShowTimeController {
     public ResponseEntity<ShowTime> getByID(@PathVariable Long id) {
       ShowTime showTime = showTimeService.findShowTimeByID(id);
         return new ResponseEntity<>(showTime, HttpStatus.OK);
+    } /**
+     * Get a showtime with its room and list of chairs.
+     *
+     * @param id ID of the showtime
+     * @return ShowTimeWithChairsDTO
+     */
+    @GetMapping("/{id}/with-chairs")
+    public ResponseEntity<ShowTimeWithChairsDTO> getShowTimeWithChairs(@PathVariable Long id) {
+        ShowTimeWithChairsDTO dto = showTimeService.getShowTimeWithChairs(id);
+        return ResponseEntity.ok(dto);
     }
-    @GetMapping("/booking/{id}")
-    public ResponseEntity<ShowTimeChairDTO> findChairByIDShowTime(@PathVariable(value = "id")Long id){
-        ShowTime showTime = showTimeService.findShowTimeByID(id);
-        ShowTimeChairDTO respone = showTimeService.convertToDTO(showTime);
-        if (respone == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok().body(respone);
+    @PostMapping
+    public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {
+        ShowListCreatedResponeDTO response = showTimeService.create(showListDTO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+    
+
 }

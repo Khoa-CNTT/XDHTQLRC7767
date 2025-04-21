@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Data
@@ -19,11 +21,11 @@ public class ShowTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String startTime;
-    private String endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private Long pricePerShowTime;
     @DateTimeFormat
-    private Date date;
+    private LocalDate date;
     private String status;
     @ManyToOne
     @JoinColumn(name = "movie_id")

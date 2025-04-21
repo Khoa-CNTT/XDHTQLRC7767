@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +15,7 @@ public class ShowListDTO {
     private Long movieId;
     private Long roomId;
     private LocalDate showDate;
+    private Long pricePerShowTime;
     private LocalTime startTime;
-    private LocalTime endTime;
+
 }

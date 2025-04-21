@@ -16,7 +16,9 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "JOIN r.cinema c " +
             "JOIN st.movie mv " +
             "WHERE FUNCTION('DATE_FORMAT', st.date, '%d-%m-%Y') = :date " +
-            "AND c.id = :id AND mv.id = :idmovies")
+            "AND c.id = :id " +
+            "AND mv.id = :idmovies " +
+            "AND st.status = 'dang_mo_ban'")
     List<ShowTime> findShowTimeByDateAndCinemaAddress(@Param("date") String date,
                                                       @Param("id") Long id,
                                                       @Param("idmovies") Long id_movies);
@@ -31,5 +33,5 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     List<ShowTime> searchShowTimes(@Param("movieName") String movieName,
                                    @Param("roomName") String roomName,
                                    @Param("date") Date date);
-
+    List<ShowTime> findByStatus(String status);
 }

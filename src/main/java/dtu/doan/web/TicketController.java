@@ -2,6 +2,7 @@ package dtu.doan.web;
 
 import dtu.doan.dto.TicketRequestDTO;
 import dtu.doan.dto.TicketResponeDTO;
+import dtu.doan.model.Ticket;
 import dtu.doan.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -31,5 +32,11 @@ public class TicketController {
         ticketService.updateTicketStatus(id);
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<Ticket> getTicketById(@PathVariable Long id) {
+         Ticket ticket = ticketService.getTicketByid(id);
+        return ResponseEntity.ok(ticket);
+    }
+
 
 }
