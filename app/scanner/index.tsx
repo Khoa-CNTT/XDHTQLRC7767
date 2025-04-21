@@ -37,7 +37,7 @@ export default function Scanner() {
 
   const sendDataToServer = async (ticketId) => {
     try {
-      const response = await fetch(`http://192.168.15.108:8080/checking/${ticketId}`, {
+      const response = await fetch(`http://192.168.15.108:8080/api/tickets/${ticketId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
