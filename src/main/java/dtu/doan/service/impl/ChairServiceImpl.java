@@ -23,5 +23,10 @@ public class ChairServiceImpl implements ChairService {
         return chairRepository.findById(id);
     }
 
+    @Override
+    public void updateStatus(Long chairId, String newStatus) {
+        chairRepository.updateChairStatus(chairId, newStatus);
+    }
+
 
 }

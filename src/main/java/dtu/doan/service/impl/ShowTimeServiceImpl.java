@@ -16,9 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import dtu.doan.model.ShowTime;
 import dtu.doan.repository.ShowTimeRepository;
@@ -52,7 +50,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
     @Override
     public List<ShowTime> searchShowTimes(String movieName, String roomName, Date date) {
-        return List.of();
+        return showTimeRepository.searchShowTimes(movieName,roomName,date);
     }
 
     @Override
@@ -60,9 +58,8 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         ShowTime showTime = showTimeRepository.findById(showTimeId)
                 .orElseThrow(() -> new RuntimeException("ShowTime not found"));
 
+        Set<Chair> chairs = showTime.getChairset();
         Room room = showTime.getRoom();
-        Set<Chair> chairs = room.getChairs(); // nếu bạn đã ánh xạ bidirectional, nếu chưa thì truy vấn ChairRepository
-
         List<ChairDTO> chairDTOs = chairs.stream().map(chair -> {
             ChairDTO dto = new ChairDTO();
             dto.setId(chair.getId());
@@ -104,8 +101,22 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         showTime.setMovie(movie);
         showTime.setRoom(room);
         showTime.setStatus("dang_mo_ban");
-
+        int rows = 5;
+        int cols = 10;
+        List<Chair> chairs = new ArrayList<>();
         ShowTime saveData = showTimeRepository.save(showTime);
+        for (int i = 0; i < rows; i++) {
+            char rowLetter = (char) ('A' + i);
+            for (int j = 1; j <= cols; j++) {
+                Chair c = new Chair();
+                c.setName(rowLetter + String.valueOf(j));
+                c.setStatus("AVAILABLE");
+                chairs.add(c);
+                c.setShowTime(showTime);
+
+            }
+        }
+        chairRepository.saveAll(chairs);
         ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
         result.setId(saveData.getId());
         result.setStartTime(saveData.getStartTime());

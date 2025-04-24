@@ -1,4 +1,5 @@
 package dtu.doan.model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -6,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.Set;
 
 @Data
 @Entity
@@ -33,5 +35,8 @@ public class ShowTime {
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
+    @OneToMany
+    @JsonBackReference
+    private Set<Chair> chairset;
 
 }

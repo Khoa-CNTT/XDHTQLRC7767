@@ -21,8 +21,8 @@ public class TicketRequestDTO {
     private String type;
     private Date date;
     private Long price;
-    private ShowTime showTime;
-    private List<Chair> chairs;
-    private Customer customer;
+    private Long id_showTime;
+    private Long id_customer;
+    private List<Long> chairIds;
 
 }

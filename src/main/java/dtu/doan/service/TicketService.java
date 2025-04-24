@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TicketService  {
 
-    List<TicketResponeDTO> saveTickets(TicketRequestDTO dto);
+    TicketResponeDTO saveTickets(TicketRequestDTO dto);
     void updateTicketStatus(Long id);
     Ticket getTicketByid(Long id);
 }

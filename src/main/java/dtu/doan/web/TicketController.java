@@ -22,9 +22,9 @@ public class TicketController {
      * API để người dùng đặt nhiều vé (mỗi vé cho 1 ghế)
      */
     @PostMapping("")
-    public ResponseEntity<List<TicketResponeDTO>> createTickets(@RequestBody TicketRequestDTO ticketRequestDTO) {
+    public ResponseEntity<TicketResponeDTO> createTickets(@RequestBody TicketRequestDTO ticketRequestDTO) {
         System.out.println("Received ticket request: " + ticketRequestDTO);
-        List<TicketResponeDTO> tickets = ticketService.saveTickets(ticketRequestDTO);
+        TicketResponeDTO tickets = ticketService.saveTickets(ticketRequestDTO);
         return ResponseEntity.ok(tickets);
     }
     @PutMapping("/{id}")

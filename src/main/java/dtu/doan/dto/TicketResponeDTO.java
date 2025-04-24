@@ -17,7 +17,8 @@ public class TicketResponeDTO {
     private String type;
     private Date date;
     private ShowTime showTime;
-    private List<Chair> chairs;
     private Customer customer;
     private Payment payment;
+    List<ChairDTO> chairDTOS;
+
 }

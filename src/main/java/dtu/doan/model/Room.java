@@ -28,7 +28,6 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
-    @JsonBackReference
-    @OneToMany(mappedBy = "room")
-    private Set<Chair> chairs;
+
+
 }

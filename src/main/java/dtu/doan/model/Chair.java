@@ -19,7 +19,9 @@ public class  Chair {
     private String type;
     private String status;
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn
+    private ShowTime showTime;
+
+
 
 }

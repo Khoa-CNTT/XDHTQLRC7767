@@ -37,5 +37,11 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     List<ShowTime> searchShowTimes(@Param("movieName") String movieName,
                                    @Param("roomName") String roomName,
                                    @Param("date") Date date);
+
     List<ShowTime> findByStatus(String status);
+
+    @Query("SELECT s FROM ShowTime s WHERE  " +
+            "FUNCTION('TIMESTAMP', s.date, s.endTime) <= CURRENT_TIMESTAMP")
+    List<ShowTime> findByStatusAndDateBeforeNow();
+
 }

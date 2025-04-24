@@ -21,7 +21,7 @@ public class ShowTimeStatusScheduler {
         List<ShowTime> activeShowTimes = showTimeRepository.findByStatus("dang_mo_ban");
 
         for (ShowTime st : activeShowTimes) {
-            LocalDateTime endDateTime = LocalDateTime.of(st.getDate(), st.getEndTime());
+            LocalDateTime endDateTime = LocalDateTime.of(st.getDate(), st.getStartTime());
 
             if (endDateTime.isBefore(now)) {
                 st.setStatus("da_chieu");
