@@ -1,6 +1,7 @@
 package dtu.doan.service.impl;
 
 
+import dtu.doan.model.Chair;
 import dtu.doan.model.Ticket;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -13,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.util.Set;
 
 
 @Service
@@ -150,7 +152,7 @@ public class MailService {
         String showDate = dateFormat.format(ticket.getShowTime().getDate()); // Ngày chiếu
         String startTime = timeFormat.format(ticket.getShowTime().getStartTime()); // Giờ bắt đầu
         String endTime = timeFormat.format(ticket.getShowTime().getEndTime()); // Giờ kết thúc
-        String seatNumber = ticket.getChairs().getName(); // Số ghế
+        Set<Chair> seatNumber = ticket.getChairs(); // Số ghế
         String cinemaName = ticket.getShowTime().getRoom().getCinema().getName(); // Cụm rạp
         String roomName = ticket.getShowTime().getRoom().getName(); // Phòng chiếu
 
