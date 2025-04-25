@@ -12,7 +12,6 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShowListCreatedResponeDTO {
-    private Long id;
     private LocalTime startTime;
     private LocalTime endTime;
     private Long pricePerShowTime;
