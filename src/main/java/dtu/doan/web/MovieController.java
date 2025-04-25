@@ -51,7 +51,7 @@ public class MovieController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getMovieById(@PathVariable Long id) {
-        try{
+        try {
             IMovieDetailDTO movie = service.getMovieById(id);
             if (movie != null) {
                 return new ResponseEntity<>(movie, HttpStatus.OK);
@@ -76,17 +76,39 @@ public class MovieController {
 
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getMovieDtl(@PathVariable Long id) {
-        try{
+        try {
             MovieResponseDTO movie = service.getMovieDtl(id);
             if (movie != null) {
                 return new ResponseEntity<>(movie, HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("",HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
+
+
+    @GetMapping("/now-showing")
+    public ResponseEntity<List<MovieHomeResponseDTO>> getNowShowingMovies() {
+        try {
+            return new ResponseEntity<>(service.getNowShowingMovies(), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<List<MovieHomeResponseDTO>> getUpcomingMovies() {
+        try {
+            return new ResponseEntity<>(service.getUpcomingMovies(), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }
