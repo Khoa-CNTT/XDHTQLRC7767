@@ -1,5 +1,6 @@
 package dtu.doan.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import dtu.doan.model.Chair;
 import dtu.doan.model.Customer;
 import dtu.doan.model.Payment;
@@ -9,6 +10,8 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -36,8 +39,9 @@ public class Ticket {
     @JoinColumn(name = "show_time_id")
     private ShowTime showTime;
 
-    @OneToOne
-    private Chair chairs;
+    @OneToMany
+    @JsonBackReference
+    private Set<Chair> chairs;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

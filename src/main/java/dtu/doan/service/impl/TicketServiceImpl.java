@@ -12,10 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TicketServiceImpl implements TicketService {
@@ -45,10 +42,11 @@ public class TicketServiceImpl implements TicketService {
         Customer customer = customerRepository.findById(dto.getId_customer()).orElseThrow();
         ShowTime showTime = showTimeRepository.findById(dto.getId_showTime()).orElseThrow();
         List<ChairDTO> chairDTOList = new ArrayList<>();
+        Set<Chair> chairs = new HashSet<>();
         for (Long chairId : dto.getChairIds()) {
             Chair chair = chairRepository.findById(chairId)
                     .orElseThrow(() -> new RuntimeException("Chair not found: " + chairId));
-
+            chairs.add(chair);
             // Cập nhật trạng thái
             chairRepository
                     .updateChairStatus(chair.getId()
@@ -70,6 +68,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.setDate(new Date());
         ticket.setShowTime(showTime);
         ticket.setCustomer(customer);
+        ticket.setChairs(chairs);
         ticket.setPayment(payment); // Gán vào cùng 1 payment
         Ticket savedTicket = ticketRepository.save(ticket);
         bookingService.processBooking(ticket);
