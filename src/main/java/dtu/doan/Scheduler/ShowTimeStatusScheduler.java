@@ -15,18 +15,18 @@ public class ShowTimeStatusScheduler {
     @Autowired
     private ShowTimeRepository showTimeRepository;
 
-    @Scheduled(fixedRate = 5 * 60 * 1000) // mỗi 5 phút
-    public void updateShowTimeStatuses() {
-        LocalDateTime now = LocalDateTime.now();
-        List<ShowTime> activeShowTimes = showTimeRepository.findByStatus("dang_mo_ban");
-
-        for (ShowTime st : activeShowTimes) {
-            LocalDateTime endDateTime = LocalDateTime.of(st.getDate(), st.getStartTime());
-
-            if (endDateTime.isBefore(now)) {
-                st.setStatus("da_chieu");
-                showTimeRepository.save(st);
-            }
-        }
-    }
+//    @Scheduled(fixedRate = 5 * 60 * 1000) // mỗi 5 phút
+//    public void updateShowTimeStatuses() {
+//        LocalDateTime now = LocalDateTime.now();
+//        List<ShowTime> activeShowTimes = showTimeRepository.findByStatus("ACTIVE");
+//
+//        for (ShowTime st : activeShowTimes) {
+//            LocalDateTime endDateTime = LocalDateTime.of(st.getDate(), st.getStartTime());
+//
+//            if (endDateTime.isBefore(now)) {
+//                st.setStatus("INACTIVE");
+//                showTimeRepository.save(st);
+//            }
+//        }
+//    }
 }
