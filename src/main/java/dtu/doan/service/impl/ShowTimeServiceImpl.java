@@ -70,20 +70,8 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         }).collect(Collectors.toList());
 
         ShowTimeWithChairsDTO dto = new ShowTimeWithChairsDTO();
-        dto.setId(showTime.getId());
-        dto.setStartTime(showTime.getStartTime());
-        dto.setEndTime(showTime.getEndTime());
         dto.setPricePerShowTime(showTime.getPricePerShowTime());
-        dto.setDate(showTime.getDate());
-        dto.setStatus(showTime.getStatus());
-
-        dto.setMovieId(showTime.getMovie().getId());
-        dto.setMovieName(showTime.getMovie().getName());
-
-        dto.setRoomId(room.getId());
-        dto.setRoomName(room.getName());
-        dto.setChairs(chairDTOs);
-
+        dto.setChairs(chairs);
         return dto;
     }
 
@@ -118,7 +106,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         }
         chairRepository.saveAll(chairs);
         ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
-        result.setId(saveData.getId());
         result.setStartTime(saveData.getStartTime());
         result.setEndTime(saveData.getEndTime());
         result.setPricePerShowTime(saveData.getPricePerShowTime());

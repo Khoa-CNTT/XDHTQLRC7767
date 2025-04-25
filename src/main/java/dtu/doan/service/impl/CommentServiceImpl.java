@@ -53,4 +53,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setDeleted(true);
         repository.save(comment);
     }
+
+    @Override
+    public List<Comment> getCommentsByMovie(Long movieId) {
+        return repository.findByMovieIdAndIsApprovedTrueAndIsDeletedFalse(movieId);
+    }
 }

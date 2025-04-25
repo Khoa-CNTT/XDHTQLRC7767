@@ -10,4 +10,5 @@ public interface CommentService {
     Comment addComment(Long movieId,  String username, String content);
     void deleteComment(Long commentId);
 
+    List<Comment> getCommentsByMovie(Long movieId);
 }
