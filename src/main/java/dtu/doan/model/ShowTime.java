@@ -1,5 +1,6 @@
 package dtu.doan.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,10 +24,10 @@ public class ShowTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
     private LocalTime endTime;
     private Long pricePerShowTime;
-    @DateTimeFormat
     private LocalDate date;
     private String status;
     @ManyToOne

@@ -16,5 +16,5 @@ import java.util.Set;
 @AllArgsConstructor
 public class ShowTimeWithChairsDTO {
     private Long pricePerShowTime;
-    private Set<Chair> chairs;
+    private Set<ChairDTO> chairs;
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tickets/")
+@RequestMapping("/api/tickets")
 public class TicketController {
 
     @Autowired
@@ -21,7 +21,7 @@ public class TicketController {
     /**
      * API để người dùng đặt nhiều vé (mỗi vé cho 1 ghế)
      */
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<TicketResponeDTO> createTickets(@RequestBody TicketRequestDTO ticketRequestDTO) {
         System.out.println("Received ticket request: " + ticketRequestDTO);
         TicketResponeDTO tickets = ticketService.saveTickets(ticketRequestDTO);

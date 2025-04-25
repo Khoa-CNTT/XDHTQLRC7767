@@ -22,25 +22,23 @@ public interface PaymentRepository extends JpaRepository<Promotion, Long> {
 
     @Query(value = """
             SELECT 
-                MONTH(p.payment_time) AS month,
+                MONTH(p.date) AS month,
                 SUM(p.amount) AS total_revenue
             FROM payment p
-            WHERE YEAR(p.payment_time) = :year AND p.status = 'SUCCESS'
-            GROUP BY MONTH(p.payment_time)
+            WHERE YEAR(p.date) = :year AND p.status = 'SUCCESS'
+            GROUP BY MONTH(p.date)
             ORDER BY month
             """, nativeQuery = true)
     List<Object[]> getMonthlyRevenueByYear(@Param("year") int year);
 
     @Query("""
             SELECT DailyRevenueDTO(
-                FUNCTION('DATE', p.paymentTime),
-                SUM(p.amount),
-                COUNT(t)
+                FUNCTION('DATE', p.date),
+                SUM(p.amount)
             )
             FROM Payment p
-            JOIN p.tickets t
-            WHERE p.status = 'SUCCESS' AND FUNCTION('DATE', p.paymentTime) = :date
-            GROUP BY FUNCTION('DATE', p.paymentTime)
+            WHERE p.status = 'SUCCESS' AND FUNCTION('DATE', p.date) = :date
+            GROUP BY FUNCTION('DATE', p.date)
             """)
     DailyRevenueDTO getRevenueAndTicketCountByDate(@Param("date") LocalDate date);
 

@@ -5,6 +5,7 @@ import dtu.doan.model.Chair;
 import dtu.doan.model.Ticket;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,7 +153,7 @@ public class MailService {
         String showDate = dateFormat.format(ticket.getShowTime().getDate()); // Ngày chiếu
         String startTime = timeFormat.format(ticket.getShowTime().getStartTime()); // Giờ bắt đầu
         String endTime = timeFormat.format(ticket.getShowTime().getEndTime()); // Giờ kết thúc
-        Set<Chair> seatNumber = ticket.getChairs(); // Số ghế
+        String seatNumber = ticket.getChairs().getName(); // Số ghế
         String cinemaName = ticket.getShowTime().getRoom().getCinema().getName(); // Cụm rạp
         String roomName = ticket.getShowTime().getRoom().getName(); // Phòng chiếu
 

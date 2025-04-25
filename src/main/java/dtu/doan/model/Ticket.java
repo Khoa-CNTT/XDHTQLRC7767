@@ -9,6 +9,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -32,16 +34,13 @@ public class Ticket {
     private Boolean used;
     private String type;
     private int price;
-    @DateTimeFormat
-    private Date date;
 
     @ManyToOne
     @JoinColumn(name = "show_time_id")
     private ShowTime showTime;
 
-    @OneToMany
-    @JsonBackReference
-    private Set<Chair> chairs;
+    @OneToOne
+    private Chair chairs;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -50,4 +49,6 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment; // Mối quan hệ với Payment
+
+
 }

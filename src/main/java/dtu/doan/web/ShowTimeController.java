@@ -3,6 +3,7 @@ package dtu.doan.web;
 import dtu.doan.dto.ShowListCreatedResponeDTO;
 import dtu.doan.dto.ShowListDTO;
 import dtu.doan.dto.ShowTimeWithChairsDTO;
+import dtu.doan.model.Chair;
 import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
 import dtu.doan.model.ShowTime;
@@ -49,8 +50,8 @@ public class ShowTimeController {
      */
     @GetMapping("/{id}/with-chairs")
     public ResponseEntity<ShowTimeWithChairsDTO> getShowTimeWithChairs(@PathVariable Long id) {
-        ShowTimeWithChairsDTO showTimeWithChairsDTO = showTimeService.getShowTimeWithChairs(id);
-        return ResponseEntity.ok(showTimeWithChairsDTO);
+        ShowTimeWithChairsDTO chairList = showTimeService.getShowTimeWithChairs(id);
+        return ResponseEntity.ok(chairList);
     }
     @PostMapping
     public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {

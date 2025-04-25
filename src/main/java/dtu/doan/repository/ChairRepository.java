@@ -10,14 +10,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ChairRepository extends JpaRepository<Chair, Long> {
     @Query(value = "SELECT c.* FROM chair c " +
-            "INNER JOIN room r ON c.room_id = r.id " +
-            "INNER JOIN show_time st ON st.room_id = r.id " +
-            "WHERE st.id = ?1", nativeQuery = true)
+            "INNER JOIN show_time st ON st.id = c.show_time_id " +
+            "WHERE st.id = ?1 " +
+            "ORDER BY LEFT(c.name, 1), CAST(SUBSTRING(c.name, 2) AS UNSIGNED)", nativeQuery = true)
     List<Chair> findAllChairViewByShowTimeId(Long showTimeId);
+
 
     @Modifying
     @Transactional

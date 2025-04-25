@@ -56,34 +56,33 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
     @Override
     public ShowTimeWithChairsDTO getShowTimeWithChairs(Long showTimeId) {
-        ShowTime showTime = showTimeRepository.findById(showTimeId)
-                .orElseThrow(() -> new RuntimeException("ShowTime not found"));
+        List<Chair> chairList = chairRepository.findAllChairViewByShowTimeId(showTimeId);
+        ShowTimeWithChairsDTO showTimeWithChairsDTO = new ShowTimeWithChairsDTO();
+        Set<ChairDTO>  chairDTOS = new HashSet<>();
+        for (Chair chair : chairList) {
+            showTimeWithChairsDTO.setPricePerShowTime(chair.getShowTime().getPricePerShowTime());
+            ChairDTO chairDTO = new ChairDTO();
+            chairDTO.setId(chair.getId());
+            chairDTO.setStatus(chair.getStatus());
+            chairDTO.setType(chair.getType());
+            chairDTO.setName(chair.getName());
+            chairDTOS.add(chairDTO);
+        }{
+        }
 
-        Set<Chair> chairs = showTime.getChairset();
-        Room room = showTime.getRoom();
-        List<ChairDTO> chairDTOs = chairs.stream().map(chair -> {
-            ChairDTO dto = new ChairDTO();
-            dto.setId(chair.getId());
-            dto.setName(chair.getName());
-            dto.setType(chair.getType());
-            dto.setStatus(chair.getStatus());
-            return dto;
-        }).collect(Collectors.toList());
-
-        ShowTimeWithChairsDTO dto = new ShowTimeWithChairsDTO();
-        dto.setPricePerShowTime(showTime.getPricePerShowTime());
-        dto.setChairs(chairs);
-        return dto;
+        showTimeWithChairsDTO.setChairs(chairDTOS);
+       return showTimeWithChairsDTO;
     }
 
     @Override
     public ShowListCreatedResponeDTO create(ShowListDTO showListDTO) {
-        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimeByDateAndStartTime(showListDTO.getShowDate(),showListDTO.getStartTime());
+        Movie movie = movieRepository.getById(showListDTO.getMovieId());
+        Room room = roomRepository.getById(showListDTO.getRoomId());
+        int duration = movie.getDuration();
+        LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
+        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(showListDTO.getShowDate(),showListDTO.getStartTime(),endTime);
+        ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
         if(showTimesCheck.size() == 0){
-            Movie movie = movieRepository.getById(showListDTO.getMovieId());
-            Room room = roomRepository.getById(showListDTO.getRoomId());
-            int duration = movie.getDuration();
-            LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
             ShowTime showTime = new ShowTime();
             showTime.setStartTime(showListDTO.getStartTime());
             showTime.setEndTime(endTime);
@@ -108,7 +107,6 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 }
             }
             chairRepository.saveAll(chairs);
-            ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
             result.setStartTime(saveData.getStartTime());
             result.setEndTime(saveData.getEndTime());
             result.setPricePerShowTime(saveData.getPricePerShowTime());

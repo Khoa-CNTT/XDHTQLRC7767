@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -35,22 +37,40 @@ public class TicketServiceImpl implements TicketService {
         // Tạo payment trước
         Payment payment = new Payment();
         payment.setStatus("success");
-        payment.setAmount((dto.getPrice()));
-        payment.setPaymentTime(new Date());
+        payment.setAmount(dto.getPrice());
+        payment.setDate(dto.getDate());
         payment = paymentRepository.save(payment);
 
-        Customer customer = customerRepository.findById(dto.getId_customer()).orElseThrow();
-        ShowTime showTime = showTimeRepository.findById(dto.getId_showTime()).orElseThrow();
+        // Kiểm tra và lấy Customer
+        Customer customer = customerRepository.findById(dto.getId_customer())
+                .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + dto.getId_customer()));
+
+        // Kiểm tra và lấy ShowTime
+        ShowTime showTime = showTimeRepository.findById(dto.getId_showTime())
+                .orElseThrow(() -> new RuntimeException("ShowTime not found with ID: " + dto.getId_showTime()));
+
+        Ticket savedTicket = new Ticket();
         List<ChairDTO> chairDTOList = new ArrayList<>();
-        Set<Chair> chairs = new HashSet<>();
+
+        // Kiểm tra và lấy Chair
         for (Long chairId : dto.getChairIds()) {
             Chair chair = chairRepository.findById(chairId)
-                    .orElseThrow(() -> new RuntimeException("Chair not found: " + chairId));
-            chairs.add(chair);
-            // Cập nhật trạng thái
-            chairRepository
-                    .updateChairStatus(chair.getId()
-                            , "BOOKED");
+                    .orElseThrow(() -> new RuntimeException("Chair not found with ID: " + chairId));
+
+            // Cập nhật trạng thái ghế
+            chairRepository.updateChairStatus(chair.getId(), "BOOKED");
+
+            // Tạo ticket
+            Ticket ticket = new Ticket();
+            ticket.setUsed(false);
+            ticket.setType(dto.getType());
+            ticket.setShowTime(showTime);
+            ticket.setCustomer(customer);
+            ticket.setChairs(chair);
+            ticket.setPayment(payment);
+
+            savedTicket = ticketRepository.save(ticket);
+            bookingService.processBooking(ticket);
 
             // Chuyển sang DTO để trả về
             ChairDTO chairDTO = new ChairDTO(
@@ -62,27 +82,17 @@ public class TicketServiceImpl implements TicketService {
             chairDTOList.add(chairDTO);
         }
 
-        Ticket ticket = new Ticket();
-        ticket.setUsed(false);
-        ticket.setType(dto.getType());
-        ticket.setDate(new Date());
-        ticket.setShowTime(showTime);
-        ticket.setCustomer(customer);
-        ticket.setChairs(chairs);
-        ticket.setPayment(payment); // Gán vào cùng 1 payment
-        Ticket savedTicket = ticketRepository.save(ticket);
-        bookingService.processBooking(ticket);
-
         // Trả về DTO
         TicketResponeDTO res = new TicketResponeDTO();
         res.setType(savedTicket.getType());
-        res.setDate(savedTicket.getDate());
         res.setShowTime(savedTicket.getShowTime());
         res.setCustomer(savedTicket.getCustomer());
         res.setChairDTOS(chairDTOList);
         res.setPayment(payment);
+
         return res;
     }
+
 
     @Override
     public void updateTicketStatus(Long id) {
