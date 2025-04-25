@@ -38,7 +38,7 @@ public class TicketServiceImpl implements TicketService {
         Payment payment = new Payment();
         payment.setStatus("success");
         payment.setAmount(dto.getPrice());
-        payment.setDate(dto.getDate());
+        payment.setDate(LocalDate.now());
         payment = paymentRepository.save(payment);
 
         // Kiểm tra và lấy Customer

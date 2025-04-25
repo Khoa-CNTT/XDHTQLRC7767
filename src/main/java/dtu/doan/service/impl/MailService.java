@@ -15,6 +15,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
 
@@ -146,13 +148,12 @@ public class MailService {
     }
 
     public String generateEmailBody(Ticket ticket) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
 
         String movieTitle = ticket.getShowTime().getMovie().getName(); // Lấy tên phim
-        String showDate = dateFormat.format(ticket.getShowTime().getDate()); // Ngày chiếu
-        String startTime = timeFormat.format(ticket.getShowTime().getStartTime()); // Giờ bắt đầu
-        String endTime = timeFormat.format(ticket.getShowTime().getEndTime()); // Giờ kết thúc
+        LocalDate showDate = ticket.getShowTime().getDate(); // Ngày chiếu
+        LocalTime startTime =ticket.getShowTime().getStartTime(); // Giờ bắt đầu
+        LocalTime endTime = ticket.getShowTime().getEndTime(); // Giờ kết thúc
         String seatNumber = ticket.getChairs().getName(); // Số ghế
         String cinemaName = ticket.getShowTime().getRoom().getCinema().getName(); // Cụm rạp
         String roomName = ticket.getShowTime().getRoom().getName(); // Phòng chiếu
