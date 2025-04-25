@@ -158,6 +158,11 @@ public class MovieServiceImpl implements MovieService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Movie> movies() {
+        return repository.findAll();
+    }
+
     private MovieHomeResponseDTO mapToDTO(Movie movie) {
         MovieHomeResponseDTO dto = new MovieHomeResponseDTO();
         dto.setId(movie.getId());
