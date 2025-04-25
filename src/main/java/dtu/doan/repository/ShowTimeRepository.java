@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -43,5 +45,5 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     @Query("SELECT s FROM ShowTime s WHERE  " +
             "FUNCTION('TIMESTAMP', s.date, s.endTime) <= CURRENT_TIMESTAMP")
     List<ShowTime> findByStatusAndDateBeforeNow();
-
+    List<ShowTime> findShowTimeByDateAndStartTime(LocalDate date, LocalTime startTime);
 }

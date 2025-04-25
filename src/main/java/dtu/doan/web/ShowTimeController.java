@@ -58,8 +58,10 @@ public class ShowTimeController {
     @PostMapping
     public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {
         ShowListCreatedResponeDTO response = showTimeService.create(showListDTO);
+        if (response == null){
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-    
 
     }
