@@ -100,7 +100,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         showTime.setDate(showListDTO.getShowDate());
         showTime.setMovie(movie);
         showTime.setRoom(room);
-        showTime.setStatus("dang_mo_ban");
+        showTime.setStatus("ACTIVE");
         int rows = 5;
         int cols = 10;
         List<Chair> chairs = new ArrayList<>();

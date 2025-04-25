@@ -20,7 +20,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "WHERE FUNCTION('DATE_FORMAT', st.date, '%d-%m-%Y') = :date " +
             "AND c.id = :id " +
             "AND mv.id = :idmovies " +
-            "AND st.status = 'dang_mo_ban'")
+            "AND st.status = 'ACTIVE'")
     List<ShowTime> findShowTimeByDateAndCinemaAddress(
             @Param("date") String date,
             @Param("id") Long id,
