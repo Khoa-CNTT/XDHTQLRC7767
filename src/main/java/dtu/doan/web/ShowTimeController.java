@@ -55,7 +55,7 @@ public class ShowTimeController {
         showTimeWithChairsDTO.setChairs(showTime.getChairset());
         return ResponseEntity.ok(showTimeWithChairsDTO);
     }
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {
         ShowListCreatedResponeDTO response = showTimeService.create(showListDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
