@@ -48,9 +48,12 @@ public class ShowTimeController {
      * @return ShowTimeWithChairsDTO
      */
     @GetMapping("/{id}/with-chairs")
-    public ResponseEntity<ShowTime> getShowTimeWithChairs(@PathVariable Long id) {
+    public ResponseEntity<ShowTimeWithChairsDTO> getShowTimeWithChairs(@PathVariable Long id) {
         ShowTime showTime = showTimeService.findShowTimeByID(id);
-        return ResponseEntity.ok(showTime);
+        ShowTimeWithChairsDTO showTimeWithChairsDTO = new ShowTimeWithChairsDTO();
+        showTimeWithChairsDTO.setPricePerShowTime(showTime.getPricePerShowTime());
+        showTimeWithChairsDTO.setChairs(showTime.getChairset());
+        return ResponseEntity.ok(showTimeWithChairsDTO);
     }
     @PostMapping("")
     public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {
