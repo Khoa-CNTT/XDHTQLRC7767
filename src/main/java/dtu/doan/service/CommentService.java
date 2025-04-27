@@ -7,9 +7,9 @@ import java.util.List;
 public interface CommentService {
     List<Comment> getUnapprovedComments();
     void approveComment(Long commentId);
-    Comment addComment(Long movieId,  String username, String content);
+    Comment addComment(Long movieId,  Long userId, String content);
     void deleteComment(Long commentId);
 
-    List<Comment> getCommentsByMovie(Long movieId);
+    List<Comment> getCommentsByMovie(Long userId,Long movieId);
 
 }

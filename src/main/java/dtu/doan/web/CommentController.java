@@ -1,5 +1,6 @@
 package dtu.doan.web;
 
+import dtu.doan.dto.CommentDto;
 import dtu.doan.model.Comment;
 import dtu.doan.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,25 +14,29 @@ import java.util.List;
 @RequestMapping("/api/comments")
 public class CommentController {
     @Autowired
-    private CommentService commentService;
+    private CommentService service;
+    @GetMapping("/test")
+    public String test(){
+        return "Test comment controller";
+    }
 
     // Add a new comment
     @PostMapping
-    public ResponseEntity<?> addComment(@RequestParam Long movieId, @RequestParam String username, @RequestParam String content) {
+    public ResponseEntity<?> addComment(@RequestBody CommentDto request) {
         try {
-            Comment comment = commentService.addComment(movieId, username, content);
+            Comment comment = service.addComment(request.getMovieId(), request.getUserId(), request.getContent());
             return new ResponseEntity<>(comment, HttpStatus.CREATED);
-
         }catch (Exception e){
             return new ResponseEntity<>("Error adding comment: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     // Get all approved comments for a movie
-    @GetMapping("/movie/{movieId}")
-    public ResponseEntity<List<Comment>> getCommentsByMovie(@PathVariable Long movieId) {
+    @GetMapping("/commentByMovieAndUser")
+    public ResponseEntity<List<Comment>> getCommentsByMovie(@RequestParam(value = "userId",required = false) Long userId,
+                                                            @RequestParam(value = "movieId", required = true) Long movieId) {
         try {
-            List<Comment> comments = commentService.getCommentsByMovie(movieId);
+            List<Comment> comments = service.getCommentsByMovie(userId,movieId);
             return new ResponseEntity<>(comments, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -41,7 +46,7 @@ public class CommentController {
     // Get all unapproved comments (admin functionality)
     @GetMapping("/unapproved")
     public ResponseEntity<List<Comment>> getUnapprovedComments() {
-        List<Comment> comments = commentService.getUnapprovedComments();
+        List<Comment> comments = service.getUnapprovedComments();
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
@@ -50,7 +55,7 @@ public class CommentController {
     @PostMapping("/approve/{id}")
     public ResponseEntity<?> approveComment(@PathVariable Long id) {
         try {
-            commentService.approveComment(id);
+            service.approveComment(id);
             return new ResponseEntity<>("Comment approved successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Error approving comment: " + e.getMessage(), HttpStatus.NOT_FOUND);

@@ -15,7 +15,7 @@ public class Comment {
     private String content;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Account user;
+    private Customer user;
 
     @ManyToOne
     @JoinColumn(name = "movie_id", nullable = false)
@@ -29,5 +29,7 @@ public class Comment {
 
     @Column(nullable = false)
     private boolean isApproved = false;
+
+
 
 }

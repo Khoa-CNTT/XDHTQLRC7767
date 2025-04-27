@@ -2,9 +2,11 @@ package dtu.doan.service.impl;
 
 import dtu.doan.model.Account;
 import dtu.doan.model.Comment;
+import dtu.doan.model.Customer;
 import dtu.doan.model.Movie;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CommentRepository;
+import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.MovieRepository;
 import dtu.doan.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Service
 public class CommentServiceImpl implements CommentService {
     @Autowired
@@ -20,6 +23,8 @@ public class CommentServiceImpl implements CommentService {
     private AccountRepository accountRepository;
     @Autowired
     private MovieRepository movieRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @Override
     public List<Comment> getUnapprovedComments() {
@@ -36,13 +41,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Comment addComment(Long movieId, String username, String content) {
+    public Comment addComment(Long movieId, Long userId, String content) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new RuntimeException("Movie not found"));
-        Account user = accountRepository.findByUsername(username);
+        Customer user = customerRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         Comment comment = new Comment();
         comment.setContent(content);
         comment.setMovie(movie);
         comment.setUser(user);
+        comment.setApproved(false);
         comment.setCreatedAt(LocalDateTime.now());
         return repository.save(comment);
     }
@@ -55,7 +62,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getCommentsByMovie(Long movieId) {
-        return repository.findByMovieIdAndIsApprovedTrueAndIsDeletedFalse(movieId);
+    public List<Comment> getCommentsByMovie(Long userId,Long movieId) {
+//        return repository.findByMovieIdAndIsApprovedTrueAndIsDeletedFalse(movieId);
+        return repository.findAllVisibleComments(userId,movieId);
     }
 }
