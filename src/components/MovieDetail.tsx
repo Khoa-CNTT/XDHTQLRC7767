@@ -30,9 +30,69 @@ import {
   StarFilled,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getMovieDetailRequest,
+  getCommentsRequest,
+  addCommentRequest,
+  resetAddCommentState,
+  Comment as CommentType,
+} from "../redux/slices/movieSlice";
+import { RootState } from "../redux/store";
 
 const { TabPane } = Tabs;
 const { TextArea } = Input;
+
+// Define movie types
+interface Actor {
+  name: string;
+  role: string;
+  image?: string;
+}
+
+interface MovieGenre {
+  id: number;
+  name: string;
+  isDelete: boolean;
+}
+
+interface MovieDTO {
+  id: number | string;
+  name?: string; // Từ API trả về
+  title?: string; // Tên trường cũ
+  imageUrl?: string; // Từ API trả về
+  poster?: string; // Tên trường cũ
+  backdrop?: string;
+  rating: number;
+  releaseYear?: number; // Từ API trả về
+  releaseDate?: string; // Tên trường cũ
+  duration: number | string;
+  description: string;
+  director: string;
+  actor?: string; // Từ API trả về
+  country?: string; // Từ API trả về
+  language?: string; // Từ API trả về
+  subtitle?: string; // Từ API trả về
+  ageLimit?: number; // Từ API trả về
+  content?: any; // Từ API trả về
+  movieGenres?: MovieGenre[]; // Từ API trả về
+  genre?: string[]; // Tên trường cũ
+  cast?: Actor[]; // Tên trường cũ
+  [key: string]: any; // Allow additional properties
+}
+
+// Interface cho currentUser
+interface User {
+  id: string; // Thay đổi từ number sang string theo đúng định nghĩa trong authSlice
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  avatar?: string;
+  address?: string;
+  birthday?: string;
+  points: number;
+  isVerified?: boolean;
+}
 
 // Styled Components
 const PageContainer = styled.div`
@@ -230,45 +290,39 @@ const TabContent = styled.div`
 
 const CastList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
 
   @media (max-width: 576px) {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 `;
 
 const CastItem = styled.div`
-  text-align: center;
-`;
-
-const CastImage = styled.div`
-  width: 100%;
-  height: 180px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 10px;
-  background-color: #2a2a4a;
+  padding: 16px;
+  transition: all 0.3s ease;
+  border-left: 3px solid #00bfff;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  @media (max-width: 576px) {
-    height: 150px;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 191, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
   }
 `;
 
 const CastName = styled.div`
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #00bfff;
 `;
 
 const CastRole = styled.div`
   color: #ccc;
   font-size: 14px;
+  line-height: 1.4;
 `;
 
 const ShowtimeSection = styled.div`
@@ -514,14 +568,52 @@ const SectionHeader = styled.div`
 const MovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [movie, setMovie] = useState<any>(null);
+  const dispatch = useDispatch();
   const [favorite, setFavorite] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [commentValue, setCommentValue] = useState("");
   const [userRating, setUserRating] = useState(0);
-  const [comments, setComments] = useState<any[]>([]);
   const [form] = Form.useForm();
+
+  // Get current user from auth state (if logged in)
+  const auth = useSelector((state: RootState) => state.auth);
+  const currentUser = auth.user as User | null;
+
+  // Get movie details from Redux store
+  const {
+    data: movieData,
+    loading: movieLoading,
+    error: movieError,
+  } = useSelector((state: RootState) => state.movie.movieDetail);
+
+  // Get comments from Redux store
+  const {
+    data: commentsData,
+    loading: commentsLoading,
+    error: commentsError,
+  } = useSelector((state: RootState) => state.movie.comments);
+
+  // Get add comment status
+  const {
+    loading: addCommentLoading,
+    error: addCommentError,
+    success: addCommentSuccess,
+  } = useSelector((state: RootState) => state.movie.addComment);
+
+  // Ensure movie data has the right type
+  const movie = movieData as MovieDTO;
+
+  // Format comments data for display
+  const comments = commentsData.map((comment: CommentType) => ({
+    id: comment.id,
+    author: comment.user?.fullName || "Người dùng ẩn danh",
+    avatar:
+      comment.user?.avatar ||
+      "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
+    content: comment.content,
+    datetime: new Date(comment.createdAt).toLocaleDateString("vi-VN"),
+    rating: 5, // API does not support ratings yet, using default value
+  }));
 
   // Custom Comment component
   const CustomComment = ({
@@ -547,138 +639,31 @@ const MovieDetail: React.FC = () => {
   );
 
   useEffect(() => {
-    // Giả lập tải dữ liệu phim
-    setTimeout(() => {
-      setMovie({
-        id: id,
-        title: "Avengers: Endgame",
-        poster:
-          "https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg",
-        backdrop: "https://wallpapercave.com/wp/wp4676582.jpg",
-        rating: 8.4,
-        releaseDate: "24/04/2019",
-        duration: "3h 1m",
-        description:
-          "Sau các sự kiện tàn khốc của Avengers: Infinity War, vũ trụ đang trong tình trạng đổ nát. Với sự giúp đỡ của các đồng minh còn lại, các Avengers tập hợp một lần nữa để đảo ngược hành động của Thanos và khôi phục sự cân bằng cho vũ trụ.",
-        director: "Anthony Russo, Joe Russo",
-        genre: ["Hành động", "Phiêu lưu", "Khoa học viễn tưởng"],
-        cast: [
-          {
-            name: "Robert Downey Jr.",
-            role: "Tony Stark / Iron Man",
-            image:
-              "https://m.media-amazon.com/images/M/MV5BNzg1MTUyNDYxOF5BMl5BanBnXkFtZTgwNTQ4MTE2MjE@._V1_UX214_CR0,0,214,317_AL_.jpg",
-          },
-          {
-            name: "Chris Evans",
-            role: "Steve Rogers / Captain America",
-            image:
-              "https://m.media-amazon.com/images/M/MV5BMTU2NTg1OTQzMF5BMl5BanBnXkFtZTcwNjIyMjkyMg@@._V1_UY317_CR6,0,214,317_AL_.jpg",
-          },
-          {
-            name: "Mark Ruffalo",
-            role: "Bruce Banner / Hulk",
-            image:
-              "https://m.media-amazon.com/images/M/MV5BNWIzZTI1ODUtZTUzMC00NTdiLWFlOTYtZTg4MGZkYmU4YzNlXkEyXkFqcGdeQXVyNTExOTk5Nzg@._V1_UX214_CR0,0,214,317_AL_.jpg",
-          },
-          {
-            name: "Chris Hemsworth",
-            role: "Thor",
-            image:
-              "https://m.media-amazon.com/images/M/MV5BOTU2MTI0NTIyNV5BMl5BanBnXkFtZTcwMTA4Nzc3OA@@._V1_UX214_CR0,0,214,317_AL_.jpg",
-          },
-          {
-            name: "Scarlett Johansson",
-            role: "Natasha Romanoff / Black Widow",
-            image:
-              "https://m.media-amazon.com/images/M/MV5BMTM3OTUwMDYwNl5BMl5BanBnXkFtZTcwNTUyNzc3Nw@@._V1_UY317_CR23,0,214,317_AL_.jpg",
-          },
-        ],
-      });
+    // Dispatch action to fetch movie details using the ID from URL
+    if (id) {
+      dispatch(getMovieDetailRequest({ id: parseInt(id) }));
 
-      // Tải dữ liệu bình luận từ JSON
-      fetch("/data/comments.json")
-        .then((response) => {
-          if (!response.ok) {
-            // Nếu không tìm thấy file JSON, sử dụng dữ liệu mẫu
-            return Promise.resolve({
-              comments: [
-                {
-                  id: 1,
-                  author: "Nguyễn Văn A",
-                  avatar:
-                    "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-                  content:
-                    "Phim hay tuyệt vời, đặc biệt là phần kỹ xảo và diễn xuất của các diễn viên!",
-                  datetime: "20/10/2023",
-                  rating: 5,
-                },
-                {
-                  id: 2,
-                  author: "Trần Thị B",
-                  avatar:
-                    "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-                  content:
-                    "Cốt truyện hơi khó hiểu nhưng nhìn chung vẫn là một bộ phim đáng xem.",
-                  datetime: "18/10/2023",
-                  rating: 4,
-                },
-                {
-                  id: 3,
-                  author: "Lê Văn C",
-                  avatar:
-                    "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-                  content: "Phim dài quá, có nhiều đoạn không cần thiết.",
-                  datetime: "15/10/2023",
-                  rating: 3,
-                },
-              ],
-            });
-          }
-          return response.json();
+      // Also fetch comments for this movie
+      dispatch(
+        getCommentsRequest({
+          movieId: parseInt(id),
+          userId: currentUser?.id, // Pass user ID if available
         })
-        .then((data) => {
-          setComments(data.comments || []);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error loading comments:", error);
-          // Sử dụng dữ liệu mẫu nếu có lỗi
-          setComments([
-            {
-              id: 1,
-              author: "Nguyễn Văn A",
-              avatar:
-                "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-              content:
-                "Phim hay tuyệt vời, đặc biệt là phần kỹ xảo và diễn xuất của các diễn viên!",
-              datetime: "20/10/2023",
-              rating: 5,
-            },
-            {
-              id: 2,
-              author: "Trần Thị B",
-              avatar:
-                "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-              content:
-                "Cốt truyện hơi khó hiểu nhưng nhìn chung vẫn là một bộ phim đáng xem.",
-              datetime: "18/10/2023",
-              rating: 4,
-            },
-            {
-              id: 3,
-              author: "Lê Văn C",
-              avatar:
-                "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-              content: "Phim dài quá, có nhiều đoạn không cần thiết.",
-              datetime: "15/10/2023",
-              rating: 3,
-            },
-          ]);
-          setLoading(false);
-        });
-    }, 1000);
-  }, [id]);
+      );
+    }
+  }, [dispatch, id, currentUser?.id]);
+
+  useEffect(() => {
+    // Reset comment form when comment is successfully added
+    if (addCommentSuccess) {
+      setCommentValue("");
+      setUserRating(0);
+      form.resetFields();
+
+      // Reset the success state
+      dispatch(resetAddCommentState());
+    }
+  }, [addCommentSuccess, form, dispatch]);
 
   const handlePlayTrailer = () => {
     message.info("Đang mở trailer phim...");
@@ -714,45 +699,19 @@ const MovieDetail: React.FC = () => {
       return;
     }
 
-    if (userRating === 0) {
-      message.error("Vui lòng đánh giá");
+    if (!currentUser) {
+      message.error("Vui lòng đăng nhập để bình luận");
       return;
     }
 
-    // Lấy ngày hiện tại
-    const today = new Date();
-    const formattedDate = `${today.getDate()}/${
-      today.getMonth() + 1
-    }/${today.getFullYear()}`;
-
-    const newComment = {
-      id: comments.length + 1,
-      author: "Người dùng ẩn danh",
-      avatar:
-        "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-      content: commentValue,
-      datetime: formattedDate,
-      rating: userRating,
-    };
-
-    // Thêm bình luận mới vào đầu danh sách
-    setComments([newComment, ...comments]);
-
-    // Lưu vào localStorage để giữ lại dữ liệu khi refresh trang
-    const savedComments = JSON.parse(
-      localStorage.getItem(`movie_${id}_comments`) || "[]"
+    // Submit comment to API
+    dispatch(
+      addCommentRequest({
+        movieId: parseInt(id || "0"),
+        userId: parseInt(currentUser.id), // Chuyển đổi string id thành number
+        content: commentValue,
+      })
     );
-    localStorage.setItem(
-      `movie_${id}_comments`,
-      JSON.stringify([newComment, ...savedComments])
-    );
-
-    // Reset form
-    setCommentValue("");
-    setUserRating(0);
-    form.resetFields();
-
-    message.success("Đã gửi bình luận và đánh giá của bạn!");
   };
 
   const calculateAverageRating = () => {
@@ -784,7 +743,7 @@ const MovieDetail: React.FC = () => {
     },
   ];
 
-  if (loading) {
+  if (movieLoading) {
     return (
       <PageContainer>
         <ContentWrapper>
@@ -793,6 +752,70 @@ const MovieDetail: React.FC = () => {
       </PageContainer>
     );
   }
+
+  if (movieError) {
+    return (
+      <PageContainer>
+        <ContentWrapper>
+          <div style={{ color: "white", textAlign: "center" }}>
+            <h2>Lỗi khi tải dữ liệu phim</h2>
+            <p>{movieError}</p>
+            <Button type="primary" onClick={() => navigate("/")}>
+              Quay lại trang chủ
+            </Button>
+          </div>
+        </ContentWrapper>
+      </PageContainer>
+    );
+  }
+
+  if (!movie) {
+    return (
+      <PageContainer>
+        <ContentWrapper>
+          <div style={{ color: "white", textAlign: "center" }}>
+            <h2>Không tìm thấy phim</h2>
+            <Button type="primary" onClick={() => navigate("/")}>
+              Quay lại trang chủ
+            </Button>
+          </div>
+        </ContentWrapper>
+      </PageContainer>
+    );
+  }
+
+  // Ensure we have all required fields with default values if needed
+  const processedMovie: MovieDTO = {
+    id: movie?.id || id || "",
+    title: movie?.name || movie?.title || "Chưa có tiêu đề",
+    poster:
+      movie?.imageUrl ||
+      movie?.poster ||
+      "https://via.placeholder.com/300x450?text=No+Poster",
+    backdrop:
+      movie?.backdrop ||
+      "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
+    rating: movie?.rating || 0,
+    releaseDate: movie?.releaseYear
+      ? `${movie.releaseYear}`
+      : movie?.releaseDate || "Chưa có năm khởi chiếu",
+    duration:
+      typeof movie?.duration === "number"
+        ? `${movie.duration} phút`
+        : movie?.duration || "Chưa xác định",
+    description: movie?.description || "Chưa có mô tả phim",
+    director: movie?.director || "Chưa cập nhật",
+    genre: movie?.movieGenres
+      ? movie.movieGenres.map((genre: MovieGenre) => genre.name)
+      : movie?.genre || [],
+    cast: movie?.actor
+      ? [{ name: movie.actor, role: "Diễn viên chính" }]
+      : movie?.cast || [],
+    country: movie?.country,
+    language: movie?.language,
+    subtitle: movie?.subtitle,
+    ageLimit: movie?.ageLimit,
+  };
 
   return (
     <PageContainer>
@@ -803,25 +826,39 @@ const MovieDetail: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <MovieBackdrop>
-            <BackdropImage src={movie.backdrop} alt={movie.title} />
+            <BackdropImage
+              src={processedMovie.backdrop}
+              alt={processedMovie.title}
+            />
             <BackdropOverlay>
               <div>
-                <MovieTitle>{movie.title}</MovieTitle>
+                <MovieTitle>{processedMovie.title}</MovieTitle>
                 <MovieInfo>
-                  {movie.genre.map((genre: string, index: number) => (
-                    <Tag key={index} color="#00bfff">
-                      {genre}
-                    </Tag>
-                  ))}
+                  {Array.isArray(processedMovie.genre) &&
+                    processedMovie.genre.map((genre: string, index: number) => (
+                      <Tag key={index} color="#00bfff">
+                        {genre}
+                      </Tag>
+                    ))}
                   <InfoItem>
-                    <ClockCircleOutlined /> {movie.duration}
+                    <ClockCircleOutlined /> {processedMovie.duration}
                   </InfoItem>
                   <InfoItem>
-                    <CalendarOutlined /> {movie.releaseDate}
+                    <CalendarOutlined /> {processedMovie.releaseDate}
                   </InfoItem>
                   <InfoItem>
-                    <VideoCameraOutlined /> {movie.director}
+                    <VideoCameraOutlined /> {processedMovie.director}
                   </InfoItem>
+                  {processedMovie.country && (
+                    <InfoItem>
+                      <TeamOutlined /> {processedMovie.country}
+                    </InfoItem>
+                  )}
+                  {processedMovie.ageLimit && (
+                    <InfoItem>
+                      <Tag color="#f50">{processedMovie.ageLimit}+</Tag>
+                    </InfoItem>
+                  )}
                 </MovieInfo>
               </div>
             </BackdropOverlay>
@@ -835,7 +872,10 @@ const MovieDetail: React.FC = () => {
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
                 <PosterContainer>
-                  <PosterImage src={movie.poster} alt={movie.title} />
+                  <PosterImage
+                    src={processedMovie.poster}
+                    alt={processedMovie.title}
+                  />
                   <PlayButton
                     className="play-button"
                     onClick={handlePlayTrailer}
@@ -862,9 +902,13 @@ const MovieDetail: React.FC = () => {
                 </ActionButtons>
 
                 <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                  <Rate allowHalf defaultValue={movie.rating / 2} disabled />
+                  <Rate
+                    allowHalf
+                    defaultValue={processedMovie.rating / 2}
+                    disabled
+                  />
                   <div style={{ color: "white", marginTop: "5px" }}>
-                    {movie.rating}/10
+                    {processedMovie.rating}/10
                   </div>
                 </div>
               </motion.div>
@@ -876,21 +920,38 @@ const MovieDetail: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
-                <MovieDescription>{movie.description}</MovieDescription>
+                <MovieDescription>
+                  {processedMovie.description}
+                </MovieDescription>
 
                 <StyledTabs defaultActiveKey="1">
                   <TabPane tab="Diễn viên" key="1">
                     <TabContent>
+                      <SectionHeader>
+                        <h3 style={{ color: "white", marginBottom: "5px" }}>
+                          Dàn diễn viên chính
+                        </h3>
+                      </SectionHeader>
                       <CastList>
-                        {movie.cast.map((actor: any, index: number) => (
-                          <CastItem key={index}>
-                            <CastImage>
-                              <img src={actor.image} alt={actor.name} />
-                            </CastImage>
-                            <CastName>{actor.name}</CastName>
-                            <CastRole>{actor.role}</CastRole>
-                          </CastItem>
-                        ))}
+                        {Array.isArray(processedMovie.cast) &&
+                        processedMovie.cast.length > 0 ? (
+                          processedMovie.cast.map(
+                            (actor: any, index: number) => (
+                              <CastItem key={index}>
+                                <CastName>
+                                  {actor.name || "Chưa cập nhật"}
+                                </CastName>
+                                <CastRole>
+                                  {actor.role || "Chưa cập nhật"}
+                                </CastRole>
+                              </CastItem>
+                            )
+                          )
+                        ) : (
+                          <div style={{ color: "white" }}>
+                            Chưa có thông tin diễn viên
+                          </div>
+                        )}
                       </CastList>
                     </TabContent>
                   </TabPane>
@@ -939,11 +1000,16 @@ const MovieDetail: React.FC = () => {
                               <SectionLabel>Bình luận của bạn:</SectionLabel>
                               <StyledTextArea
                                 rows={4}
-                                placeholder="Chia sẻ cảm nghĩ của bạn về bộ phim..."
+                                placeholder={
+                                  currentUser
+                                    ? "Chia sẻ cảm nghĩ của bạn về bộ phim..."
+                                    : "Vui lòng đăng nhập để bình luận"
+                                }
                                 value={commentValue}
                                 onChange={(e) =>
                                   setCommentValue(e.target.value)
                                 }
+                                disabled={!currentUser}
                               />
                             </div>
                           </Form.Item>
@@ -954,48 +1020,75 @@ const MovieDetail: React.FC = () => {
                             <SubmitButton
                               htmlType="submit"
                               icon={<SendOutlined />}
+                              loading={addCommentLoading}
+                              disabled={!currentUser}
                             >
-                              Gửi bình luận
+                              {currentUser
+                                ? "Gửi bình luận"
+                                : "Đăng nhập để bình luận"}
                             </SubmitButton>
                           </Form.Item>
                         </CommentForm>
 
                         <StyledDivider />
 
-                        <List
-                          dataSource={comments}
-                          header={
-                            <SectionLabel>
-                              {comments.length} bình luận
-                            </SectionLabel>
-                          }
-                          itemLayout="horizontal"
-                          renderItem={(item) => (
-                            <List.Item
-                              style={{
-                                borderBottom:
-                                  "1px solid rgba(255, 255, 255, 0.1)",
-                              }}
-                            >
-                              <CustomComment
-                                author={item.author}
-                                avatar={item.avatar}
-                                content={
-                                  <>
-                                    <StyledRate
-                                      disabled
-                                      defaultValue={item.rating}
-                                    />
-                                    <RatingContent>
-                                      {item.content}
-                                    </RatingContent>
-                                  </>
-                                }
-                                datetime={item.datetime}
-                              />
-                            </List.Item>
-                          )}
-                        />
+                        {commentsLoading ? (
+                          <Skeleton active avatar paragraph={{ rows: 2 }} />
+                        ) : commentsError ? (
+                          <div style={{ color: "white", textAlign: "center" }}>
+                            <p>
+                              Không thể tải bình luận. Vui lòng thử lại sau.
+                            </p>
+                          </div>
+                        ) : comments.length > 0 ? (
+                          <List
+                            dataSource={comments}
+                            header={
+                              <SectionLabel>
+                                {comments.length} bình luận
+                              </SectionLabel>
+                            }
+                            itemLayout="horizontal"
+                            renderItem={(item) => (
+                              <List.Item
+                                style={{
+                                  borderBottom:
+                                    "1px solid rgba(255, 255, 255, 0.1)",
+                                }}
+                              >
+                                <CustomComment
+                                  author={item.author}
+                                  avatar={item.avatar}
+                                  content={
+                                    <>
+                                      <StyledRate
+                                        disabled
+                                        defaultValue={item.rating}
+                                      />
+                                      <RatingContent>
+                                        {item.content}
+                                      </RatingContent>
+                                    </>
+                                  }
+                                  datetime={item.datetime}
+                                />
+                              </List.Item>
+                            )}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              color: "white",
+                              textAlign: "center",
+                              padding: "20px 0",
+                            }}
+                          >
+                            <p>
+                              Chưa có bình luận nào cho phim này. Hãy là người
+                              đầu tiên bình luận!
+                            </p>
+                          </div>
+                        )}
                       </CommentSection>
                     </TabContent>
                   </TabPane>

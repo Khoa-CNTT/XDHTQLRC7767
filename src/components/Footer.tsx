@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
               <FooterColumn>
                 <FooterLogo>
                   <LogoText>
-                    UBAN<span>FLIX</span>
+                    BSCMSAA<span>PUE</span>
                   </LogoText>
                   <CinemaText>CINEMA</CinemaText>
                 </FooterLogo>

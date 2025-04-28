@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Row, Col, Card, Radio, Divider, message, Spin, Steps } from "antd";
 import {
   CalendarOutlined,
@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   PageContainer,
   BookingContent,
@@ -47,34 +47,15 @@ import {
   BackButton,
   NextButton,
 } from "../../styles/BookingPageStyles";
+import { getBookingRequest } from "../../redux/slices/movieSlice";
+import { RootState } from "../../redux/store";
+import {
+  getCinemaListRequest,
+  getMockShowtimeRequest,
+  getWithChairRequest,
+} from "../../redux/slices/cinemaSlice";
 
 const { Step } = Steps;
-
-// Giả lập dữ liệu phim
-const mockMovie = {
-  id: "1",
-  title: "Avengers: Endgame",
-  poster:
-    "https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg",
-  rating: 8.4,
-  releaseDate: "2023-10-15",
-  duration: "3h 1m",
-  description:
-    "Sau các sự kiện tàn khốc của Avengers: Infinity War, vũ trụ đang trong tình trạng đổ nát. Với sự giúp đỡ của các đồng minh còn lại, các Avengers tập hợp một lần nữa để đảo ngược hành động của Thanos và khôi phục sự cân bằng cho vũ trụ.",
-  director: "Anthony Russo, Joe Russo",
-  cast: "Robert Downey Jr., Chris Evans, Mark Ruffalo, Chris Hemsworth, Scarlett Johansson",
-  genre: "Hành động, Phiêu lưu, Khoa học viễn tưởng",
-};
-
-// Giả lập dữ liệu rạp chiếu
-const mockCinemas = [
-  { id: "1", name: "CGV Vincom Center", address: "Quận 1, TP.HCM" },
-  { id: "2", name: "CGV Aeon Mall", address: "Quận 7, TP.HCM" },
-  { id: "3", name: "CGV Landmark 81", address: "Quận Bình Thạnh, TP.HCM" },
-];
-
-// Giả lập dữ liệu suất chiếu
-const mockShowtimes = ["10:30", "13:15", "15:45", "18:20", "20:50", "22:30"];
 
 // Giả lập dữ liệu ghế ngồi
 const generateSeats = () => {
@@ -98,39 +79,69 @@ const generateSeats = () => {
 const STANDARD_PRICE = 90000; // 90k VND
 const VIP_PRICE = 120000; // 120k VND
 
+const formatShowtime = (startTime: string, endTime: string) => {
+  const start = startTime.substring(0, 5);
+  const end = endTime.substring(0, 5);
+  return `${start} - ${end}`;
+};
+
+// Thêm interface để định nghĩa kiểu dữ liệu
+interface FormattedShowtime {
+  id: number;
+  time: string;
+}
+
 const BookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [movie, setMovie] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
   const [selectedCinema, setSelectedCinema] = useState<string>("");
-  const [selectedShowtime, setSelectedShowtime] = useState<string>("");
+  const [selectedShowtime, setSelectedShowtime] =
+    useState<FormattedShowtime | null>(null);
+
   const [seats, setSeats] = useState<any[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const { movieBooking } = useSelector((state: RootState) => state.movie);
+  const { cinemaList, mockShowtimes } = useSelector(
+    (state: RootState) => state.cinema
+  );
+  const [showtimes, setShowtimes] = useState<FormattedShowtime[]>([]);
 
-  // Lấy thông tin phim
   useEffect(() => {
-    // Giả lập API call
-    setTimeout(() => {
-      setMovie(mockMovie);
+    dispatch(getBookingRequest({ id: id }));
+    dispatch(getCinemaListRequest());
+    dispatch(getWithChairRequest({ id: 35 }));
+  }, [id]);
+
+  // Thêm useEffect riêng để xử lý khi có dữ liệu
+  useEffect(() => {
+    if (movieBooking?.data) {
+      setMovie(movieBooking.data);
       setSeats(generateSeats());
       setLoading(false);
-    }, 1000);
-  }, [id]);
+    }
+  }, [movieBooking]);
+
+  // Cập nhật useEffect khi có dữ liệu mockShowtimes từ API
+  useEffect(() => {
+    if (mockShowtimes?.data) {
+      const formattedShowtimes = mockShowtimes.data.map((showtime: any) => ({
+        id: showtime.id,
+        time: formatShowtime(showtime.startTime, showtime.endTime),
+      }));
+      setShowtimes(formattedShowtimes);
+    }
+  }, [mockShowtimes]);
 
   // Xử lý khi chọn rạp chiếu
   const handleCinemaSelect = (cinemaId: string) => {
     setSelectedCinema(cinemaId);
-    setSelectedShowtime(""); // Reset showtime khi đổi rạp
-  };
-
-  // Xử lý khi chọn suất chiếu
-  const handleShowtimeSelect = (time: string) => {
-    setSelectedShowtime(time);
+    setSelectedShowtime(null);
   };
 
   // Xử lý khi chọn ghế
@@ -174,17 +185,17 @@ const BookingPage: React.FC = () => {
         message.error("Vui lòng chọn rạp chiếu");
         return;
       }
-      if (!selectedShowtime) {
-        message.error("Vui lòng chọn suất chiếu");
-        return;
-      }
+      // if (!selectedShowtime) {
+      //   message.error("Vui lòng chọn suất chiếu");
+      //   return;
+      // }
     } else if (currentStep === 1) {
       if (selectedSeats.length === 0) {
         message.error("Vui lòng chọn ít nhất 1 ghế");
         return;
       }
     }
-
+    dispatch(getWithChairRequest({ id: 3 }));
     if (currentStep === 2) {
       // Xử lý thanh toán
       message.success("Đặt vé thành công!");
@@ -219,7 +230,7 @@ const BookingPage: React.FC = () => {
     const bookingData = {
       movie: {
         id: id || "",
-        title: movie?.title || "Unknown Movie",
+        name: movie?.name || "Unknown Movie",
         image: movie?.poster || "",
         duration: movie?.duration || "N/A",
       },
@@ -229,7 +240,7 @@ const BookingPage: React.FC = () => {
       },
       showtime: {
         date: formattedDate,
-        time: selectedShowtime || "",
+        time: selectedShowtime?.time || "",
         screen: "Screen 1",
       },
       seats: selectedSeats,
@@ -246,7 +257,7 @@ const BookingPage: React.FC = () => {
     navigate("/invoice", { state: { bookingData } });
   };
 
-  if (loading) {
+  if (loading || movieBooking?.loading || !movie) {
     return (
       <PageContainer>
         <BookingContent>
@@ -275,18 +286,18 @@ const BookingPage: React.FC = () => {
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
                   <MovieInfoCard
-                    cover={<img alt={movie.title} src={movie.poster} />}
+                    cover={<img alt={movie?.name} src={movie?.imageUrl} />}
                   >
-                    <MovieTitle>{movie.title}</MovieTitle>
+                    <MovieTitle>{movie?.name}</MovieTitle>
                     <MovieMeta>
                       <MetaItem>
-                        <CalendarOutlined /> Khởi chiếu: {movie.releaseDate}
+                        <CalendarOutlined /> Khởi chiếu: {movie?.releaseYear}
                       </MetaItem>
                       <MetaItem>
                         <ClockCircleOutlined /> Thời lượng: {movie.duration}
                       </MetaItem>
                       <MetaItem>
-                        <StarOutlined /> Đánh giá: {movie.rating}/10
+                        <StarOutlined /> Đánh giá: {movie?.rating}/10
                       </MetaItem>
                     </MovieMeta>
                     <MovieDescription>{movie.description}</MovieDescription>
@@ -305,12 +316,21 @@ const BookingPage: React.FC = () => {
 
                   <SectionTitle>Chọn rạp chiếu</SectionTitle>
                   <CinemaList>
-                    {mockCinemas.map((cinema) => (
+                    {cinemaList?.data?.map((cinema: any) => (
                       <Radio
-                        key={cinema.id}
+                        key={cinema?.id}
                         value={cinema.id}
                         checked={selectedCinema === cinema.id}
-                        onChange={() => handleCinemaSelect(cinema.id)}
+                        onChange={() => {
+                          handleCinemaSelect(cinema.id);
+                          dispatch(
+                            getMockShowtimeRequest({
+                              date: dayjs(selectedDate).format("DD-MM-YYYY"),
+                              cinemaId: cinema.id,
+                              movieId: id,
+                            })
+                          );
+                        }}
                         style={{ display: "block", marginBottom: "16px" }}
                       >
                         <CinemaCard>
@@ -327,13 +347,15 @@ const BookingPage: React.FC = () => {
                     <>
                       <SectionTitle>Chọn suất chiếu</SectionTitle>
                       <ShowtimeList>
-                        {mockShowtimes.map((time, index) => (
+                        {showtimes.map((showtime) => (
                           <ShowtimeButton
-                            key={index}
-                            $selected={selectedShowtime === time}
-                            onClick={() => handleShowtimeSelect(time)}
+                            key={showtime.id}
+                            $selected={selectedShowtime?.id === showtime.id}
+                            onClick={() => {
+                              setSelectedShowtime(showtime);
+                            }}
                           >
-                            {time}
+                            {showtime.time}
                           </ShowtimeButton>
                         ))}
                       </ShowtimeList>
@@ -346,7 +368,7 @@ const BookingPage: React.FC = () => {
                   <SummaryCard>
                     <SummaryItem>
                       <SummaryLabel>Phim:</SummaryLabel>
-                      <SummaryValue>{movie.title}</SummaryValue>
+                      <SummaryValue>{movie.name}</SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Ngày chiếu:</SummaryLabel>
@@ -360,15 +382,16 @@ const BookingPage: React.FC = () => {
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
                         {selectedCinema
-                          ? mockCinemas.find((c) => c.id === selectedCinema)
-                              ?.name
+                          ? cinemaList?.data?.find(
+                              (c) => c.id === selectedCinema
+                            )?.name
                           : "Chưa chọn"}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Suất chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {selectedShowtime || "Chưa chọn"}
+                        {selectedShowtime?.time || "Chưa chọn"}
                       </SummaryValue>
                     </SummaryItem>
                   </SummaryCard>
@@ -440,7 +463,7 @@ const BookingPage: React.FC = () => {
                   <SummaryCard>
                     <SummaryItem>
                       <SummaryLabel>Phim:</SummaryLabel>
-                      <SummaryValue>{movie.title}</SummaryValue>
+                      <SummaryValue>{movie?.name}</SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Ngày chiếu:</SummaryLabel>
@@ -451,12 +474,15 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {mockCinemas.find((c) => c.id === selectedCinema)?.name}
+                        {
+                          cinemaList?.data?.find((c) => c.id === selectedCinema)
+                            ?.name
+                        }
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Suất chiếu:</SummaryLabel>
-                      <SummaryValue>{selectedShowtime}</SummaryValue>
+                      <SummaryValue>{selectedShowtime?.time}</SummaryValue>
                     </SummaryItem>
                     <Divider style={{ margin: "12px 0" }} />
                     <SummaryItem>
@@ -628,12 +654,15 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {mockCinemas.find((c) => c.id === selectedCinema)?.name}
+                        {
+                          cinemaList?.data?.find((c) => c.id === selectedCinema)
+                            ?.name
+                        }
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Suất chiếu:</SummaryLabel>
-                      <SummaryValue>{selectedShowtime}</SummaryValue>
+                      <SummaryValue>{selectedShowtime?.time}</SummaryValue>
                     </SummaryItem>
                     <Divider style={{ margin: "12px 0" }} />
                     <SummaryItem>

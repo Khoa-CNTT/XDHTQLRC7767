@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { Button } from "antd";
+import { Button, Empty, Spin } from "antd";
 import {
   LeftOutlined,
   RightOutlined,
@@ -9,6 +9,13 @@ import {
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeIn, slideInUp } from "../utils/animations";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import {
+  getNowShowingMoviesRequest,
+  getUpcomingMoviesRequest,
+  MovieHomeResponseDTO,
+} from "../redux/slices/movieSlice";
 
 // Styled Components
 const MovieListContainer = styled.div`
@@ -69,6 +76,7 @@ const MoviesContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  min-height: 500px; /* Add a minimum height to prevent layout shifts */
 
   @media (max-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
@@ -110,7 +118,7 @@ const MoviePoster = styled.div`
 const PosterImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.3s;
   background-color: #000;
 `;
@@ -244,6 +252,14 @@ const DetailButton = styled(Button)`
   }
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+  width: 100%;
+`;
+
 const MovieList: React.FC = () => {
   const [activeTab, setActiveTab] = useState("now-showing");
   const [currentPage, setCurrentPage] = useState(0);
@@ -253,6 +269,16 @@ const MovieList: React.FC = () => {
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right"
   );
+
+  const dispatch = useDispatch();
+  const { nowShowingMovies, upcomingMovies } = useSelector(
+    (state: RootState) => state.movie
+  );
+
+  useEffect(() => {
+    dispatch(getNowShowingMoviesRequest());
+    dispatch(getUpcomingMoviesRequest());
+  }, [dispatch]);
 
   useEffect(() => {
     const options = {
@@ -281,135 +307,22 @@ const MovieList: React.FC = () => {
     };
   }, []);
 
-  // Expanded movie data with more entries
-  const allMovies = {
-    "now-showing": [
-      {
-        id: 1,
-        title: "QUỶ NHẬP TRÀNG",
-        duration: "95 PHÚT",
-        releaseDate: "KHỞI CHIẾU 15-03-2025",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 2,
-        title: "VENOM: KẺ THÙ CUỐI CÙNG",
-        duration: "110 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 3,
-        title: "JOKER: FOLIE À DEUX",
-        duration: "138 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 4,
-        title: "DEADPOOL & WOLVERINE",
-        duration: "127 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 5,
-        title: "INSIDE OUT 2",
-        duration: "96 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 6,
-        title: "KUNG FU PANDA 4",
-        duration: "94 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 7,
-        title: "GODZILLA X KONG",
-        duration: "115 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 8,
-        title: "DUNE: PART TWO",
-        duration: "166 PHÚT",
-        releaseDate: "ĐANG CHIẾU",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-    ],
-    "coming-soon": [
-      {
-        id: 101,
-        title: "GLADIATOR II",
-        duration: "155 PHÚT",
-        releaseDate: "KHỞI CHIẾU 22-11-2024",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 102,
-        title: "WICKED",
-        duration: "160 PHÚT",
-        releaseDate: "KHỞI CHIẾU 27-11-2024",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 103,
-        title: "MOANA 2",
-        duration: "110 PHÚT",
-        releaseDate: "KHỞI CHIẾU 29-11-2024",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 104,
-        title: "MUFASA: THE LION KING",
-        duration: "120 PHÚT",
-        releaseDate: "KHỞI CHIẾU 20-12-2024",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 105,
-        title: "SONIC THE HEDGEHOG 3",
-        duration: "115 PHÚT",
-        releaseDate: "KHỞI CHIẾU 27-12-2024",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-      {
-        id: 106,
-        title: "AVATAR 3",
-        duration: "180 PHÚT",
-        releaseDate: "KHỞI CHIẾU 19-12-2025",
-        image:
-          "https://s3-alpha-sig.figma.com/img/3bb3/076f/2f736f47ecfe350189e25ad6e80401a0?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=rz9NYtEkSdKwNi81rsI-tmnj95CIUmTry~Q~HZvV333G-atbpa6DG3cRSVh8aitn9xVl~GROvbIddvoo8P-VGPDvZyJts8oqrTKt619l334mUS3Mm2qHauzMDIgrs5ckxrAYh1AfN5jJESmcty8k4TrmYOq7Y7z1VTsAOThuRNnNjgNgxUct3pw7~dWV3spUhgCp2DSCJ6QYMvc05eFgKf2JNz9zXSh2i9JwwPHaoa3Zw7J3GHdJOsXSVmg~01QeoWLsJnwysxaVpeY0oIVQPTRu0ItgYBy4ey7sHIRSU-sQSckW0eOiQ6gRYhp6HY5x0xBZwrL2rM3Vt9oi0MXDlA__",
-      },
-    ],
-  };
-
   // Get current movies based on active tab and pagination
   const getCurrentMovies = () => {
+    const movies =
+      activeTab === "now-showing" ? nowShowingMovies.data : upcomingMovies.data;
+
     const start = currentPage * moviesPerPage;
     const end = start + moviesPerPage;
-    return allMovies[activeTab as keyof typeof allMovies].slice(start, end);
+    return movies.slice(start, end);
   };
 
   // Calculate total pages
-  const totalMovies = allMovies[activeTab as keyof typeof allMovies].length;
+  const totalMovies =
+    activeTab === "now-showing"
+      ? nowShowingMovies.data.length
+      : upcomingMovies.data.length;
+
   const totalPages = Math.ceil(totalMovies / moviesPerPage);
 
   const handleTabChange = (tab: string) => {
@@ -462,6 +375,12 @@ const MovieList: React.FC = () => {
     }),
   };
 
+  // Kiểm tra trạng thái loading
+  const isLoading =
+    activeTab === "now-showing"
+      ? nowShowingMovies.loading
+      : upcomingMovies.loading;
+
   return (
     <MovieListContainer ref={sectionRef}>
       <MovieListContent>
@@ -494,57 +413,75 @@ const MovieList: React.FC = () => {
             </LeftSlideButton>
           )}
 
-          <motion.div
-            key={currentPage}
-            variants={staggerContainer}
-            initial="hidden"
-            animate={isVisible ? "visible" : "hidden"}
-          >
-            <MoviesContainer>
-              {getCurrentMovies().map((movie, index) => (
-                <motion.div
-                  key={movie.id}
-                  custom={slideDirection}
-                  variants={slideAnimation}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  transition={{
-                    delay: index * 0.08, // Increased from 0.05 for slower staggering
-                    duration: 0.6, // Increased from 0.4 for slower individual animations
-                  }}
-                >
-                  <MovieCard>
-                    <MoviePoster>
-                      <PosterImage src={movie.image} alt={movie.title} />
-                      <PosterOverlay className="overlay">
+          {isLoading ? (
+            <LoadingContainer>
+              <Spin size="large" />
+            </LoadingContainer>
+          ) : totalMovies === 0 ? (
+            <LoadingContainer>
+              <Empty description="Không có phim" />
+            </LoadingContainer>
+          ) : (
+            <motion.div
+              key={currentPage}
+              variants={staggerContainer}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+            >
+              <MoviesContainer>
+                {getCurrentMovies().map((movie, index) => (
+                  <motion.div
+                    key={movie.id}
+                    custom={slideDirection}
+                    variants={slideAnimation}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    transition={{
+                      delay: index * 0.08, // Increased from 0.05 for slower staggering
+                      duration: 0.6, // Increased from 0.4 for slower individual animations
+                    }}
+                  >
+                    <MovieCard>
+                      <MoviePoster>
+                        <PosterImage src={movie.poster} alt={movie.title} />
+                        <PosterOverlay className="overlay">
+                          <Link to={`/movie/${movie.id}`}>
+                            <DetailButton icon={<InfoCircleOutlined />}>
+                              CHI TIẾT
+                            </DetailButton>
+                          </Link>
+                        </PosterOverlay>
+                      </MoviePoster>
+                      <MovieTitle>{movie.title}</MovieTitle>
+                      <MovieInfo>{movie.duration} phút</MovieInfo>
+                      <MovieInfo>
+                        {activeTab === "now-showing"
+                          ? "ĐANG CHIẾU"
+                          : `KHỞI CHIẾU: ${new Date(
+                              movie.releaseDate
+                            ).toLocaleDateString("vi-VN")}`}
+                      </MovieInfo>
+                      <ButtonsContainer>
                         <Link to={`/movie/${movie.id}`}>
                           <DetailButton icon={<InfoCircleOutlined />}>
                             CHI TIẾT
                           </DetailButton>
                         </Link>
-                      </PosterOverlay>
-                    </MoviePoster>
-                    <MovieTitle>{movie.title}</MovieTitle>
-                    <MovieInfo>{movie.duration}</MovieInfo>
-                    <MovieInfo>{movie.releaseDate}</MovieInfo>
-                    <ButtonsContainer>
-                      <Link to={`/movie/${movie.id}`}>
-                        <DetailButton icon={<InfoCircleOutlined />}>
-                          CHI TIẾT
-                        </DetailButton>
-                      </Link>
-                      <Link to={`/booking/${movie.id}`}>
-                        <ActionButton>ĐẶT VÉ</ActionButton>
-                      </Link>
-                    </ButtonsContainer>
-                  </MovieCard>
-                </motion.div>
-              ))}
-            </MoviesContainer>
-          </motion.div>
+                        {activeTab === "now-showing" && (
+                          <Link to={`/booking/${movie.id}`}>
+                            <ActionButton>ĐẶT VÉ</ActionButton>
+                          </Link>
+                        )}
+                      </ButtonsContainer>
+                    </MovieCard>
+                  </motion.div>
+                ))}
+              </MoviesContainer>
+            </motion.div>
+          )}
 
-          {showNextButton && (
+          {showNextButton && !isLoading && totalMovies > 0 && (
             <RightSlideButton onClick={nextPage}>
               <RightOutlined />
             </RightSlideButton>
@@ -552,9 +489,13 @@ const MovieList: React.FC = () => {
         </MoviesSlider>
 
         {/* Pagination indicator */}
-        <div style={{ textAlign: "center", marginTop: "20px", color: "white" }}>
-          Trang {currentPage + 1} / {totalPages}
-        </div>
+        {!isLoading && totalMovies > 0 && (
+          <div
+            style={{ textAlign: "center", marginTop: "20px", color: "white" }}
+          >
+            Trang {currentPage + 1} / {totalPages}
+          </div>
+        )}
       </MovieListContent>
     </MovieListContainer>
   );

@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { fadeIn, slideInLeft, slideInRight } from "../utils/animations";
+import { useDispatch, useSelector } from "react-redux";
+import { getPromotionsRequest } from "../redux/slices/promotionSlice";
+import { RootState } from "../redux/store";
+import { Spin, Empty } from "antd";
+import { Link } from "react-router-dom";
 
 // Styled Components
 const DiscountContainer = styled.div`
@@ -157,9 +162,51 @@ const DiscountDescription = styled.p`
   line-height: 1.5;
 `;
 
+const DiscountDate = styled.p`
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+`;
+
+const ViewAllButton = styled(Link)`
+  display: block;
+  text-align: center;
+  margin-top: 30px;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #00bfff, #0077ff);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+
+  &:hover {
+    background: linear-gradient(90deg, #0099cc, #0066cc);
+    transform: translateY(-3px);
+    box-shadow: 0 7px 14px rgba(0, 119, 255, 0.3);
+    color: white;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+`;
+
 const Discount: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
+  const dispatch = useDispatch();
+  const { promotions } = useSelector((state: RootState) => state.promotion);
 
   useEffect(() => {
     const options = {
@@ -188,60 +235,50 @@ const Discount: React.FC = () => {
     };
   }, []);
 
-  const discounts = [
-    {
-      id: 2,
-      name: "HAPPY DAY THỨ 2 GIÁ RẺ",
-      description: "Giảm giá đặc biệt vào thứ 2 hàng tuần",
-      image:
-        "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    },
-    {
-      id: 3,
-      name: "ĐẶT VÉ XEM PHIM GIẢM 50.000Đ",
-      description: "Ưu đãi đặc biệt khi đặt vé online",
-      image:
-        "https://s3-alpha-sig.figma.com/img/aa76/e900/667798e09b1e6afcce54bd7c1dfefd9d?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=InHv4pYcA8Q6Z2PC~1nwQm0ePlfzBkYDCimQ-1YP2sDYZvQYCHFJ2-v6pZRDvAXSkqOYv5Mndt1kfont5hWqx9t1XFUGGfbQlMvqUa5uZ68dMyfcCZdu1UMcO4YrXn6a43lGpyViJ7fI3zgdJezdMMlLgG-7wwf~OoEmdVQ-lVMwx-I~9YLgA7mlmIZw~zX9vXOz78tq61IGWdteks8SlarkObwlnpY~R7M~5OaOQhlNSFdeXwmAIgL69kmNaya2fPNmSklswubPVEZp3Jx7eqYjxnTc5dFScXcQQtlCs3sZf1gIw9Ua-AdniV4z6tV6ahDUa~W2xkxr98tZhTsA7g__",
-    },
-    {
-      id: 4,
-      name: "XEM PHIM CÙNG VNPAY QR",
-      description: "Giảm đến 15K khi thanh toán qua VNPAY",
-      image:
-        "https://s3-alpha-sig.figma.com/img/d224/4e1c/ba8f3aafcae36c6c343e2d425f42cc63?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=ZLdoAE-aWUoz12PiecHAc1YTGvt7JSGa4z6XJ2JTphMlwenXXJfT-b6kEDpoc8GPpftggoXh-DLMcU2PReHkjmv6U5BMFrqU0gKLQYgROOZ7L39zyCfSCvNUHdyqLW-HLLT3Ipx0FEXN6ZQ3faHuSZJdeFUvs8suyOiOMkiQEgnzOFWoUAtLVGAPKpAT4bvkzjICaf3ZJOqlBuor9GmldOjXQIevbArSfKonUFs0UDzhfMS7EytnfYljoMhBi23eg0NqNraYoUdt~LpN62jY6kOguoMyxoGVTQzQLDEXUzTHWHUVn~DDS8Rk5-IqyoEknZfOOwXOHjbv6o09rZLGfg__",
-    },
-    {
-      id: 5,
-      name: "BỮA TIỆC ĐIỆN ẢNH 45K",
-      description: "Combo bỏng nước chỉ với 45K vào ngày Culture Day",
-      image:
-        "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    },
-    {
-      id: 6,
-      name: "BỮA TIỆC ĐIỆN ẢNH 45K",
-      description: "Combo bỏng nước chỉ với 45K vào ngày Culture Day",
-      image:
-        "https://s3-alpha-sig.figma.com/img/d6ae/dead/a3ab4075110152b75104f994b2174052?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=M91RXD5kuzlwG~6TRF95B1oRiJ9hpPAHZmCwkb1L5mHOJlGT0BWZaYVBzAcK~m2ff7pv4bjQXkVkHGnRQzMVGD5o3~cviDmrdaZ-SuGw4nFp4JaznR-LW61qTriJL4p1S4j8vaZxWmHsuJLBo4NsVh7wpYNifCi2DD1rjypOQqUYQoRIMWZMoNmKp4dYL5KY1cjfXhMJay8VS12a0OKh64XXX6hOPtysC6pJq6DB21uZo4nHaORg4rHihzWtRyEq5s6PVxgrBhQbwnQPdgYuoRKZt0q7h4ieCqz5iJlO0p9e45aFvBlZCd6SR~Y1upubwFWy7FmUJHM0uNXFb~~4DA__",
-    },
-  ];
-  return (
-    <DiscountContainer ref={sectionRef}>
-      <DiscountContent>
-        <motion.div
-          variants={fadeIn}
-          initial="hidden"
-          animate={isVisible ? "visible" : "hidden"}
-        >
-          <DiscountTitle
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
-          >
-            <h1>KHUYẾN MÃI & ƯU ĐÃI</h1>
-          </DiscountTitle>
-        </motion.div>
+  useEffect(() => {
+    // Fetch promotions when component mounts
+    dispatch(getPromotionsRequest({ page: 0 }));
+  }, [dispatch]);
 
+  // Sử dụng dữ liệu khuyến mãi từ API hoặc fallback về dữ liệu tĩnh nếu chưa tải
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN");
+    };
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
+  // Render promotions with loading state
+  const renderPromotions = () => {
+    if (promotions.loading) {
+      return (
+        <LoadingContainer>
+          <Spin size="large" />
+        </LoadingContainer>
+      );
+    }
+
+    if (!promotions.data || promotions.data.content.length === 0) {
+      // Render fallback static data until API data is available
+      return (
+        <LoadingContainer style={{ color: "#fff" }}>
+          <Empty
+            description={
+              <span style={{ color: "#fff" }}>
+                Không tìm thấy khuyến mãi nào
+              </span>
+            }
+          />
+        </LoadingContainer>
+      );
+    }
+
+    // Get first 5 promotions to display
+    const displayPromotions = promotions.data.content.slice(0, 5);
+
+    return (
+      <>
         <DiscountGrid>
           <motion.div
             variants={slideInLeft}
@@ -259,26 +296,53 @@ const Discount: React.FC = () => {
             </DiscountTextBox>
           </motion.div>
 
-          {discounts.map((discount, index) => (
+          {displayPromotions.map((promotion, index) => (
             <motion.div
-              key={discount.id}
+              key={promotion.id}
               variants={index % 2 === 0 ? slideInLeft : slideInRight}
               initial="hidden"
               animate={isVisible ? "visible" : "hidden"}
               transition={{ delay: index * 0.2 }}
             >
               <DiscountItem>
-                <DiscountImage src={discount.image} alt={discount.name} />
+                <DiscountImage src={promotion.image} alt={promotion.title} />
                 <DiscountInfo>
-                  <DiscountName>{discount.name}</DiscountName>
+                  <DiscountName>{promotion.title}</DiscountName>
                   <DiscountDescription>
-                    {discount.description}
+                    {promotion.description}
                   </DiscountDescription>
+                  <DiscountDate>
+                    {formatDateRange(promotion.startDate, promotion.endDate)}
+                  </DiscountDate>
                 </DiscountInfo>
               </DiscountItem>
             </motion.div>
           ))}
         </DiscountGrid>
+
+        <ViewAllButton to="/promotions">Xem tất cả khuyến mãi</ViewAllButton>
+      </>
+    );
+  };
+
+  return (
+    <DiscountContainer ref={sectionRef}>
+      <DiscountContent>
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          animate={isVisible ? "visible" : "hidden"}
+        >
+          <DiscountTitle
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
+          >
+            <h1>KHUYẾN MÃI & ƯU ĐÃI</h1>
+          </DiscountTitle>
+        </motion.div>
+
+        {renderPromotions()}
       </DiscountContent>
     </DiscountContainer>
   );

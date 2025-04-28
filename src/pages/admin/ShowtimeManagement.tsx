@@ -28,6 +28,18 @@ import {
 import styled from "styled-components";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
+import { getCinemaListRequest } from "../../redux/slices/cinemaSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { getMovieListRequest } from "../../redux/slices/movieSlice";
+import { getRoomListRequest } from "../../redux/slices/room.slice";
+import {
+  Showtime,
+  createShowtimeRequest,
+  getShowtimeListRequest,
+  resetCreateShowtimeState,
+  ShowListDTO,
+} from "../../redux/slices/showtimeSlice";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -43,130 +55,36 @@ const StyledCard = styled(Card)`
   margin-bottom: 24px;
 `;
 
-// Interface cho lịch chiếu
-interface Showtime {
-  id: number;
-  movieId: number;
-  movieTitle: string;
-  roomId: number;
-  roomName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  price: number;
-  status: string;
-}
-
-// Interface cho phim
-interface Movie {
-  id: number;
-  title: string;
-  duration: number;
-}
-
-// Interface cho phòng chiếu
-interface Room {
-  id: number;
-  name: string;
-  capacity: number;
-}
-
 const ShowtimeManagement: React.FC = () => {
-  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentShowtime, setCurrentShowtime] = useState<Showtime | null>(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState<string>("");
   const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
+  const dispatch = useDispatch();
 
-  // Mock data
+  const { cinemaList } = useSelector((state: RootState) => state.cinema);
+  const { movieList } = useSelector((state: RootState) => state.movie);
+  const { roomList } = useSelector((state: RootState) => state.room);
+  const { showtimeList, createShowtime } = useSelector(
+    (state: RootState) => state.showtime
+  );
+
   useEffect(() => {
-    // Giả lập tải dữ liệu
-    setTimeout(() => {
-      setMovies([
-        { id: 1, title: "Avengers: Endgame", duration: 181 },
-        { id: 2, title: "Spider-Man: No Way Home", duration: 148 },
-        { id: 3, title: "The Batman", duration: 176 },
-        { id: 4, title: "Dune", duration: 155 },
-        { id: 5, title: "Encanto", duration: 102 },
-      ]);
+    dispatch(getCinemaListRequest());
+    dispatch(getMovieListRequest());
+    dispatch(getShowtimeListRequest());
+  }, [dispatch]);
 
-      setRooms([
-        { id: 1, name: "Phòng 1", capacity: 100 },
-        { id: 2, name: "Phòng 2", capacity: 120 },
-        { id: 3, name: "Phòng 3", capacity: 80 },
-        { id: 4, name: "Phòng VIP", capacity: 50 },
-      ]);
-
-      setShowtimes([
-        {
-          id: 1,
-          movieId: 1,
-          movieTitle: "Avengers: Endgame",
-          roomId: 1,
-          roomName: "Phòng 1",
-          date: "2023-07-15",
-          startTime: "10:00",
-          endTime: "13:01",
-          price: 90000,
-          status: "Đang mở bán",
-        },
-        {
-          id: 2,
-          movieId: 2,
-          movieTitle: "Spider-Man: No Way Home",
-          roomId: 2,
-          roomName: "Phòng 2",
-          date: "2023-07-15",
-          startTime: "14:00",
-          endTime: "16:28",
-          price: 85000,
-          status: "Đang mở bán",
-        },
-        {
-          id: 3,
-          movieId: 3,
-          movieTitle: "The Batman",
-          roomId: 3,
-          roomName: "Phòng 3",
-          date: "2023-07-16",
-          startTime: "18:00",
-          endTime: "20:56",
-          price: 100000,
-          status: "Sắp mở bán",
-        },
-        {
-          id: 4,
-          movieId: 4,
-          movieTitle: "Dune",
-          roomId: 4,
-          roomName: "Phòng VIP",
-          date: "2023-07-16",
-          startTime: "20:00",
-          endTime: "22:35",
-          price: 120000,
-          status: "Đang mở bán",
-        },
-        {
-          id: 5,
-          movieId: 5,
-          movieTitle: "Encanto",
-          roomId: 1,
-          roomName: "Phòng 1",
-          date: "2023-07-17",
-          startTime: "09:00",
-          endTime: "10:42",
-          price: 75000,
-          status: "Sắp mở bán",
-        },
-      ]);
-
-      setLoading(false);
-    }, 1000);
-  }, []);
+  // Xử lý kết quả sau khi tạo lịch chiếu
+  useEffect(() => {
+    if (createShowtime.success) {
+      setIsModalVisible(false);
+      form.resetFields();
+      setCurrentShowtime(null);
+      dispatch(resetCreateShowtimeState());
+    }
+  }, [createShowtime.success, dispatch, form]);
 
   const showModal = (showtime: Showtime | null = null) => {
     setCurrentShowtime(showtime);
@@ -175,7 +93,7 @@ const ShowtimeManagement: React.FC = () => {
     if (showtime) {
       form.setFieldsValue({
         ...showtime,
-        date: dayjs(showtime.date),
+        showDate: dayjs(showtime.date),
         startTime: dayjs(showtime.startTime, "HH:mm"),
       });
     } else {
@@ -190,55 +108,38 @@ const ShowtimeManagement: React.FC = () => {
   };
 
   const handleSubmit = (values: any) => {
-    const { movieId, roomId, date, startTime, price } = values;
+    const { movieId, roomId, showDate, startTime, pricePerShowTime } = values;
+    console.log(values);
 
     // Tìm phim để lấy thời lượng
-    const selectedMovie = movies.find((movie) => movie.id === movieId);
+    const selectedMovie = movieList?.data?.find(
+      (movie: any) => movie.id === movieId
+    );
     if (!selectedMovie) {
       message.error("Không tìm thấy phim đã chọn!");
       return;
     }
 
-    // Tính giờ kết thúc
-    const endTimeObj = startTime.clone().add(selectedMovie.duration, "minute");
-    const endTime = endTimeObj.format("HH:mm");
-
-    const formattedValues = {
-      ...values,
-      date: date.format("YYYY-MM-DD"),
-      startTime: startTime.format("HH:mm"),
-      endTime,
-      movieTitle: selectedMovie.title,
-      roomName: rooms.find((room) => room.id === roomId)?.name || "",
-      status: "Sắp mở bán",
-    };
-
     if (currentShowtime) {
-      // Cập nhật lịch chiếu
-      const updatedShowtimes = showtimes.map((item) =>
-        item.id === currentShowtime.id
-          ? { ...item, ...formattedValues, id: currentShowtime.id }
-          : item
-      );
-      setShowtimes(updatedShowtimes);
-      message.success("Cập nhật lịch chiếu thành công!");
+      // Chức năng cập nhật sẽ được triển khai sau
+      message.info("Chức năng cập nhật đang được phát triển.");
     } else {
-      // Thêm lịch chiếu mới
-      const newShowtime = {
-        ...formattedValues,
-        id: Math.max(...showtimes.map((s) => s.id), 0) + 1,
+      // Tạo lịch chiếu mới thông qua API
+      const showTimeData: ShowListDTO = {
+        movieId,
+        roomId,
+        showDate: showDate.format("YYYY-MM-DD"),
+        startTime: startTime.format("HH:mm"),
+        pricePerShowTime: pricePerShowTime,
       };
-      setShowtimes([...showtimes, newShowtime]);
-      message.success("Thêm lịch chiếu mới thành công!");
-    }
 
-    handleCancel();
+      dispatch(createShowtimeRequest(showTimeData));
+    }
   };
 
   const handleDelete = (id: number) => {
-    const updatedShowtimes = showtimes.filter((showtime) => showtime.id !== id);
-    setShowtimes(updatedShowtimes);
-    message.success("Xóa lịch chiếu thành công!");
+    // Chức năng xóa sẽ được triển khai sau
+    message.info("Chức năng xóa đang được phát triển.");
   };
 
   const handleSearch = (value: string) => {
@@ -250,7 +151,7 @@ const ShowtimeManagement: React.FC = () => {
   };
 
   // Lọc lịch chiếu
-  const filteredShowtimes = showtimes.filter((showtime) => {
+  const filteredShowtimes = showtimeList.data.filter((showtime) => {
     let matchesSearch = true;
     let matchesDate = true;
 
@@ -301,14 +202,14 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Ngày chiếu",
-      dataIndex: "date",
-      key: "date",
-      render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
+      dataIndex: "showDate",
+      key: "showDate",
+      render: (showDate: string) => dayjs(showDate).format("DD/MM/YYYY"),
     },
     {
       title: "Giờ chiếu",
       key: "time",
-      render: (_, record: Showtime) => (
+      render: (_: unknown, record: Showtime) => (
         <span>
           {record.startTime} - {record.endTime}
         </span>
@@ -316,9 +217,10 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Giá vé",
-      dataIndex: "price",
-      key: "price",
-      render: (price: number) => `${price.toLocaleString()}đ`,
+      dataIndex: "pricePerShowTime",
+      key: "pricePerShowTime",
+      render: (pricePerShowTime: number) =>
+        `${pricePerShowTime.toLocaleString()}đ`,
     },
     {
       title: "Trạng thái",
@@ -331,7 +233,7 @@ const ShowtimeManagement: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
-      render: (_: any, record: Showtime) => (
+      render: (_: unknown, record: Showtime) => (
         <Space size="small">
           <Button
             type="primary"
@@ -398,7 +300,7 @@ const ShowtimeManagement: React.FC = () => {
         columns={columns}
         dataSource={filteredShowtimes}
         rowKey="id"
-        loading={loading}
+        loading={showtimeList.loading}
         pagination={{ pageSize: 10 }}
       />
 
@@ -406,18 +308,36 @@ const ShowtimeManagement: React.FC = () => {
         title={currentShowtime ? "Chỉnh sửa lịch chiếu" : "Thêm lịch chiếu mới"}
         open={isModalVisible}
         onCancel={handleCancel}
+        confirmLoading={createShowtime.loading}
         footer={null}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            name="cinemaId"
+            label="Rạp"
+            rules={[{ required: true, message: "Vui lòng chọn rạp!" }]}
+          >
+            <Select placeholder="Chọn rạp">
+              {cinemaList?.data?.map((cinema: any) => (
+                <Option key={cinema.id} value={cinema.id}>
+                  {cinema.name} - {cinema.address}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
           <Form.Item
             name="movieId"
             label="Phim"
             rules={[{ required: true, message: "Vui lòng chọn phim!" }]}
           >
-            <Select placeholder="Chọn phim">
-              {movies.map((movie) => (
+            <Select
+              placeholder="Chọn phim"
+              onChange={(value) => dispatch(getRoomListRequest({ id: value }))}
+            >
+              {movieList?.data?.map((movie: any) => (
                 <Option key={movie.id} value={movie.id}>
-                  {movie.title} ({movie.duration} phút)
+                  {movie.name} ({movie.duration} phút)
                 </Option>
               ))}
             </Select>
@@ -429,7 +349,7 @@ const ShowtimeManagement: React.FC = () => {
             rules={[{ required: true, message: "Vui lòng chọn phòng chiếu!" }]}
           >
             <Select placeholder="Chọn phòng chiếu">
-              {rooms.map((room) => (
+              {roomList?.data?.map((room: any) => (
                 <Option key={room.id} value={room.id}>
                   {room.name} (Sức chứa: {room.capacity})
                 </Option>
@@ -440,7 +360,7 @@ const ShowtimeManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="date"
+                name="showDate"
                 label="Ngày chiếu"
                 rules={[
                   { required: true, message: "Vui lòng chọn ngày chiếu!" },
@@ -467,7 +387,7 @@ const ShowtimeManagement: React.FC = () => {
           </Row>
 
           <Form.Item
-            name="price"
+            name="pricePerShowTime"
             label="Giá vé (VNĐ)"
             rules={[{ required: true, message: "Vui lòng nhập giá vé!" }]}
           >
@@ -484,7 +404,11 @@ const ShowtimeManagement: React.FC = () => {
             <Button onClick={handleCancel} style={{ marginRight: 8 }}>
               Hủy
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createShowtime.loading}
+            >
               {currentShowtime ? "Cập nhật" : "Thêm mới"}
             </Button>
           </div>

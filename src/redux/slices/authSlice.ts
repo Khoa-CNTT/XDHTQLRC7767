@@ -135,10 +135,10 @@ const authSlice = createSlice({
         getUserInfoFailure: (state, action: PayloadAction<string>) => {
             state.userInfo.loading = false;
             state.userInfo.error = action.payload;
-            state.isAuthenticated = false;
-            state.user = null;
-            state.token = null;
-            localStorage.removeItem('token');
+            // state.isAuthenticated = false;
+            // state.user = null;
+            // state.token = null;
+            // localStorage.removeItem('token');
         },
 
         // Login actions

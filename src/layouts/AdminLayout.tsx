@@ -183,7 +183,7 @@ const AdminLayout: React.FC = () => {
         <StyledLogo>
           {!collapsed && (
             <h1>
-              UBAN<span>FLIX</span>
+              BSCMSAA<span>PUE</span>
             </h1>
           )}
         </StyledLogo>

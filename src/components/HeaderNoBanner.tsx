@@ -127,7 +127,7 @@ const HeaderNoBanner: React.FC = () => {
           <LogoContainer>
             <Logo onClick={() => navigate("/")}>
               <LogoText>
-                UBAN<span>FLIX</span>
+                BSCMSAA<span>PUE</span>
               </LogoText>
               <CinemaText>CINEMA</CinemaText>
             </Logo>

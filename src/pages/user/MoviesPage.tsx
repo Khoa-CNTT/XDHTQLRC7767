@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Row,
@@ -11,6 +11,8 @@ import {
   Tag,
   Pagination,
   Space,
+  Spin,
+  Empty,
 } from "antd";
 import {
   SearchOutlined,
@@ -20,6 +22,15 @@ import {
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getMovieListRequest,
+  getNowShowingMoviesRequest,
+  getUpcomingMoviesRequest,
+  MovieHomeResponseDTO,
+} from "../../redux/slices/movieSlice";
+import { RootState } from "../../redux/store";
+import { DefaultOptionType } from "antd/es/select";
 
 const { TabPane } = Tabs;
 const { Meta } = Card;
@@ -360,166 +371,18 @@ const FilterButton = styled(Button)`
   }
 `;
 
-// Dữ liệu mẫu cho phim đang chiếu với ảnh chất lượng cao
-const nowShowingMovies = [
-  {
-    id: "1",
-    title: "Venom: Kẻ Thù Cuối Cùng",
-    poster:
-      "https://afamilycdn.com/k:Tnk9vRlUgEMOa9xiFyoQdi0bvg9Omj/Image/2012/11/brave-73942/20-poster-phim-dep-nhat-nam-2012-p1.jpg",
-    releaseDate: "20/10/2023",
-    duration: "2h 15m",
-    genres: ["Hành động", "Khoa học viễn tưởng"],
-    rating: 7.5,
-  },
-  {
-    id: "2",
-    title: "Quỷ Nhập Tràng",
-    poster:
-      "https://upload.wikimedia.org/wikipedia/vi/4/4f/Ng%C6%B0%E1%BB%9Di_%C4%91%E1%BA%B9p_v%C3%A0_qu%C3%A1i_v%E1%BA%ADt_poster.jpg",
-    releaseDate: "13/10/2023",
-    duration: "1h 59m",
-    genres: ["Kinh dị", "Giật gân"],
-    rating: 6.8,
-  },
-  {
-    id: "3",
-    title: "Joker: Folie à Deux",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "04/10/2023",
-    duration: "2h 18m",
-    genres: ["Tội phạm", "Tâm lý"],
-    rating: 8.2,
-  },
-  {
-    id: "4",
-    title: "Dune: Part Two",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "01/11/2023",
-    duration: "2h 46m",
-    genres: ["Khoa học viễn tưởng", "Phiêu lưu"],
-    rating: 8.7,
-  },
-  {
-    id: "9",
-    title: "Deadpool & Wolverine",
-    poster:
-      "https://upload.wikimedia.org/wikipedia/vi/4/4f/Ng%C6%B0%E1%BB%9Di_%C4%91%E1%BA%B9p_v%C3%A0_qu%C3%A1i_v%E1%BA%ADt_poster.jpg",
-    releaseDate: "26/07/2023",
-    duration: "2h 07m",
-    genres: ["Hành động", "Hài hước", "Siêu anh hùng"],
-    rating: 8.5,
-  },
-  {
-    id: "10",
-    title: "Oppenheimer",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "21/07/2023",
-    duration: "3h 00m",
-    genres: ["Tiểu sử", "Lịch sử", "Chính kịch"],
-    rating: 9.0,
-  },
-  {
-    id: "11",
-    title: "Godzilla x Kong",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "29/03/2023",
-    duration: "1h 52m",
-    genres: ["Hành động", "Khoa học viễn tưởng", "Phiêu lưu"],
-    rating: 7.8,
-  },
-  {
-    id: "12",
-    title: "Dune",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "22/10/2021",
-    duration: "2h 35m",
-    genres: ["Khoa học viễn tưởng", "Phiêu lưu"],
-    rating: 8.4,
-  },
-];
-
-// Dữ liệu mẫu cho phim sắp chiếu với ảnh chất lượng cao
-const comingSoonMovies = [
-  {
-    id: "5",
-    title: "The Marvels",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "10/11/2023",
-    duration: "2h 05m",
-    genres: ["Hành động", "Siêu anh hùng"],
-    rating: 7.8,
-  },
-  {
-    id: "6",
-    title: "Aquaman and the Lost Kingdom",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "20/12/2023",
-    duration: "2h 15m",
-    genres: ["Hành động", "Phiêu lưu"],
-    rating: 7.2,
-  },
-  {
-    id: "7",
-    title: "Wonka",
-    poster: "https://i.imgur.com/Lc9EnXV.jpg",
-    releaseDate: "15/12/2023",
-    duration: "1h 56m",
-    genres: ["Phiêu lưu", "Hài hước"],
-    rating: 7.5,
-  },
-  {
-    id: "8",
-    title: "Gladiator II",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "22/11/2023",
-    duration: "2h 30m",
-    genres: ["Hành động", "Lịch sử"],
-    rating: 8.3,
-  },
-  {
-    id: "13",
-    title: "Furiosa: A Mad Max Saga",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "24/05/2024",
-    duration: "2h 30m",
-    genres: ["Hành động", "Phiêu lưu"],
-    rating: 8.1,
-  },
-  {
-    id: "14",
-    title: "Kingdom of the Planet of the Apes",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "10/05/2024",
-    duration: "2h 20m",
-    genres: ["Khoa học viễn tưởng", "Hành động"],
-    rating: 7.9,
-  },
-  {
-    id: "15",
-    title: "Joker 2",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "04/10/2024",
-    duration: "2h 18m",
-    genres: ["Tội phạm", "Tâm lý"],
-    rating: 8.2,
-  },
-  {
-    id: "16",
-    title: "Avatar 3",
-    poster: "https://cly.1cdn.vn/2021/06/16/quai-vat4.jpg",
-    releaseDate: "19/12/2025",
-    duration: "3h 10m",
-    genres: ["Khoa học viễn tưởng", "Phiêu lưu"],
-    rating: 8.9,
-  },
-];
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+`;
 
 const MoviesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("now-showing");
-  const [movies, setMovies] = useState<any[]>([]);
-  const [filteredMovies, setFilteredMovies] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [filteredMovies, setFilteredMovies] = useState<MovieHomeResponseDTO[]>(
+    []
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
@@ -528,33 +391,42 @@ const MoviesPage: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Get movie data from Redux store
+  const { nowShowingMovies, upcomingMovies } = useSelector(
+    (state: RootState) => state.movie
+  );
+
+  // Determine current movies and loading state based on active tab
+  const currentMovies =
+    activeTab === "now-showing" ? nowShowingMovies : upcomingMovies;
+  const isLoading = currentMovies.loading;
 
   useEffect(() => {
-    fetchMovies();
-  }, [activeTab]);
+    // Fetch both movie lists when component mounts
+    dispatch(getNowShowingMoviesRequest());
+    dispatch(getUpcomingMoviesRequest());
+  }, [dispatch]);
 
   useEffect(() => {
-    filterMovies();
-  }, [searchText, selectedGenre, selectedYear, movies]);
-
-  const fetchMovies = () => {
-    setLoading(true);
-
-    // Giả lập API call
-    setTimeout(() => {
-      if (activeTab === "now-showing") {
-        setMovies(nowShowingMovies);
-        setFilteredMovies(nowShowingMovies);
-      } else {
-        setMovies(comingSoonMovies);
-        setFilteredMovies(comingSoonMovies);
-      }
-      setLoading(false);
-    }, 500);
-  };
+    // When the active tab changes or movies are loaded, update filtered movies
+    if (currentMovies.data) {
+      filterMovies();
+    }
+  }, [
+    activeTab,
+    nowShowingMovies.data,
+    upcomingMovies.data,
+    searchText,
+    selectedGenre,
+    selectedYear,
+  ]);
 
   const filterMovies = () => {
-    let result = [...movies];
+    if (!currentMovies.data) return;
+
+    let result = [...currentMovies.data];
 
     // Lọc theo tên phim
     if (searchText) {
@@ -563,19 +435,20 @@ const MoviesPage: React.FC = () => {
       );
     }
 
-    // Lọc theo thể loại
-    if (selectedGenre) {
-      result = result.filter((movie) =>
-        movie.genres.some((genre) =>
-          genre.toLowerCase().includes(selectedGenre.toLowerCase())
-        )
-      );
-    }
+    // Lọc theo thể loại - this would need to be adapted based on your API data structure
+    // if (selectedGenre && movie.genres) {
+    //   result = result.filter((movie) =>
+    //     movie.genres.some((genre: string) =>
+    //       genre.toLowerCase().includes(selectedGenre.toLowerCase())
+    //     )
+    //   );
+    // }
 
     // Lọc theo năm phát hành
-    if (selectedYear) {
-      result = result.filter((movie) =>
-        movie.releaseDate.includes(selectedYear)
+    if (selectedYear && result[0]?.releaseDate) {
+      result = result.filter(
+        (movie) =>
+          new Date(movie.releaseDate).getFullYear().toString() === selectedYear
       );
     }
 
@@ -587,6 +460,14 @@ const MoviesPage: React.FC = () => {
     setSearchText("");
     setSelectedGenre(null);
     setSelectedYear(null);
+  };
+
+  const handleGenreChange = (value: string | null) => {
+    setSelectedGenre(value);
+  };
+
+  const handleYearChange = (value: string | null) => {
+    setSelectedYear(value);
   };
 
   const paginatedMovies = filteredMovies.slice(
@@ -613,17 +494,124 @@ const MoviesPage: React.FC = () => {
     },
   };
 
-  const handleViewDetail = (movieId: string) => {
+  const handleViewDetail = (movieId: number) => {
     navigate(`/movie/${movieId}`);
   };
 
-  const handleBooking = (movieId: string) => {
+  const handleBooking = (movieId: number) => {
     navigate(`/booking/${movieId}`);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Format date to local string (dd/mm/yyyy)
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN");
+  };
+
+  const renderMoviesContent = (): ReactNode => {
+    if (isLoading) {
+      return (
+        <LoadingContainer>
+          <Spin size="large" />
+        </LoadingContainer>
+      );
+    }
+
+    if (filteredMovies.length === 0) {
+      return (
+        <LoadingContainer>
+          <Empty description="Không tìm thấy phim phù hợp" />
+        </LoadingContainer>
+      );
+    }
+
+    return (
+      <>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <Row gutter={[24, 24]}>
+            {paginatedMovies.map((movie) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
+                <motion.div variants={itemVariants}>
+                  <MovieCard
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <Card
+                      hoverable
+                      cover={<img alt={movie.title} src={movie.poster} />}
+                      bordered={false}
+                    >
+                      <Meta
+                        title={movie.title}
+                        description={
+                          <>
+                            <MovieMeta>
+                              <MovieInfo>
+                                <CalendarOutlined />{" "}
+                                {formatDate(movie.releaseDate)}
+                              </MovieInfo>
+                              <MovieInfo>{movie.duration}</MovieInfo>
+                            </MovieMeta>
+                            {/* Assuming genres might not be in the API data */}
+                            <MovieTags>
+                              {/* Render genres if available */}
+                            </MovieTags>
+                            <ButtonContainer>
+                              <DetailButton
+                                icon={<InfoCircleOutlined />}
+                                onClick={() => handleViewDetail(movie.id)}
+                              >
+                                Chi tiết
+                              </DetailButton>
+                              {activeTab === "now-showing" ? (
+                                <BookingButton
+                                  type="primary"
+                                  onClick={() => handleBooking(movie.id)}
+                                >
+                                  Đặt vé
+                                </BookingButton>
+                              ) : (
+                                <BookingButton
+                                  type="primary"
+                                  onClick={() => handleBooking(movie.id)}
+                                >
+                                  Đặt vé trước
+                                </BookingButton>
+                              )}
+                            </ButtonContainer>
+                          </>
+                        }
+                      />
+                    </Card>
+                  </MovieCard>
+                </motion.div>
+              </Col>
+            ))}
+          </Row>
+        </motion.div>
+
+        {filteredMovies.length > 0 && (
+          <PaginationContainer>
+            <Pagination
+              current={currentPage}
+              total={filteredMovies.length}
+              pageSize={pageSize}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+            />
+          </PaginationContainer>
+        )}
+      </>
+    );
   };
 
   return (
@@ -667,7 +655,9 @@ const MoviesPage: React.FC = () => {
                       placeholder="Thể loại"
                       style={{ width: "100%" }}
                       value={selectedGenre}
-                      onChange={setSelectedGenre}
+                      onChange={(value: string | null) =>
+                        handleGenreChange(value)
+                      }
                       allowClear
                     >
                       <Select.Option value="Hành động">Hành động</Select.Option>
@@ -692,9 +682,13 @@ const MoviesPage: React.FC = () => {
                       placeholder="Năm phát hành"
                       style={{ width: "100%" }}
                       value={selectedYear}
-                      onChange={setSelectedYear}
+                      onChange={(value: string | null) =>
+                        handleYearChange(value)
+                      }
                       allowClear
                     >
+                      <Select.Option value="2025">2025</Select.Option>
+                      <Select.Option value="2024">2024</Select.Option>
                       <Select.Option value="2023">2023</Select.Option>
                       <Select.Option value="2022">2022</Select.Option>
                       <Select.Option value="2021">2021</Select.Option>
@@ -712,98 +706,7 @@ const MoviesPage: React.FC = () => {
                 </FilterRow>
               </FilterContainer>
 
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <Row gutter={[24, 24]}>
-                  {paginatedMovies.map((movie) => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
-                      <motion.div variants={itemVariants}>
-                        <MovieCard
-                          whileHover={{ scale: 1.03 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          <Card
-                            hoverable
-                            cover={<img alt={movie.title} src={movie.poster} />}
-                            bordered={false}
-                          >
-                            <Meta
-                              title={movie.title}
-                              description={
-                                <>
-                                  <MovieMeta>
-                                    <MovieInfo>
-                                      <CalendarOutlined /> {movie.releaseDate}
-                                    </MovieInfo>
-                                    <MovieInfo>{movie.duration}</MovieInfo>
-                                  </MovieMeta>
-                                  <MovieTags>
-                                    {movie.genres.map(
-                                      (genre: string, index: number) => (
-                                        <Tag
-                                          key={index}
-                                          color="#00bfff"
-                                          style={{ marginBottom: "5px" }}
-                                        >
-                                          {genre}
-                                        </Tag>
-                                      )
-                                    )}
-                                  </MovieTags>
-                                  <ButtonContainer>
-                                    <DetailButton
-                                      icon={<InfoCircleOutlined />}
-                                      onClick={() => handleViewDetail(movie.id)}
-                                    >
-                                      Chi tiết
-                                    </DetailButton>
-                                    <BookingButton
-                                      type="primary"
-                                      onClick={() => handleBooking(movie.id)}
-                                    >
-                                      Đặt vé
-                                    </BookingButton>
-                                  </ButtonContainer>
-                                </>
-                              }
-                            />
-                          </Card>
-                        </MovieCard>
-                      </motion.div>
-                    </Col>
-                  ))}
-                </Row>
-              </motion.div>
-
-              {filteredMovies.length === 0 && !loading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  style={{
-                    textAlign: "center",
-                    padding: "40px 0",
-                    color: "white",
-                  }}
-                >
-                  <h3>Không tìm thấy phim phù hợp</h3>
-                  <p>Vui lòng thử lại với bộ lọc khác</p>
-                </motion.div>
-              )}
-
-              {filteredMovies.length > 0 && (
-                <PaginationContainer>
-                  <Pagination
-                    current={currentPage}
-                    total={filteredMovies.length}
-                    pageSize={pageSize}
-                    onChange={handlePageChange}
-                    showSizeChanger={false}
-                  />
-                </PaginationContainer>
-              )}
+              {renderMoviesContent()}
             </TabPane>
 
             <TabPane tab="PHIM SẮP CHIẾU" key="coming-soon">
@@ -826,7 +729,9 @@ const MoviesPage: React.FC = () => {
                       placeholder="Thể loại"
                       style={{ width: "100%" }}
                       value={selectedGenre}
-                      onChange={setSelectedGenre}
+                      onChange={(value: string | null) =>
+                        handleGenreChange(value)
+                      }
                       allowClear
                     >
                       <Select.Option value="Hành động">Hành động</Select.Option>
@@ -851,12 +756,14 @@ const MoviesPage: React.FC = () => {
                       placeholder="Năm phát hành"
                       style={{ width: "100%" }}
                       value={selectedYear}
-                      onChange={setSelectedYear}
+                      onChange={(value: string | null) =>
+                        handleYearChange(value)
+                      }
                       allowClear
                     >
-                      <Select.Option value="2023">2023</Select.Option>
-                      <Select.Option value="2024">2024</Select.Option>
                       <Select.Option value="2025">2025</Select.Option>
+                      <Select.Option value="2024">2024</Select.Option>
+                      <Select.Option value="2023">2023</Select.Option>
                     </StyledSelect>
                   </FilterItem>
                   <FilterItem>
@@ -871,98 +778,7 @@ const MoviesPage: React.FC = () => {
                 </FilterRow>
               </FilterContainer>
 
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <Row gutter={[24, 24]}>
-                  {paginatedMovies.map((movie) => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
-                      <motion.div variants={itemVariants}>
-                        <MovieCard
-                          whileHover={{ scale: 1.03 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          <Card
-                            hoverable
-                            cover={<img alt={movie.title} src={movie.poster} />}
-                            bordered={false}
-                          >
-                            <Meta
-                              title={movie.title}
-                              description={
-                                <>
-                                  <MovieMeta>
-                                    <MovieInfo>
-                                      <CalendarOutlined /> {movie.releaseDate}
-                                    </MovieInfo>
-                                    <MovieInfo>{movie.duration}</MovieInfo>
-                                  </MovieMeta>
-                                  <MovieTags>
-                                    {movie.genres.map(
-                                      (genre: string, index: number) => (
-                                        <Tag
-                                          key={index}
-                                          color="#00bfff"
-                                          style={{ marginBottom: "5px" }}
-                                        >
-                                          {genre}
-                                        </Tag>
-                                      )
-                                    )}
-                                  </MovieTags>
-                                  <ButtonContainer>
-                                    <DetailButton
-                                      icon={<InfoCircleOutlined />}
-                                      onClick={() => handleViewDetail(movie.id)}
-                                    >
-                                      Chi tiết
-                                    </DetailButton>
-                                    <BookingButton
-                                      type="primary"
-                                      onClick={() => handleBooking(movie.id)}
-                                    >
-                                      Đặt vé trước
-                                    </BookingButton>
-                                  </ButtonContainer>
-                                </>
-                              }
-                            />
-                          </Card>
-                        </MovieCard>
-                      </motion.div>
-                    </Col>
-                  ))}
-                </Row>
-              </motion.div>
-
-              {filteredMovies.length === 0 && !loading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  style={{
-                    textAlign: "center",
-                    padding: "40px 0",
-                    color: "white",
-                  }}
-                >
-                  <h3>Không tìm thấy phim phù hợp</h3>
-                  <p>Vui lòng thử lại với bộ lọc khác</p>
-                </motion.div>
-              )}
-
-              {filteredMovies.length > 0 && (
-                <PaginationContainer>
-                  <Pagination
-                    current={currentPage}
-                    total={filteredMovies.length}
-                    pageSize={pageSize}
-                    onChange={handlePageChange}
-                    showSizeChanger={false}
-                  />
-                </PaginationContainer>
-              )}
+              {renderMoviesContent()}
             </TabPane>
           </StyledTabs>
         </motion.div>

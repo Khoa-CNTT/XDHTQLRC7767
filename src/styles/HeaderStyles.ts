@@ -1,8 +1,27 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Layout, Typography, Menu, Button, Drawer, Input, Image } from "antd";
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
+
+// Define keyframes for slide animations
+const slideOutToLeft = keyframes`
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+`;
+
+const slideInFromRight = keyframes`
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+`;
 
 // Styled Components
 export const StyledHeader = styled.div`
@@ -423,6 +442,7 @@ export const MainBanner = styled.div`
   margin-bottom: 20px;
   overflow: hidden;
   border-radius: 8px;
+  background-color: #000;
   
   @media (max-width: 768px) {
     height: 350px;
@@ -434,10 +454,29 @@ export const MainBanner = styled.div`
 `;
 
 export const BannerImage = styled.img`
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   object-position: center;
+  
+  &.current {
+    z-index: 1;
+  }
+  
+  &.next {
+    z-index: 2;
+  }
+  
+  &.sliding-out {
+    animation: ${slideOutToLeft} 2s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  }
+  
+  &.sliding-in {
+    animation: ${slideInFromRight} 2s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  }
 `;
 
 export const SliderButton = styled.button`

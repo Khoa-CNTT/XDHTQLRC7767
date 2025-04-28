@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Avatar, Dropdown } from "antd";
 import {
   LeftOutlined,
   RightOutlined,
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined,
   SearchOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
@@ -56,7 +55,58 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [nextSlide, setNextSlide] = useState(1);
+  const [sliding, setSliding] = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+
+  // Add useEffect for automatic slideshow with smooth animation
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      handleNextSlide();
+    }, 3000); // Change slide every 3 seconds
+
+    // Cleanup function to clear the interval when component unmounts
+    return () => clearInterval(intervalId);
+  }, [currentSlide, sliding]); // Add dependencies to ensure proper re-renders
+
+  const handleNextSlide = () => {
+    if (sliding) return; // Prevent animation overlap
+
+    // Calculate next slide index
+    let next;
+    if (currentSlide === bannerImages.length - 1) {
+      // If at last image, go back to first image (index 0)
+      next = 0;
+    } else {
+      // Otherwise go to next image
+      next = currentSlide + 1;
+    }
+
+    setNextSlide(next);
+    setSliding(true);
+
+    // After animation completes, update current slide
+    setTimeout(() => {
+      setCurrentSlide(next);
+      setSliding(false);
+    }, 2000); // Match animation duration (2s)
+  };
+
+  const handlePrevSlide = () => {
+    if (sliding) return; // Prevent animation overlap
+
+    // Prepare previous slide
+    const prev =
+      currentSlide === 0 ? bannerImages.length - 1 : currentSlide - 1;
+    setNextSlide(prev);
+    setSliding(true);
+
+    // After animation completes, update current slide
+    setTimeout(() => {
+      setCurrentSlide(prev);
+      setSliding(false);
+    }, 2000); // Match animation duration (2s)
+  };
 
   const handleSearch = (value: string) => {
     if (value.trim()) {
@@ -105,29 +155,17 @@ const Header: React.FC = () => {
   );
 
   const bannerImages = [
-    "http://s3-alpha-sig.figma.com/img/e52d/592a/6c60e01ff6e1e0af89918550ece2cf6e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=kLAVm5CM3Y5c6jPWXUtHndczad2luX55nGzoKPIWyiILFoBFZtEjazScb947Tbzrt~tNbxa3yAsp0ag5hu-uSDZw0kfjU8LxU8mIvYsAbeLpKu9AvwrdNTf7nDP4wFmMziqCvoK0LXtaLGA5cxusmxUpOUTfGBddUoEFbthdwbipuUE3dAyv682KYvIeL-N38OwMMuoUPx~qLOhxo-MlECf01yosMwHJmz~xSzwdeBsoTlOXwBl4NthIVYZ-ZnP-VaSh753ItVyfGtq02c5TC0lV~L4yI0fs~1m17IhNQqSPzDLUC~V78v8d-DORXQd9aTQ6~u3RBfSZvOZn1KVmgA__",
-    "http://s3-alpha-sig.figma.com/img/e52d/592a/6c60e01ff6e1e0af89918550ece2cf6e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=kLAVm5CM3Y5c6jPWXUtHndczad2luX55nGzoKPIWyiILFoBFZtEjazScb947Tbzrt~tNbxa3yAsp0ag5hu-uSDZw0kfjU8LxU8mIvYsAbeLpKu9AvwrdNTf7nDP4wFmMziqCvoK0LXtaLGA5cxusmxUpOUTfGBddUoEFbthdwbipuUE3dAyv682KYvIeL-N38OwMMuoUPx~qLOhxo-MlECf01yosMwHJmz~xSzwdeBsoTlOXwBl4NthIVYZ-ZnP-VaSh753ItVyfGtq02c5TC0lV~L4yI0fs~1m17IhNQqSPzDLUC~V78v8d-DORXQd9aTQ6~u3RBfSZvOZn1KVmgA__",
-    "http://s3-alpha-sig.figma.com/img/e52d/592a/6c60e01ff6e1e0af89918550ece2cf6e?Expires=1744588800&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=kLAVm5CM3Y5c6jPWXUtHndczad2luX55nGzoKPIWyiILFoBFZtEjazScb947Tbzrt~tNbxa3yAsp0ag5hu-uSDZw0kfjU8LxU8mIvYsAbeLpKu9AvwrdNTf7nDP4wFmMziqCvoK0LXtaLGA5cxusmxUpOUTfGBddUoEFbthdwbipuUE3dAyv682KYvIeL-N38OwMMuoUPx~qLOhxo-MlECf01yosMwHJmz~xSzwdeBsoTlOXwBl4NthIVYZ-ZnP-VaSh753ItVyfGtq02c5TC0lV~L4yI0fs~1m17IhNQqSPzDLUC~V78v8d-DORXQd9aTQ6~u3RBfSZvOZn1KVmgA__",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853900/lm8_dp9ulu.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853929/timxac_kcf0zr.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853885/diadao_zdcru1.jpg",
   ];
 
   const thumbnailImages = [
-    "https://s3-alpha-sig.figma.com/img/8401/bd80/d25bcd199f819265844ec8673349033f?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=MeXIdLF5tp5CcenxV7EYS~SjXI0Qzt7bZf2KYAzavE9C4M39O2~Cpl4ImQWKINZvocy3mx~9cFPf5FAgTkqd8P5ooEImcHg9aiCuUbW8YyrooAqjdzMUXkqF8Ot65hWgktoIcUiq-SLuTKb1C9sQ~8RHMF6~YlPosjkVg0mTI98eS6ClYaNzUrQVs4u2FIwYS2As2kvq~7gWGwSqmBnrswjrdBDpZRcakqv04R0da8jpOP9cs4YIkckbMdIsmL-xbVXf6ZBty8xC~UQp28QBprlxhuMaVHlH5YrdndyxD1y-h741pFicG4ChxIA8VQfDF6VMt3E4-bms2UmFLIDAvQ__",
-    "https://s3-alpha-sig.figma.com/img/8401/bd80/d25bcd199f819265844ec8673349033f?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=MeXIdLF5tp5CcenxV7EYS~SjXI0Qzt7bZf2KYAzavE9C4M39O2~Cpl4ImQWKINZvocy3mx~9cFPf5FAgTkqd8P5ooEImcHg9aiCuUbW8YyrooAqjdzMUXkqF8Ot65hWgktoIcUiq-SLuTKb1C9sQ~8RHMF6~YlPosjkVg0mTI98eS6ClYaNzUrQVs4u2FIwYS2As2kvq~7gWGwSqmBnrswjrdBDpZRcakqv04R0da8jpOP9cs4YIkckbMdIsmL-xbVXf6ZBty8xC~UQp28QBprlxhuMaVHlH5YrdndyxD1y-h741pFicG4ChxIA8VQfDF6VMt3E4-bms2UmFLIDAvQ__",
-    "https://s3-alpha-sig.figma.com/img/8401/bd80/d25bcd199f819265844ec8673349033f?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=MeXIdLF5tp5CcenxV7EYS~SjXI0Qzt7bZf2KYAzavE9C4M39O2~Cpl4ImQWKINZvocy3mx~9cFPf5FAgTkqd8P5ooEImcHg9aiCuUbW8YyrooAqjdzMUXkqF8Ot65hWgktoIcUiq-SLuTKb1C9sQ~8RHMF6~YlPosjkVg0mTI98eS6ClYaNzUrQVs4u2FIwYS2As2kvq~7gWGwSqmBnrswjrdBDpZRcakqv04R0da8jpOP9cs4YIkckbMdIsmL-xbVXf6ZBty8xC~UQp28QBprlxhuMaVHlH5YrdndyxD1y-h741pFicG4ChxIA8VQfDF6VMt3E4-bms2UmFLIDAvQ__",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853900/lm8_dp9ulu.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853929/timxac_kcf0zr.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853885/diadao_zdcru1.jpg",
     "https://s3-alpha-sig.figma.com/img/8401/bd80/d25bcd199f819265844ec8673349033f?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=MeXIdLF5tp5CcenxV7EYS~SjXI0Qzt7bZf2KYAzavE9C4M39O2~Cpl4ImQWKINZvocy3mx~9cFPf5FAgTkqd8P5ooEImcHg9aiCuUbW8YyrooAqjdzMUXkqF8Ot65hWgktoIcUiq-SLuTKb1C9sQ~8RHMF6~YlPosjkVg0mTI98eS6ClYaNzUrQVs4u2FIwYS2As2kvq~7gWGwSqmBnrswjrdBDpZRcakqv04R0da8jpOP9cs4YIkckbMdIsmL-xbVXf6ZBty8xC~UQp28QBprlxhuMaVHlH5YrdndyxD1y-h741pFicG4ChxIA8VQfDF6VMt3E4-bms2UmFLIDAvQ__",
   ];
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === bannerImages.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === 0 ? bannerImages.length - 1 : prev - 1
-    );
-  };
 
   return (
     <>
@@ -161,7 +199,7 @@ const Header: React.FC = () => {
             <LogoContainer>
               <Logo className="logo-container" onClick={() => navigate("/")}>
                 <LogoText>
-                  UBAN<span>FLIX</span>
+                  BSCMSAA<span>PUE</span>
                 </LogoText>
                 <CinemaText>CINEMA</CinemaText>
               </Logo>
@@ -263,9 +301,26 @@ const Header: React.FC = () => {
         <BannerContainer>
           <BannerContent>
             <MainBanner>
-              <BannerImage src={bannerImages[currentSlide]} alt="Banner" />
-              <LeftButton icon={<LeftOutlined />} onClick={prevSlide} />
-              <RightButton icon={<RightOutlined />} onClick={nextSlide} />
+              <BannerImage
+                src={bannerImages[currentSlide]}
+                alt={`Banner ${currentSlide + 1}`}
+                className={sliding ? "current sliding-out" : "current"}
+              />
+
+              {sliding && (
+                <BannerImage
+                  src={bannerImages[nextSlide]}
+                  alt={`Banner ${nextSlide + 1}`}
+                  className="next sliding-in"
+                />
+              )}
+
+              <LeftButton onClick={handlePrevSlide}>
+                <LeftOutlined />
+              </LeftButton>
+              <RightButton onClick={handleNextSlide}>
+                <RightOutlined />
+              </RightButton>
             </MainBanner>
             <SmallThumbnailsContainer>
               {thumbnailImages.map((image, index) => (

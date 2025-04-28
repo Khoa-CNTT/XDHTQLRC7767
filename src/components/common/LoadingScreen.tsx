@@ -167,7 +167,7 @@ const LoadingScreen: React.FC = () => {
       <LoadingContent>
         <LogoContainer>
           <Logo>
-            UBAN
+            BSCMSAAPUE
             <span>CINEMA</span>
           </Logo>
         </LogoContainer>

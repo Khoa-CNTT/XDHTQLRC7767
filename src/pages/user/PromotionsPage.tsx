@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Tag, Pagination, Input, Select, Button } from "antd";
+import {
+  Row,
+  Col,
+  Card,
+  Tag,
+  Pagination,
+  Input,
+  Select,
+  Button,
+  Spin,
+  Empty,
+} from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -12,6 +23,12 @@ import {
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getPromotionsRequest,
+  Promotion,
+} from "../../redux/slices/promotionSlice";
+import { RootState } from "../../redux/store";
 
 const { Meta } = Card;
 const { Option } = Select;
@@ -462,125 +479,27 @@ const fadeInUp = {
 };
 
 const PromotionsPage: React.FC = () => {
-  const [promotions, setPromotions] = useState<any[]>([]);
-  const [filteredPromotions, setFilteredPromotions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
+  const [searchText, setSearchText] = useState("");
 
-  // Mock data
-  const promotionsData = [
-    {
-      id: "1",
-      title: "Mua 1 Tặng 1 Vào Thứ Tư Hàng Tuần",
-      image: "https://i.imgur.com/3gQT5hY.jpg",
-      description:
-        "Áp dụng cho tất cả các suất chiếu vào thứ Tư hàng tuần. Mua 1 vé tặng 1 vé cùng loại.",
-      date: "01/10/2023 - 31/12/2023",
-      category: "Giảm giá vé",
-      tags: ["Mua 1 tặng 1", "Thứ Tư"],
-      isHot: true,
-    },
-    {
-      id: "2",
-      title: "Combo Bắp Nước Siêu Tiết Kiệm",
-      image: "https://i.imgur.com/JXFHOiM.jpg",
-      description:
-        "Combo 1 bắp lớn + 2 nước lớn chỉ với 99.000đ, tiết kiệm đến 30%.",
-      date: "15/10/2023 - 15/11/2023",
-      category: "Ưu đãi bắp nước",
-      tags: ["Combo", "Bắp nước"],
-      isHot: false,
-    },
-    {
-      id: "3",
-      title: "Sinh Nhật Thành Viên - Tặng Vé Xem Phim",
-      image: "https://i.imgur.com/8yqDSGC.jpg",
-      description:
-        "Thành viên UBANFLIX được tặng 1 vé xem phim miễn phí trong tháng sinh nhật.",
-      date: "01/01/2023 - 31/12/2023",
-      category: "Thành viên",
-      tags: ["Sinh nhật", "Vé miễn phí"],
-      isHot: true,
-    },
-    {
-      id: "4",
-      title: "Ưu Đãi Học Sinh, Sinh Viên",
-      image: "https://i.imgur.com/KYgANZU.jpg",
-      description:
-        "Giảm 20% giá vé cho học sinh, sinh viên vào các ngày trong tuần (trừ cuối tuần và ngày lễ).",
-      date: "01/09/2023 - 31/05/2024",
-      category: "Giảm giá vé",
-      tags: ["Học sinh", "Sinh viên"],
-      isHot: false,
-    },
-    {
-      id: "5",
-      title: "Khuyến Mãi Thanh Toán Qua ZaloPay",
-      image: "https://i.imgur.com/qJPjvUF.jpg",
-      description: "Giảm ngay 30K khi thanh toán từ 150K qua ví ZaloPay.",
-      date: "01/11/2023 - 30/11/2023",
-      category: "Thanh toán",
-      tags: ["ZaloPay", "Giảm 30K"],
-      isHot: true,
-    },
-    {
-      id: "6",
-      title: "Ưu Đãi Dành Cho Chủ Thẻ Ngân Hàng VCB",
-      image: "https://i.imgur.com/vXuEWZV.jpg",
-      description: "Giảm 50K cho hóa đơn từ 300K khi thanh toán bằng thẻ VCB.",
-      date: "15/10/2023 - 15/12/2023",
-      category: "Thanh toán",
-      tags: ["Ngân hàng", "VCB"],
-      isHot: false,
-    },
-    {
-      id: "7",
-      title: "Đặt Vé Online - Nhận Quà Liền Tay",
-      image: "https://i.imgur.com/8GDSG7X.jpg",
-      description:
-        "Đặt vé online qua ứng dụng UBANFLIX, nhận ngay phiếu giảm giá bắp nước.",
-      date: "01/11/2023 - 30/11/2023",
-      category: "Đặt vé online",
-      tags: ["Online", "Quà tặng"],
-      isHot: false,
-    },
-    {
-      id: "8",
-      title: "Ưu Đãi Ngày Độc Thân 11.11",
-      image: "https://i.imgur.com/5KWkQxP.jpg",
-      description:
-        "Giảm 50% giá vé thứ 2 khi mua 2 vé cùng lúc vào ngày 11/11/2023.",
-      date: "11/11/2023",
-      category: "Sự kiện đặc biệt",
-      tags: ["11.11", "Độc thân"],
-      isHot: true,
-    },
-    {
-      id: "9",
-      title: "Khuyến Mãi Black Friday",
-      image: "https://i.imgur.com/JKTdS5N.jpg",
-      description:
-        "Giảm đến 50% cho tất cả các loại vé vào ngày Black Friday 24/11/2023.",
-      date: "24/11/2023 - 26/11/2023",
-      category: "Sự kiện đặc biệt",
-      tags: ["Black Friday", "Giảm 50%"],
-      isHot: true,
-    },
-    {
-      id: "10",
-      title: "Ưu Đãi Dành Cho Gia Đình",
-      image: "https://i.imgur.com/Lc9EnXV.jpg",
-      description:
-        "Combo gia đình 4 vé + 2 bắp lớn + 4 nước chỉ 599K, áp dụng cuối tuần.",
-      date: "01/10/2023 - 31/12/2023",
-      category: "Combo gia đình",
-      tags: ["Gia đình", "Cuối tuần"],
-      isHot: false,
-    },
-  ];
+  const dispatch = useDispatch();
+  const { promotions, searchTitle, currentPage } = useSelector(
+    (state: RootState) => state.promotion
+  );
+
+  // Mock data for the featured promotion and categories
+  // (We keep these since they are not part of the API)
+  const featuredPromotion = {
+    id: "special1",
+    title: "KHUYẾN MÃI ĐẶC BIỆT: GIẢM 50% CHO SUẤT CHIẾU ĐẦU TIÊN",
+    image: "https://i.imgur.com/AvmwQ5D.jpg",
+    description:
+      "Áp dụng cho tất cả các suất chiếu sớm nhất trong ngày, từ thứ Hai đến thứ Sáu. Giảm ngay 50% giá vé khi đặt online qua ứng dụng hoặc website UBANFLIX Cinema. Số lượng vé có hạn, nhanh tay đặt ngay!",
+    date: "01/11/2023 - 31/12/2023",
+    category: "Giảm giá vé",
+    tags: ["Suất sớm", "Giảm 50%"],
+    isHot: true,
+  };
 
   // Categories
   const categories = [
@@ -600,69 +519,128 @@ const PromotionsPage: React.FC = () => {
     },
   ];
 
-  // Featured promotion
-  const featuredPromotion = {
-    id: "special1",
-    title: "KHUYẾN MÃI ĐẶC BIỆT: GIẢM 50% CHO SUẤT CHIẾU ĐẦU TIÊN",
-    image: "https://i.imgur.com/AvmwQ5D.jpg",
-    description:
-      "Áp dụng cho tất cả các suất chiếu sớm nhất trong ngày, từ thứ Hai đến thứ Sáu. Giảm ngay 50% giá vé khi đặt online qua ứng dụng hoặc website UBANFLIX Cinema. Số lượng vé có hạn, nhanh tay đặt ngay!",
-    date: "01/11/2023 - 31/12/2023",
-    category: "Giảm giá vé",
-    tags: ["Suất sớm", "Giảm 50%"],
-    isHot: true,
-  };
-
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setPromotions(promotionsData);
-      setFilteredPromotions(promotionsData);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    // Fetch promotions on component mount
+    dispatch(getPromotionsRequest({ title: searchText, page: 0 }));
+  }, [dispatch]);
 
-  useEffect(() => {
-    filterPromotions();
-  }, [searchText, selectedCategory, promotions]);
-
-  const filterPromotions = () => {
-    let result = [...promotions];
-
-    if (searchText) {
-      result = result.filter(
-        (promo) =>
-          promo.title.toLowerCase().includes(searchText.toLowerCase()) ||
-          promo.description.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-
-    if (selectedCategory && selectedCategory !== "all") {
-      result = result.filter((promo) => promo.category === selectedCategory);
-    }
-
-    setFilteredPromotions(result);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleSearch = () => {
+    dispatch(getPromotionsRequest({ title: searchText, page: 0 }));
   };
 
   const handleResetFilters = () => {
     setSearchText("");
     setSelectedCategory(null);
-    setFilteredPromotions(promotions);
+    dispatch(getPromotionsRequest({ title: "", page: 0 }));
+  };
+
+  const handlePageChange = (page: number) => {
+    // API pages are 0-indexed, but Ant Design Pagination is 1-indexed
+    dispatch(getPromotionsRequest({ page: page - 1 }));
   };
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId === "all" ? null : categoryId);
+    // For now categories are just UI filters, not API filters
   };
 
-  // Get current promotions for pagination
-  const getCurrentPromotions = () => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredPromotions.slice(startIndex, startIndex + pageSize);
+  // Function to format date range from startDate and endDate
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN");
+    };
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
+  // Render promotions content with loading state
+  const renderPromotionsContent = () => {
+    if (promotions.loading) {
+      return (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <Spin size="large" />
+        </div>
+      );
+    }
+
+    if (!promotions.data || promotions.data.content.length === 0) {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            textAlign: "center",
+            padding: "40px 0",
+            color: "white",
+          }}
+        >
+          <Empty description="Không tìm thấy khuyến mãi nào" />
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <Row gutter={[24, 24]}>
+          {promotions.data.content.map((promotion) => (
+            <Col xs={24} sm={12} md={8} key={promotion.id}>
+              <motion.div variants={itemVariants}>
+                <PromotionCard
+                  whileHover={{ scale: 1.03 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  {promotion.status && <PromotionBadge>HOT</PromotionBadge>}
+                  <Card
+                    hoverable
+                    cover={<img alt={promotion.title} src={promotion.image} />}
+                    bordered={false}
+                  >
+                    <Meta
+                      title={promotion.title}
+                      description={
+                        <>
+                          <p>{promotion.description}</p>
+                          <PromotionTags>
+                            <Tag
+                              color="#00bfff"
+                              style={{ marginBottom: "5px" }}
+                            >
+                              {promotion.discount}% off
+                            </Tag>
+                            {promotion.code && (
+                              <Tag
+                                color="#00bfff"
+                                style={{ marginBottom: "5px" }}
+                              >
+                                Mã: {promotion.code}
+                              </Tag>
+                            )}
+                          </PromotionTags>
+                          <PromotionMeta>
+                            <PromotionDate>
+                              <CalendarOutlined />{" "}
+                              {formatDateRange(
+                                promotion.startDate,
+                                promotion.endDate
+                              )}
+                            </PromotionDate>
+                          </PromotionMeta>
+                          <ViewButton>XEM CHI TIẾT</ViewButton>
+                        </>
+                      }
+                    />
+                  </Card>
+                </PromotionCard>
+              </motion.div>
+            </Col>
+          ))}
+        </Row>
+      </motion.div>
+    );
   };
 
   return (
@@ -698,6 +676,21 @@ const PromotionsPage: React.FC = () => {
                 prefix={<SearchOutlined />}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={handleSearch}
+                addonAfter={
+                  <Button
+                    type="primary"
+                    style={{
+                      background: "#00bfff",
+                      border: "none",
+                      borderRadius: "0",
+                      height: "100%",
+                    }}
+                    onClick={handleSearch}
+                  >
+                    <SearchOutlined />
+                  </Button>
+                }
               />
             </FilterItem>
             <FilterItem>
@@ -705,7 +698,9 @@ const PromotionsPage: React.FC = () => {
                 placeholder="Danh mục"
                 style={{ width: "100%" }}
                 value={selectedCategory}
-                onChange={setSelectedCategory}
+                onChange={(value: unknown) =>
+                  setSelectedCategory(value as string | null)
+                }
                 allowClear
               >
                 <Option value="all">Tất cả</Option>
@@ -793,81 +788,14 @@ const PromotionsPage: React.FC = () => {
           <GiftOutlined /> Tất Cả Khuyến Mãi
         </SectionTitle>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Row gutter={[24, 24]}>
-            {getCurrentPromotions().map((promotion) => (
-              <Col xs={24} sm={12} md={8} key={promotion.id}>
-                <motion.div variants={itemVariants}>
-                  <PromotionCard
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    {promotion.isHot && <PromotionBadge>HOT</PromotionBadge>}
-                    <Card
-                      hoverable
-                      cover={
-                        <img alt={promotion.title} src={promotion.image} />
-                      }
-                      bordered={false}
-                    >
-                      <Meta
-                        title={promotion.title}
-                        description={
-                          <>
-                            <p>{promotion.description}</p>
-                            <PromotionTags>
-                              {promotion.tags.map((tag, index) => (
-                                <Tag
-                                  key={index}
-                                  color="#00bfff"
-                                  style={{ marginBottom: "5px" }}
-                                >
-                                  {tag}
-                                </Tag>
-                              ))}
-                            </PromotionTags>
-                            <PromotionMeta>
-                              <PromotionDate>
-                                <CalendarOutlined /> {promotion.date}
-                              </PromotionDate>
-                            </PromotionMeta>
-                            <ViewButton>XEM CHI TIẾT</ViewButton>
-                          </>
-                        }
-                      />
-                    </Card>
-                  </PromotionCard>
-                </motion.div>
-              </Col>
-            ))}
-          </Row>
-        </motion.div>
+        {renderPromotionsContent()}
 
-        {filteredPromotions.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              textAlign: "center",
-              padding: "40px 0",
-              color: "white",
-            }}
-          >
-            <h3>Không tìm thấy khuyến mãi phù hợp</h3>
-            <p>Vui lòng thử lại với từ khóa khác hoặc xóa bộ lọc</p>
-          </motion.div>
-        )}
-
-        {filteredPromotions.length > pageSize && (
+        {promotions.data && promotions.data.totalPages > 1 && (
           <PaginationContainer>
             <Pagination
-              current={currentPage}
-              total={filteredPromotions.length}
-              pageSize={pageSize}
+              current={promotions.data.number + 1} // API is 0-indexed but Ant Design is 1-indexed
+              total={promotions.data.totalElements}
+              pageSize={promotions.data.size}
               onChange={handlePageChange}
               showSizeChanger={false}
             />
