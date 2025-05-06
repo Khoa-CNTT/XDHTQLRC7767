@@ -53,7 +53,9 @@ dependencies {
 	//vnpay
 	implementation 'commons-codec:commons-codec:1.15'
 
-
+	// Analysis comments
+	implementation 'edu.stanford.nlp:stanford-corenlp:4.5.4'
+	implementation 'edu.stanford.nlp:stanford-corenlp:4.5.4:models'
 }
 
 tasks.named('test') {

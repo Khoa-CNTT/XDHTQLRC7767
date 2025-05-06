@@ -70,7 +70,8 @@ public class SecurityConfig {
                                 "/resend-verify-email",
                                 "/api/movies/now-showing",
                                 "/api/movies/upcoming",
-                                "/api/movies/detail/{id}"
+                                "/api/movies/detail/{id}",
+                                "/api/sentiment/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
