@@ -71,7 +71,7 @@ public class SecurityConfig {
                                 "/api/movies/now-showing",
                                 "/api/movies/upcoming",
                                 "/api/movies/detail/{id}",
-                                "/api/tickets/mobile/**"
+                                "/api/tickets/mobile/{id}"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
