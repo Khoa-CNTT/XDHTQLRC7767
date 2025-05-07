@@ -27,12 +27,12 @@ public class TicketController {
         TicketResponeDTO tickets = ticketService.saveTickets(ticketRequestDTO);
         return ResponseEntity.ok(tickets);
     }
-    @PutMapping("/{id}")
+    @PutMapping("/mobile/{id}")
     public ResponseEntity<?> updateTicketStatus(@PathVariable Long id) {
         ticketService.updateTicketStatus(id);
         return ResponseEntity.ok().build();
     }
-    @GetMapping("/{id}")
+    @GetMapping("/mobile/{id}")
     public ResponseEntity<Ticket> getTicketById(@PathVariable Long id) {
          Ticket ticket = ticketService.getTicketByid(id);
         return ResponseEntity.ok(ticket);
