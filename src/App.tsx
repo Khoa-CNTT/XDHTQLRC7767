@@ -31,6 +31,7 @@ import EmailVerificationPage from "./pages/user/EmailVerificationPage";
 import LoadingScreen from "./components/common/LoadingScreen";
 import ResetPasswordPage from "./pages/user/ResetPasswordPage";
 import AdminLogin from "./pages/admin/Login";
+import ChatBox from "./components/ChatBox/ChatBox";
 
 // Admin pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -74,6 +75,7 @@ const AppContent = () => {
   return (
     <StyledLayout>
       <AppRoutes />
+      <ChatBox />
     </StyledLayout>
   );
 };

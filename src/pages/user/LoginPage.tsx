@@ -285,27 +285,11 @@ const LoginPage: React.FC = () => {
         <StyledDivider plain>
           <Text type="secondary">Hoặc đăng nhập với</Text>
         </StyledDivider>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-            marginBottom: 30,
-          }}
-        >
-          <SocialButton
-            onClick={handleGoogleLogin}
-            icon={<GoogleOutlined style={{ color: "#DB4437" }} />}
-          >
-            Google
-          </SocialButton>
-          <SocialButton
-            onClick={handleGoogleLogin}
-            icon={<FacebookFilled style={{ color: "#4267B2" }} />}
-          >
-            Facebook
-          </SocialButton>
+        <div className="">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => console.log("Login Failed")}
+          />
         </div>
 
         <div style={{ textAlign: "center" }}>
