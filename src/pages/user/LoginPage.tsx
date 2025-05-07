@@ -6,14 +6,11 @@ import {
   LockOutlined,
   EyeTwoTone,
   EyeInvisibleOutlined,
-  GoogleOutlined,
-  FacebookFilled,
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
-import { GoogleLogin } from "@react-oauth/google";
 import { authService } from "../../services/authService";
 
 const { Title, Text } = Typography;
@@ -110,33 +107,6 @@ const GlowingButton = styled(Button)`
   }
 `;
 
-const SocialButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 46px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-
-  span {
-    display: flex;
-    align-items: center;
-  }
-
-  .anticon {
-    font-size: 20px;
-    margin-right: 8px;
-  }
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  }
-`;
-
 const StyledInput = styled(Input)`
   height: 48px;
   border-radius: 8px;
@@ -200,14 +170,8 @@ const LoginPage: React.FC = () => {
     }
   }, [error]);
 
-  const handleGoogleLogin = async (credentialResponse: any) => {
-    try {
-      await authService.loginWithGoogle(credentialResponse);
-      message.success("Đăng nhập thành công!");
-      navigate("/");
-    } catch (error) {
-      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
-    }
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
   return (
@@ -285,11 +249,16 @@ const LoginPage: React.FC = () => {
         <StyledDivider plain>
           <Text type="secondary">Hoặc đăng nhập với</Text>
         </StyledDivider>
-        <div className="">
-          <GoogleLogin
-            onSuccess={handleGoogleLogin}
-            onError={() => console.log("Login Failed")}
-          />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 20,
+          }}
+        >
+          <GlowingButton onClick={handleGoogleLogin}>
+            Đăng nhập với Google
+          </GlowingButton>
         </div>
 
         <div style={{ textAlign: "center" }}>
