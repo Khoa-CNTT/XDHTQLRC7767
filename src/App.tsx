@@ -32,6 +32,7 @@ import LoadingScreen from "./components/common/LoadingScreen";
 import ResetPasswordPage from "./pages/user/ResetPasswordPage";
 import AdminLogin from "./pages/admin/Login";
 import ChatBox from "./components/ChatBox/ChatBox";
+import LoginSuccessPage from "./pages/user/LoginSuccessPage";
 
 // Admin pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -103,6 +104,7 @@ const AppRoutes = () => {
         <Route path="/forget-password" element={<ResetPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/login-success" element={<LoginSuccessPage />} />
         {/* Admin Login Route */}
         <Route path="/admin/login" element={<AdminLogin />} />
       </Route>
