@@ -46,8 +46,9 @@ public class ChatController {
                 statusText = "Không xác định";
             }
 
+
             return String.format(
-                    "- Tên phim: %s\n  Mô tả: %s\n  Đạo diễn: %s\n  Diễn viên: %s\n  Năm phát hành: %d\n  Quốc gia: %s\n  Ngôn ngữ: %s\n  Thời lượng: %d phút\n  Độ tuổi: %d+\n  Ngày phát hành: %s\n  Trạng thái: %s\n  Ngày: %s\n  Giờ bắt đầu: %s\n  Giờ kết thúc: %s\n  Giá: %d VND\n  Phòng: %s\n",
+                    "- Tên phim: %s\n  Mô tả: %s\n Đạo diễn: %s\n  Diễn viên: %s\n  Năm phát hành: %d\n  Quốc gia: %s\n  Ngôn ngữ: %s\n  Thời lượng: %d phút\n  Độ tuổi: %d+\n  Ngày phát hành: %s\n  Trạng thái: %s\n  Ngày: %s\n  Giờ bắt đầu: %s\n  Giờ kết thúc: %s\n  Giá: %d VND\n  Phòng: %s\n",
                     showTime.getMovie().getName(),
                     showTime.getMovie().getDescription(),
                     showTime.getMovie().getDirector(),
@@ -65,7 +66,14 @@ public class ChatController {
                     showTime.getPricePerShowTime(),
                     showTime.getRoom().getName()
             );
-        }).collect(Collectors.joining("\n"));
+        }).collect(Collectors.joining("\n"))
+                + "\n\n👉 Để đặt vé" +
+                "1 : Đăng nhập tài khoảng thành viên" +
+                "2 : Chọn phim muốn xem" +
+                "3 : chọn rạp và chọn suất chiếu" +
+                "4 : chọn ghế" +
+                "5 : chọn thanh toán sau đó nhận mã qr về bằng gmail" +
+                "Bạn vui lòng đem mã qr đến để nhân viên kiểm tra trước khi thưởng thức phim nhé";
 
         String prompt = """
                       Bạn là một nhân viên bán vé tại rạp phim. Nhiệm vụ của bạn là:
