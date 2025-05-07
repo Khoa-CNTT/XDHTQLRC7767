@@ -11,6 +11,7 @@ import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
+import { GoogleLogin } from "@react-oauth/google";
 import { authService } from "../../services/authService";
 
 const { Title, Text } = Typography;
@@ -170,8 +171,14 @@ const LoginPage: React.FC = () => {
     }
   }, [error]);
 
-  const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  const handleGoogleLogin = async (credentialResponse: any) => {
+    try {
+      await authService.loginWithGoogle(credentialResponse);
+      message.success("Đăng nhập thành công!");
+      navigate("/");
+    } catch (error) {
+      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+    }
   };
 
   return (
@@ -249,16 +256,11 @@ const LoginPage: React.FC = () => {
         <StyledDivider plain>
           <Text type="secondary">Hoặc đăng nhập với</Text>
         </StyledDivider>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 20,
-          }}
-        >
-          <GlowingButton onClick={handleGoogleLogin}>
-            Đăng nhập với Google
-          </GlowingButton>
+        <div className="">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => console.log("Login Failed")}
+          />
         </div>
 
         <div style={{ textAlign: "center" }}>

@@ -1,5 +1,5 @@
 import axiosInstance from "../utils/axiosConfig";
-import axios from "axios";
+import { CredentialResponse } from "@react-oauth/google";
 
 export interface LoginPayload {
   username: string;
@@ -9,6 +9,18 @@ export interface LoginPayload {
 export const authService = {
   login: async (data: LoginPayload) => {
     const response = await axiosInstance.post("/authenticate", data);
+    if (response.data) {
+      localStorage.setItem("token", response.data);
+    }
+    return response.data;
+  },
+
+  loginWithGoogle: async (credentialResponse: CredentialResponse) => {
+    const response = await axiosInstance.get("/auth/google", {
+      params: {
+        credential: credentialResponse.credential,
+      },
+    });
     if (response.data) {
       localStorage.setItem("token", response.data);
     }
@@ -28,13 +40,5 @@ export const authService = {
     return localStorage.getItem("token");
   },
 };
-
-// Create axios instance with token
-const api = axios.create({
-  baseURL: "http://localhost:8080",
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
 
 export default authService;
