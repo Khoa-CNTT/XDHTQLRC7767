@@ -1,24 +1,21 @@
 package dtu.doan.service.impl;
 
-import com.google.cloud.language.v1.AnalyzeEntitySentimentRequest;
-import com.google.cloud.language.v1.AnalyzeEntitySentimentResponse;
-import com.google.cloud.language.v1.Document;
-import com.google.cloud.language.v1.LanguageServiceClient;
+import com.google.cloud.language.v1.*;
+import dtu.doan.dto.SentimentDTO;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 public class EntitySentimentAnalysisGoogleService {
-    public AnalyzeEntitySentimentResponse analyzeSentiment(String text) throws IOException {
+    public SentimentDTO analyzeSentiment(String text) throws IOException {
+        SentimentDTO sentimentResult = new SentimentDTO();
         try (LanguageServiceClient language = LanguageServiceClient.create()) {
             Document doc = Document.newBuilder().setContent(text).setType(Document.Type.PLAIN_TEXT).build();
-            AnalyzeEntitySentimentRequest request = AnalyzeEntitySentimentRequest.newBuilder()
-                    .setDocument(doc)
-                    .build();
-            AnalyzeEntitySentimentResponse response = language.analyzeEntitySentiment(request);
-            return response;
+            Sentiment sentiment = language.analyzeSentiment(doc).getDocumentSentiment();
+            sentimentResult.setScore(sentiment.getScore());
+            sentimentResult.setMagnitude(sentimentResult.getMagnitude());
+            return sentimentResult;
         }
     }
-
 }

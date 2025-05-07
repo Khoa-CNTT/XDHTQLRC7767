@@ -29,7 +29,8 @@ public class Comment {
 
     @Column(nullable = false)
     private boolean isApproved = false;
-
-
+    @Column(nullable = false)
+    private String sentiment;
+    private float score;
 
 }
