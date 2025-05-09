@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -58,6 +59,8 @@ public class SecurityConfig {
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
+                .headers(headers -> headers
+                        .addHeaderWriter(new StaticHeadersWriter("Cross-Origin-Opener-Policy", "")))
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
                                 "/",
@@ -71,8 +74,9 @@ public class SecurityConfig {
                                 "/api/movies/now-showing",
                                 "/api/movies/upcoming",
                                 "/api/movies/detail/{id}",
-                                "/api/sentiment/**"
-//                                "/api/sentiment/google"
+                                "/api/sentiment/**",
+                                "/auth/social-login",
+                                "/auth/google"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

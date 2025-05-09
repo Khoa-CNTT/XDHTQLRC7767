@@ -17,6 +17,8 @@ spring:
       org.hibernate.SQL: DEBUG
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE
       org.hibernate.tool.schema: DEBUG
+      org.springframework.oauth2: DEBUG
+      org.springframework.web: DEBUG
   mail:
     host: smtp.gmail.com
     port: 587
@@ -36,17 +38,17 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: "{baseUrl}/oauth2/callback/google"
+            redirect-uri: "http://localhost:5173/auth/callback/google"
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             scope:
               - openid
               - profile
               - email
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-            user-name-attribute: sub
+#        provider:
+#          google:
+#            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+#            token-uri: https://oauth2.googleapis.com/token
+#            user-name-attribute: sub
   cloud:
     gcp:
       credentials:

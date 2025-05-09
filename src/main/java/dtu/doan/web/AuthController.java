@@ -1,5 +1,6 @@
 package dtu.doan.web;
 
+
 import dtu.doan.dto.AuthRequest;
 import dtu.doan.dto.ChangePasswordRequest;
 import dtu.doan.dto.RegisterRequest;
@@ -12,6 +13,7 @@ import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.VerificationTokenRepository;
 import dtu.doan.service.AccountService;
 import dtu.doan.service.CustomerService;
+import dtu.doan.service.impl.AuthService;
 import dtu.doan.service.impl.MailService;
 import dtu.doan.service.impl.VerificationService;
 import dtu.doan.utils.JwtUtil;
@@ -27,6 +29,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -65,12 +70,16 @@ public class AuthController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private AuthService authService;
+
+
 
     @PostMapping("/login-admin")
-    public ResponseEntity<?> loginAdmin(@RequestBody AuthRequest authRequest){
-        try{
+    public ResponseEntity<?> loginAdmin(@RequestBody AuthRequest authRequest) {
+        try {
             return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
         }
     }
@@ -151,7 +160,7 @@ public class AuthController {
 
     @Transactional
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody RegisterRequest request)  {
+    public ResponseEntity<?> signup(@RequestBody RegisterRequest request) {
         String username = request.getEmail();
         if (!username.matches("^[\\w\\.-]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             return new ResponseEntity<>("Invalid email format", HttpStatus.BAD_REQUEST);
@@ -360,6 +369,23 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/auth/social-login")
+    public ResponseEntity<String> socialAuth() {
+        String loginType = "google";
+        loginType = loginType.trim().toLowerCase();
+        String url = authService.generateAuthUrl(loginType);
+        return ResponseEntity.ok(url);
+    }
 
+    @PostMapping("/auth/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body){
+        String idTokenString = body.get("credential");
+        try {
+            String jwt = authService.authenticateWithGoogle(idTokenString);
+            return new ResponseEntity<>(jwt,HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
+        }
+    }
 }
 
