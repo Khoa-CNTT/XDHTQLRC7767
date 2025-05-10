@@ -1,4 +1,4 @@
-package dtu.doan.Scheduler;
+package dtu.doan.scheduler;
 
 import dtu.doan.model.ShowTime;
 import dtu.doan.repository.ShowTimeRepository;

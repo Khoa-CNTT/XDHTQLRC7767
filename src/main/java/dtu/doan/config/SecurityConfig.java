@@ -29,9 +29,6 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
-    @Autowired
-    private CustomOAuth2SuccessHandler successHandler;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -81,9 +78,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-//                .oauth2Login(oauth -> oauth
-//                        .successHandler(successHandler)
-//                );
         return http.build();
     }
 
