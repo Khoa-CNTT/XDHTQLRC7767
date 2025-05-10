@@ -1,16 +1,11 @@
 package dtu.doan.dto;
 
-import dtu.doan.model.Chair;
-import dtu.doan.model.Customer;
-import dtu.doan.model.ShowTime;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -19,9 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class TicketRequestDTO {
     private String type;
-    private Date date;
-    private ShowTime showTime;
-    private List<Chair> chairs;
-    private Customer customer;
-
+    private Double price;
+    private Long id_showTime;
+    private Long id_customer;
+    private LocalDate date; // Import java.time.LocalDate
+    private List<Long> chairIds;
 }

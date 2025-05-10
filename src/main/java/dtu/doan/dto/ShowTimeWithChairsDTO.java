@@ -1,5 +1,6 @@
 package dtu.doan.dto;
 
+import dtu.doan.model.Chair;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,14 +8,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class ShowListDTO {
-    private Long movieId;
-    private Long roomId;
-    private LocalDate showDate;
+@AllArgsConstructor
+public class ShowTimeWithChairsDTO {
     private Long pricePerShowTime;
-    private LocalTime startTime;
+    private Set<ChairDTO> chairs;
 }

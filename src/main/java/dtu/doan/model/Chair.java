@@ -11,7 +11,7 @@ import java.util.Set;
         @Index(name = "idx_type", columnList = "type"),
         @Index(name = "idx_status", columnList = "status"),
 })
-public class Chair {
+public class  Chair {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,7 +19,9 @@ public class Chair {
     private String type;
     private String status;
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn
+    private ShowTime showTime;
+
+
 
 }

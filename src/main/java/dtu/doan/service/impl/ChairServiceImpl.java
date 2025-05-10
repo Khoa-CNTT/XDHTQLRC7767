@@ -15,12 +15,17 @@ public class ChairServiceImpl implements ChairService {
     private ChairRepository chairRepository;
     @Override
     public List<Chair> findAllChairByShowTimeId(Long showTimeId) {
-        return chairRepository.findAllChairByShowTimeId(showTimeId);
+        return chairRepository.findAllChairViewByShowTimeId(showTimeId);
     }
 
     @Override
     public Optional<Chair> findChairById(Long id) {
         return chairRepository.findById(id);
+    }
+
+    @Override
+    public void updateStatus(Long chairId, String newStatus) {
+        chairRepository.updateChairStatus(chairId, newStatus);
     }
 
 

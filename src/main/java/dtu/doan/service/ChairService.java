@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ChairService  {
     List<Chair> findAllChairByShowTimeId(Long showTimeId);
     Optional<Chair> findChairById(Long id);
+    public void updateStatus(Long chairId, String newStatus);
 }

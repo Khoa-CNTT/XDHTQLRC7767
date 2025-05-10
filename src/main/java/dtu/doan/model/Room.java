@@ -1,4 +1,10 @@
 package dtu.doan.model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.util.Set;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,4 +28,6 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
+
+
 }

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 @Data
@@ -15,9 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 public class TicketResponeDTO {
     private String type;
-    private Date date;
     private ShowTime showTime;
-    private List<Chair> chairs;
     private Customer customer;
     private Payment payment;
+    List<ChairDTO> chairDTOS;
+
 }

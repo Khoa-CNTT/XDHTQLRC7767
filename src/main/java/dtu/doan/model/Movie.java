@@ -41,3 +41,4 @@ public class Movie {
     private LocalDate releaseDate;
     private int status;
 }
+

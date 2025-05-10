@@ -1,5 +1,11 @@
 package dtu.doan.web;
 
+import dtu.doan.dto.ShowListCreatedResponeDTO;
+import dtu.doan.dto.ShowListDTO;
+import dtu.doan.dto.ShowTimeWithChairsDTO;
+import dtu.doan.model.Chair;
+import dtu.doan.model.ShowTime;
+import dtu.doan.service.ShowTimeService;
 import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
 import lombok.Data;
@@ -36,5 +42,24 @@ public class ShowTimeController {
     public ResponseEntity<ShowTime> getByID(@PathVariable Long id) {
       ShowTime showTime = showTimeService.findShowTimeByID(id);
         return new ResponseEntity<>(showTime, HttpStatus.OK);
+    } /**
+     * Get a showtime with its room and list of chairs.
+     *
+     * @param id ID of the showtime
+     * @return ShowTimeWithChairsDTO
+     */
+    @GetMapping("/{id}/with-chairs")
+    public ResponseEntity<ShowTimeWithChairsDTO> getShowTimeWithChairs(@PathVariable Long id) {
+        ShowTimeWithChairsDTO chairList = showTimeService.getShowTimeWithChairs(id);
+        return ResponseEntity.ok(chairList);
     }
-}
+    @PostMapping
+    public ResponseEntity<ShowListCreatedResponeDTO> createShowTime(@RequestBody ShowListDTO showListDTO) {
+        ShowListCreatedResponeDTO response = showTimeService.create(showListDTO);
+        if (response == null){
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    }

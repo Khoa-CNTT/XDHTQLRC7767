@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chairs")
 public class ChairController {
+
     @Autowired
     private ChairService chairService;
     @GetMapping("/{id}")
