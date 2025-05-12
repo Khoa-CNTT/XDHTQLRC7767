@@ -234,7 +234,28 @@ const MovieInfo = styled.div`
 
 const MovieTags = styled.div`
   margin-bottom: 15px;
-  height: 60px;
+  min-height: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const GenreTag = styled(Tag)`
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(0, 191, 255, 0.15);
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 191, 255, 0.25);
+    box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -378,6 +399,25 @@ const LoadingContainer = styled.div`
   height: 300px;
 `;
 
+// Cập nhật interface tại đầu file hoặc import từ movieSlice
+interface Genre {
+  id: number;
+  name: string;
+  isDelete: boolean;
+}
+
+// Đảm bảo MovieHomeResponseDTO trong component bao gồm genres
+// Có thể cần thêm vào interface này nếu import từ redux
+interface MovieHomeResponseDTO {
+  id: number;
+  title: string;
+  description: string;
+  duration: number;
+  releaseDate: string;
+  poster: string;
+  genres: Genre[];
+}
+
 const MoviesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("now-showing");
   const [filteredMovies, setFilteredMovies] = useState<MovieHomeResponseDTO[]>(
@@ -435,14 +475,16 @@ const MoviesPage: React.FC = () => {
       );
     }
 
-    // Lọc theo thể loại - this would need to be adapted based on your API data structure
-    // if (selectedGenre && movie.genres) {
-    //   result = result.filter((movie) =>
-    //     movie.genres.some((genre: string) =>
-    //       genre.toLowerCase().includes(selectedGenre.toLowerCase())
-    //     )
-    //   );
-    // }
+    // Lọc theo thể loại
+    if (selectedGenre && result[0]?.genres) {
+      result = result.filter((movie) =>
+        movie.genres.some(
+          (genre) =>
+            genre.name.toLowerCase() === selectedGenre.toLowerCase() &&
+            !genre.isDelete
+        )
+      );
+    }
 
     // Lọc theo năm phát hành
     if (selectedYear && result[0]?.releaseDate) {
@@ -561,9 +603,15 @@ const MoviesPage: React.FC = () => {
                               </MovieInfo>
                               <MovieInfo>{movie.duration}</MovieInfo>
                             </MovieMeta>
-                            {/* Assuming genres might not be in the API data */}
                             <MovieTags>
-                              {/* Render genres if available */}
+                              {movie.genres &&
+                                movie.genres
+                                  .filter((genre) => !genre.isDelete)
+                                  .map((genre) => (
+                                    <GenreTag key={genre.id}>
+                                      {genre.name}
+                                    </GenreTag>
+                                  ))}
                             </MovieTags>
                             <ButtonContainer>
                               <DetailButton
