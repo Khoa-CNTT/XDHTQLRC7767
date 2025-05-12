@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { loginRequest } from "../../redux/slices/authSlice";
+import { getUserInfoRequest, loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
 import { GoogleLogin } from "@react-oauth/google";
 import { authService } from "../../services/authService";
@@ -174,7 +174,7 @@ const LoginPage: React.FC = () => {
   const handleGoogleLogin = async (credentialResponse: any) => {
     try {
       await authService.loginWithGoogle(credentialResponse);
-      message.success("Đăng nhập thành công!");
+      dispatch(getUserInfoRequest());
       navigate("/");
     } catch (error) {
       message.error("Đăng nhập thất bại. Vui lòng thử lại!");
