@@ -69,7 +69,7 @@ public class TicketServiceImpl implements TicketService {
             ticket.setPayment(payment);
 
             savedTicket = ticketRepository.save(ticket);
-            bookingService.processBooking(ticket);
+            bookingService.processBooking(savedTicket);
 
             // Chuyển sang DTO để trả về
             ChairDTO chairDTO = new ChairDTO(
