@@ -17,6 +17,6 @@ public class TicketRequestDTO {
     private Double price;
     private Long id_showTime;
     private Long id_customer;
-    private LocalDate date; // Import java.time.LocalDate
+    private LocalDate date;
     private List<Long> chairIds;
 }

@@ -51,7 +51,6 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket savedTicket = new Ticket();
         List<ChairDTO> chairDTOList = new ArrayList<>();
-
         // Kiểm tra và lấy Chair
         for (Long chairId : dto.getChairIds()) {
             Chair chair = chairRepository.findById(chairId)
@@ -70,7 +69,7 @@ public class TicketServiceImpl implements TicketService {
             ticket.setPayment(payment);
 
             savedTicket = ticketRepository.save(ticket);
-            bookingService.processBooking(ticket);
+            bookingService.processBooking(savedTicket);
 
             // Chuyển sang DTO để trả về
             ChairDTO chairDTO = new ChairDTO(

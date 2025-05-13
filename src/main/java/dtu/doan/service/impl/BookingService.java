@@ -1,12 +1,12 @@
 package dtu.doan.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dtu.doan.model.Ticket;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-
 @Service
 public class BookingService {
     @Autowired
@@ -47,7 +47,11 @@ public class BookingService {
     private String generateQrData(Ticket ticket) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(ticket); // Chuyển đổi đối tượng thành JSON
+            objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            String qrData = objectMapper.writeValueAsString(ticket);
+            return qrData;
         } catch (Exception e) {
             e.printStackTrace();
             return "{}"; // Trả về JSON rỗng nếu có lỗi

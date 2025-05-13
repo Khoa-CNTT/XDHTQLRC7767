@@ -159,79 +159,84 @@ public class MailService {
         String roomName = ticket.getShowTime().getRoom().getName(); // Phòng chiếu
 
         return String.format("""
-                        <html>
-                        <head>
-                            <style>
-                                body {
-                                    font-family: 'Poppins', Arial, sans-serif;
-                                    color: #E0E0E0;
-                                    text-align: center;
-                                    padding: 20px;
-                                }
-                                .container {
-                                    max-width: 600px;
-                                    margin: 0 auto;
-                                    padding: 20px;
-                                    background: #1E1E1E;
-                                    border-radius: 12px;
-                                    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
-                                    color: #D0D0D0;
-                                }
-                                h2 {
-                                    color: #FFD700;
-                                    font-size: 26px;
-                                    margin-bottom: 15px;
-                                }
-                                .ticket-info {
-                                    background: #292929;
-                                    padding: 15px;
-                                    border-radius: 8px;
-                                    text-align: left;
-                                    border-left: 5px solid #FFD700;
-                                }
-                                .ticket-title {
-                                    color: #FFFFFF;
-                                    font-size: 20px;
-                                    font-weight: bold;
-                                    text-transform: uppercase;
-                                    margin-bottom: 12px;
-                                }
-                                .ticket-info p {
-                                    margin: 8px 0;
-                                    font-size: 16px;
-                                    color: #C0C0C0;
-                                }
-                                .highlight {
-                                    font-weight: bold;
-                                    color: #FFD700;
-                                }
-                                .footer {
-                                    margin-top: 20px;
-                                    font-size: 14px;
-                                    color: #B0B0B0;
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="container">
-                                <h2>🎟️ Xác nhận đặt vé xem phim 🎬</h2>
-                                <p>Chào bạn, cảm ơn đã đặt vé tại hệ thống của chúng tôi.</p>
-                                <p>Vui lòng kiểm tra thông tin vé bên dưới:</p>
-                                <div class="ticket-info">
-                                    <p class="ticket-title">Thông tin vé</p>
-                                    <p><strong>🎬 Tên phim:</strong> %s</p>
-                                    <p><strong>📅 Ngày chiếu:</strong> %s</p>
-                                    <p><strong>🕒 Thời gian:</strong> %s - %s</p>
-                                    <p><strong>🪑 Số ghế:</strong> %s</p>
-                                    <p><strong>📍 Cụm rạp:</strong> %s</p>
-                                    <p><strong>🏠 Phòng chiếu:</strong> %s</p>
-                                </div>
-                                <p class="footer">Hãy đến sớm trước 15 phút để nhận vé và thưởng thức phim nhé!</p>
-                                <p class="footer"><strong>Trân trọng,</strong><br>Đội ngũ Rạp Chiếu Phim</p>
-                            </div>
-                        </body>
-                        </html>
-                        """,
+        <html>
+        <head>
+            <style>
+                body {
+                    font-family: 'Poppins', Arial, sans-serif;
+                    color: #D0E7FF;
+                    background-color: #0B1727;
+                    text-align: center;
+                    padding: 20px;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: #132238;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                    color: #D0E7FF;
+                }
+                h2 {
+                    color: #66B2FF;
+                    font-size: 26px;
+                    margin-bottom: 15px;
+                }
+                .ticket-info {
+                    background: #1A2B40;
+                    padding: 15px;
+                    border-radius: 8px;
+                    text-align: left;
+                    border-left: 5px solid #66B2FF;
+                }
+                .ticket-title {
+                    color: #FFFFFF;
+                    font-size: 20px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    margin-bottom: 12px;
+                }
+                .ticket-info p {
+                    margin: 8px 0;
+                    font-size: 16px;
+                    color: #BFDFFF;
+                }
+                .highlight {
+                    font-weight: bold;
+                    color: #66B2FF;
+                }
+                .footer {
+                    margin-top: 20px;
+                    font-size: 14px;
+                    color: #A0BFD0;
+                }
+                  p {
+                        color: #E0E0E0; /* hoặc #FFFFFF nếu muốn trắng hoàn toàn */
+                        font-size: 16px;
+                    }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>🎟️ Xác nhận đặt vé xem phim 🎬</h2>
+                <p>Chào bạn, cảm ơn đã đặt vé tại hệ thống của chúng tôi.</p>
+                <p>Vui lòng kiểm tra thông tin vé bên dưới:</p>
+                <div class="ticket-info">
+                    <p class="ticket-title">Thông tin vé</p>
+                    <p><strong>🎬 Tên phim:</strong> %s</p>
+                    <p><strong>📅 Ngày chiếu:</strong> %s</p>
+                    <p><strong>🕒 Thời gian:</strong> %s - %s</p>
+                    <p><strong>🪑 Số ghế:</strong> %s</p>
+                    <p><strong>📍 Cụm rạp:</strong> %s</p>
+                    <p><strong>🏠 Phòng chiếu:</strong> %s</p>
+                </div>
+                <p class="footer">Hãy đến sớm trước 15 phút để nhận vé và thưởng thức phim nhé!</p>
+                <p class="footer"><strong>Trân trọng,</strong><br>Đội ngũ Rạp Chiếu Phim</p>
+            </div>
+        </body>
+        </html>
+        """,
                 movieTitle,
                 showDate,
                 startTime,
@@ -240,6 +245,7 @@ public class MailService {
                 cinemaName,
                 roomName
         );
+
     }
 
 
