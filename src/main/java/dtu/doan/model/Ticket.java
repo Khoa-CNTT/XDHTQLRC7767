@@ -1,6 +1,7 @@
 package dtu.doan.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dtu.doan.model.Chair;
 import dtu.doan.model.Customer;
 import dtu.doan.model.Payment;
@@ -26,6 +27,7 @@ import java.util.Set;
 },uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code", "show_time_id"}),  // Đảm bảo mã vé không trùng
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -51,7 +51,6 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket savedTicket = new Ticket();
         List<ChairDTO> chairDTOList = new ArrayList<>();
-
         // Kiểm tra và lấy Chair
         for (Long chairId : dto.getChairIds()) {
             Chair chair = chairRepository.findById(chairId)
