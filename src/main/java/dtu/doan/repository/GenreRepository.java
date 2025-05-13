@@ -17,4 +17,6 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
             nativeQuery = true
     )
     List<Genre> getGenreByMovieId(Long movieId);
+
+    List<Genre> findByIsDeleteFalse();
 }
