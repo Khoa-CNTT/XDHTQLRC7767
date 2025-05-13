@@ -47,6 +47,10 @@ public class RoomServiceImpl implements RoomService {
                 seatFormats.add(c);
             }
         }
+        room1.setName(room.getName());
+        room1.setType(room.getType());
+        room1.setCapacity(50);
+        room1.setStatus("ACTIVE");
         room1.setSeats(seatFormats);
         room1.setCinema(cinema);
          roomRepository.save(room1);
