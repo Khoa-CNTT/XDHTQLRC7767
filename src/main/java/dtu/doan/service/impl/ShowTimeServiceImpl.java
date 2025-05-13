@@ -80,9 +80,10 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         Room room = roomRepository.getById(showListDTO.getRoomId());
         int duration = movie.getDuration();
         LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
-        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(showListDTO.getShowDate(),showListDTO.getStartTime(),endTime);
+        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(showListDTO.getShowDate(), showListDTO.getStartTime(), endTime);
         ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
-        if(showTimesCheck.size() == 0){
+
+        if (showTimesCheck.isEmpty()) {
             ShowTime showTime = new ShowTime();
             showTime.setStartTime(showListDTO.getStartTime());
             showTime.setEndTime(endTime);
@@ -91,33 +92,34 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             showTime.setMovie(movie);
             showTime.setRoom(room);
             showTime.setStatus("ACTIVE");
-            int rows = 5;
-            int cols = 10;
-            List<Chair> chairs = new ArrayList<>();
-            ShowTime saveData = showTimeRepository.save(showTime);
-            for (int i = 0; i < rows; i++) {
-                char rowLetter = (char) ('A' + i);
-                for (int j = 1; j <= cols; j++) {
-                    Chair c = new Chair();
-                    c.setName(rowLetter + String.valueOf(j));
-                    c.setStatus("AVAILABLE");
-                    chairs.add(c);
-                    c.setShowTime(showTime);
 
-                }
+            // Lấy danh sách ChairFormat từ Room
+            List<SeatFormat> seatFormats = (List<SeatFormat>) room.getSeats(); // Giả sử Room có quan hệ với SeatFormat
+            List<Chair> chairs = new ArrayList<>();
+            ShowTime savedShowTime = showTimeRepository.save(showTime);
+
+            // Tạo danh sách Chair dựa trên SeatFormat
+            for (SeatFormat seatFormat : seatFormats) {
+                Chair chair = new Chair();
+                chair.setName(seatFormat.getName());
+                chair.setStatus("AVAILABLE");
+                chair.setShowTime(savedShowTime);
+                chairs.add(chair);
             }
+
             chairRepository.saveAll(chairs);
-            result.setStartTime(saveData.getStartTime());
-            result.setEndTime(saveData.getEndTime());
-            result.setPricePerShowTime(saveData.getPricePerShowTime());
-            result.setShowDate(saveData.getDate());
-            result.setMovieId(saveData.getMovie().getId());
-            result.setRoomId(saveData.getRoom().getId());
-            result.setMovieName(saveData.getMovie().getName()); // nếu có field này trong DTO
-            result.setRoomName(saveData.getRoom().getName());     // nếu có field này trong DTO
-            result.setStatus(saveData.getStatus());
+
+            result.setStartTime(savedShowTime.getStartTime());
+            result.setEndTime(savedShowTime.getEndTime());
+            result.setPricePerShowTime(savedShowTime.getPricePerShowTime());
+            result.setShowDate(savedShowTime.getDate());
+            result.setMovieId(savedShowTime.getMovie().getId());
+            result.setRoomId(savedShowTime.getRoom().getId());
+            result.setMovieName(savedShowTime.getMovie().getName());
+            result.setRoomName(savedShowTime.getRoom().getName());
+            result.setStatus(savedShowTime.getStatus());
             return result;
-        }else{
+        } else {
             return null;
         }
     }

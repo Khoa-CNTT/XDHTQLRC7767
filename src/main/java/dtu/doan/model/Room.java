@@ -28,6 +28,8 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SeatFormat> seats;
 
 
 }
