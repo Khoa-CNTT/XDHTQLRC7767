@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import { QRCodeSVG } from "qrcode.react";
 import { motion } from "framer-motion";
+import dayjs from "dayjs";
 
 const PageContainer = styled.div`
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -340,6 +341,11 @@ const FooterText = styled.div`
   font-size: 12px;
 `;
 
+// Helper function to check if an object is a dayjs object
+const isDayjs = (obj: any): boolean => {
+  return obj && typeof obj === "object" && typeof obj.format === "function";
+};
+
 interface BookingData {
   movie: {
     id: string;
@@ -352,7 +358,7 @@ interface BookingData {
     address: string;
   };
   showtime: {
-    date: string;
+    date: any; // Using any to accommodate different date formats
     time: string;
     screen: string;
   };
@@ -414,12 +420,23 @@ const InvoicePage: React.FC = () => {
     return null;
   }
 
-  // Format date string if it's a Dayjs object
-  const formattedDate =
-    typeof bookingData.showtime.date === "object" &&
-    bookingData.showtime.date.format
-      ? bookingData.showtime.date.format("DD/MM/YYYY")
-      : bookingData.showtime.date;
+  // Format date string safely
+  const formattedDate = (() => {
+    const dateValue = bookingData.showtime.date;
+
+    // If it's a dayjs object
+    if (isDayjs(dateValue)) {
+      return dateValue.format("DD/MM/YYYY");
+    }
+
+    // If it's a Date object
+    if (dateValue instanceof Date) {
+      return dayjs(dateValue).format("DD/MM/YYYY");
+    }
+
+    // If it's already a string
+    return dateValue;
+  })();
 
   return (
     <PageContainer>

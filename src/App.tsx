@@ -22,6 +22,7 @@ import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
 import CinemaPage from "./pages/user/CinemaPage";
 import UserLayout from "./layouts/UserLayout";
 import InvoicePage from "./pages/user/InvoicePage";
+import PaymentCallback from "./pages/user/PaymentCallback";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import PrivateRoute from "./components/PrivateRoute";
@@ -93,6 +94,13 @@ const AppRoutes = () => {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/promotions" element={<PromotionsPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        {/* VNPay Payment Callback - Không cần đăng nhập */}
+        <Route path="/payment/vnpay-return" element={<PaymentCallback />} />
+        {/* Additional routes for VNPay return handling */}
+        <Route path="/loading" element={<PaymentCallback />} />
+        <Route path="/payment-callback" element={<PaymentCallback />} />
+        {/* Trang xem vé sau khi thanh toán - Không cần đăng nhập */}
+        <Route path="/invoice" element={<InvoicePage />} />
       </Route>
 
       {/* Guest Routes - Chỉ cho phép khi chưa đăng nhập */}
@@ -112,7 +120,6 @@ const AppRoutes = () => {
         <Route element={<UserLayout />}>
           <Route path="/booking/:id" element={<BookingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/invoice" element={<InvoicePage />} />
         </Route>
 
         {/* Admin Routes */}

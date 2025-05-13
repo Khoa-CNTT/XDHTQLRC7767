@@ -5,6 +5,7 @@ import cinemaSaga from "./cinemaSaga";
 import roomSaga from "./room.Saga";
 import showtimeSaga from "./showtimeSaga";
 import promotionSaga from "./promotionSaga";
+import paymentSaga from "./paymentSaga";
 
 export default function* rootSaga() {
   yield fork(authSaga);
@@ -13,4 +14,5 @@ export default function* rootSaga() {
   yield fork(roomSaga);
   yield fork(showtimeSaga);
   yield fork(promotionSaga);
+  yield fork(paymentSaga);
 }

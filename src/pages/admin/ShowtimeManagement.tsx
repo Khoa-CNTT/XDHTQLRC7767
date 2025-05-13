@@ -39,6 +39,7 @@ import {
   getShowtimeListRequest,
   resetCreateShowtimeState,
   ShowListDTO,
+  ShowtimeParams,
 } from "../../redux/slices/showtimeSlice";
 
 const { Title, Text } = Typography;
@@ -70,10 +71,11 @@ const ShowtimeManagement: React.FC = () => {
     (state: RootState) => state.showtime
   );
 
+  // Fetch initial data
   useEffect(() => {
     dispatch(getCinemaListRequest());
     dispatch(getMovieListRequest());
-    dispatch(getShowtimeListRequest());
+    dispatch(getShowtimeListRequest()); // Pass empty object to match the updated saga
   }, [dispatch]);
 
   // Xử lý kết quả sau khi tạo lịch chiếu
@@ -144,13 +146,26 @@ const ShowtimeManagement: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchText(value);
+    // Search for showtimes based on movieName and roomName
+    dispatch(getShowtimeListRequest());
   };
 
   const handleDateFilter = (date: Dayjs | null) => {
     setFilterDate(date);
+
+    if (date) {
+      // Filter by date - properly typed now
+      const params: ShowtimeParams = {
+        date: date.format("YYYY-MM-DD"),
+      };
+      dispatch(getShowtimeListRequest(params));
+    } else {
+      // If date filter is cleared, fetch all showtimes
+      dispatch(getShowtimeListRequest());
+    }
   };
 
-  // Lọc lịch chiếu
+  // Use client-side filtering since we're still implementing server-side filtering
   const filteredShowtimes = showtimeList.data.filter((showtime) => {
     let matchesSearch = true;
     let matchesDate = true;
@@ -202,9 +217,9 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Ngày chiếu",
-      dataIndex: "showDate",
-      key: "showDate",
-      render: (showDate: string) => dayjs(showDate).format("DD/MM/YYYY"),
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
       title: "Giờ chiếu",
@@ -217,10 +232,9 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Giá vé",
-      dataIndex: "pricePerShowTime",
-      key: "pricePerShowTime",
-      render: (pricePerShowTime: number) =>
-        `${pricePerShowTime.toLocaleString()}đ`,
+      dataIndex: "price",
+      key: "price",
+      render: (price: number) => `${price.toLocaleString()}đ`,
     },
     {
       title: "Trạng thái",

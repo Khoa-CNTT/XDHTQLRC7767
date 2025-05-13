@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Row, Col, Card, Radio, Divider, message, Spin, Steps } from "antd";
+import {
+  Row,
+  Col,
+  Card,
+  Radio,
+  Divider,
+  message,
+  Spin,
+  Steps,
+  DatePicker as AntDatePicker,
+} from "antd";
 import {
   CalendarOutlined,
   ClockCircleOutlined,
@@ -52,12 +62,20 @@ import { RootState } from "../../redux/store";
 import {
   getCinemaListRequest,
   getMockShowtimeRequest,
-  getWithChairRequest,
 } from "../../redux/slices/cinemaSlice";
+import { getShowtimeWithChairsRequest } from "../../redux/slices/showtimeSlice";
+import { createPaymentRequest } from "../../redux/slices/paymentSlice";
 
 const { Step } = Steps;
 
-// Giả lập dữ liệu ghế ngồi
+// Cinema type definition
+interface Cinema {
+  id: string;
+  name: string;
+  address: string;
+}
+
+// Giả lập dữ liệu ghế ngồi khi API chưa trả về dữ liệu
 const generateSeats = () => {
   const rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
   const seatsPerRow = 10;
@@ -73,6 +91,11 @@ const generateSeats = () => {
   }
 
   return seats;
+};
+
+// Custom DatePicker để tránh lỗi TypeScript
+const DatePicker = (props: any) => {
+  return <StyledDatePicker {...props} />;
 };
 
 // Giá vé
@@ -110,22 +133,46 @@ const BookingPage: React.FC = () => {
   const { cinemaList, mockShowtimes } = useSelector(
     (state: RootState) => state.cinema
   );
+  const { showtimeWithChairs } = useSelector(
+    (state: RootState) => state.showtime
+  );
+
   const [showtimes, setShowtimes] = useState<FormattedShowtime[]>([]);
+
+  // Thêm state quản lý phương thức thanh toán
+  const [paymentMethod, setPaymentMethod] = useState("vnpay");
 
   useEffect(() => {
     dispatch(getBookingRequest({ id: id }));
     dispatch(getCinemaListRequest());
-    dispatch(getWithChairRequest({ id: 35 }));
-  }, [id]);
+  }, [id, dispatch]);
 
   // Thêm useEffect riêng để xử lý khi có dữ liệu
   useEffect(() => {
     if (movieBooking?.data) {
       setMovie(movieBooking.data);
-      setSeats(generateSeats());
       setLoading(false);
     }
   }, [movieBooking]);
+
+  // Sử dụng dữ liệu ghế từ API thay vì tạo dữ liệu giả
+  useEffect(() => {
+    if (showtimeWithChairs?.data) {
+      // Ánh xạ dữ liệu ghế từ API sang định dạng hiển thị trong ứng dụng
+      const formattedSeats = showtimeWithChairs.data.chairs.map((chair) => ({
+        id: chair.name,
+        type: chair.type?.toLowerCase() === "vip" ? "vip" : "standard",
+        status:
+          chair.status?.toLowerCase() === "available" ? "available" : "booked",
+        price: chair.price,
+      }));
+
+      setSeats(formattedSeats);
+    } else {
+      // Fallback to generated seats if API does not return data
+      setSeats(generateSeats());
+    }
+  }, [showtimeWithChairs]);
 
   // Cập nhật useEffect khi có dữ liệu mockShowtimes từ API
   useEffect(() => {
@@ -185,17 +232,22 @@ const BookingPage: React.FC = () => {
         message.error("Vui lòng chọn rạp chiếu");
         return;
       }
-      // if (!selectedShowtime) {
-      //   message.error("Vui lòng chọn suất chiếu");
-      //   return;
-      // }
+      if (!selectedShowtime) {
+        message.error("Vui lòng chọn suất chiếu");
+        return;
+      }
     } else if (currentStep === 1) {
       if (selectedSeats.length === 0) {
         message.error("Vui lòng chọn ít nhất 1 ghế");
         return;
       }
     }
-    dispatch(getWithChairRequest({ id: 3 }));
+
+    // Nếu chuyển sang bước chọn ghế, lấy thông tin ghế từ API
+    if (currentStep === 0) {
+      dispatch(getShowtimeWithChairsRequest({ id: selectedShowtime!.id }));
+    }
+
     if (currentStep === 2) {
       // Xử lý thanh toán
       message.success("Đặt vé thành công!");
@@ -211,11 +263,12 @@ const BookingPage: React.FC = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleDateChange = (date: Dayjs | null) => {
+  // Fix the DatePicker onChange type
+  const handleDateChange = (date: any, dateString: string | string[]) => {
     setSelectedDate(date);
   };
 
-  // Hàm xử lý khi người dùng nhấn nút thanh toán
+  // Cập nhật hàm handlePayment để xử lý thanh toán VNPay
   const handlePayment = () => {
     // Kiểm tra xem người dùng đã chọn ghế chưa
     if (selectedSeats.length === 0) {
@@ -253,8 +306,36 @@ const BookingPage: React.FC = () => {
       },
     };
 
-    // Chuyển hướng đến trang hóa đơn và truyền dữ liệu booking
-    navigate("/invoice", { state: { bookingData } });
+    // Lưu dữ liệu đặt vé vào localStorage trước khi chuyển hướng đến VNPay
+    localStorage.setItem("bookingData", JSON.stringify(bookingData));
+    console.log("Saved initial bookingData to localStorage:", bookingData);
+
+    // Chọn phương thức thanh toán
+    if (paymentMethod === "vnpay") {
+      // Tạo thông tin đơn hàng
+      const totalAmount = calculateTotalPrice();
+      const orderInfo = `Thanh toan ve xem phim ${movie?.name} - ${selectedSeats.length} ve`;
+
+      // Gọi API tạo URL thanh toán VNPAY
+      dispatch(
+        createPaymentRequest({
+          amount: totalAmount,
+          orderInfo,
+          bookingData,
+        })
+      );
+    } else {
+      // Phương thức thanh toán khác hoặc thanh toán tại quầy
+      message.success("Đặt vé thành công!");
+      navigate("/invoice", { state: { bookingData } });
+    }
+  };
+
+  // Helper function to find cinema by ID
+  const findCinemaById = (id: string): Cinema | undefined => {
+    return cinemaList?.data && Array.isArray(cinemaList.data)
+      ? cinemaList.data.find((c: any) => c.id === id)
+      : undefined;
   };
 
   if (loading || movieBooking?.loading || !movie) {
@@ -304,6 +385,7 @@ const BookingPage: React.FC = () => {
                   </MovieInfoCard>
 
                   <SectionTitle>Chọn ngày xem phim</SectionTitle>
+                  {/* @ts-ignore */}
                   <StyledDatePicker
                     value={selectedDate}
                     onChange={handleDateChange}
@@ -323,6 +405,7 @@ const BookingPage: React.FC = () => {
                         checked={selectedCinema === cinema.id}
                         onChange={() => {
                           handleCinemaSelect(cinema.id);
+                          console.log(cinema.id);
                           dispatch(
                             getMockShowtimeRequest({
                               date: dayjs(selectedDate).format("DD-MM-YYYY"),
@@ -381,11 +464,7 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {selectedCinema
-                          ? cinemaList?.data?.find(
-                              (c) => c.id === selectedCinema
-                            )?.name
-                          : "Chưa chọn"}
+                        {findCinemaById(selectedCinema)?.name || "Chưa chọn"}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
@@ -474,10 +553,7 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {
-                          cinemaList?.data?.find((c) => c.id === selectedCinema)
-                            ?.name
-                        }
+                        {findCinemaById(selectedCinema)?.name || ""}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
@@ -562,9 +638,13 @@ const BookingPage: React.FC = () => {
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
                   <Card title="Phương thức thanh toán">
-                    <Radio.Group defaultValue="card" style={{ width: "100%" }}>
+                    <Radio.Group
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      style={{ width: "100%" }}
+                    >
                       <Radio.Button
-                        value="card"
+                        value="vnpay"
                         style={{
                           width: "100%",
                           marginBottom: "10px",
@@ -574,11 +654,10 @@ const BookingPage: React.FC = () => {
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: "bold" }}>
-                            Thẻ tín dụng/ghi nợ
-                          </div>
+                          <div style={{ fontWeight: "bold" }}>VNPay</div>
                           <div style={{ fontSize: "12px", color: "#666" }}>
-                            Visa, Mastercard, JCB
+                            Thanh toán bằng VNPay (ATM, Visa, MasterCard, JCB,
+                            QR Code)
                           </div>
                         </div>
                       </Radio.Button>
@@ -619,7 +698,7 @@ const BookingPage: React.FC = () => {
                         </div>
                       </Radio.Button>
                       <Radio.Button
-                        value="vnpay"
+                        value="card"
                         style={{
                           width: "100%",
                           height: "auto",
@@ -628,9 +707,11 @@ const BookingPage: React.FC = () => {
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: "bold" }}>VNPay QR</div>
+                          <div style={{ fontWeight: "bold" }}>
+                            Thẻ tín dụng/ghi nợ
+                          </div>
                           <div style={{ fontSize: "12px", color: "#666" }}>
-                            Quét mã QR để thanh toán
+                            Visa, Mastercard, JCB
                           </div>
                         </div>
                       </Radio.Button>
@@ -654,10 +735,7 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {
-                          cinemaList?.data?.find((c) => c.id === selectedCinema)
-                            ?.name
-                        }
+                        {findCinemaById(selectedCinema)?.name || ""}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
