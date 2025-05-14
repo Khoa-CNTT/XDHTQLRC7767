@@ -58,8 +58,7 @@ public class TicketServiceImpl implements TicketService {
 
             // Cập nhật trạng thái ghế
             chairRepository.updateChairStatus(chair.getId(), "BOOKED");
-
-            // Tạo ticket
+            chair.setStatus("BOOKED");
             Ticket ticket = new Ticket();
             ticket.setUsed(false);
             ticket.setType(dto.getType());

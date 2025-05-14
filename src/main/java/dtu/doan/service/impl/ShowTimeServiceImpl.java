@@ -107,7 +107,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 chairs.add(chair);
             }
 
-            chairRepository.saveAll(chairs);
+
 
             result.setStartTime(savedShowTime.getStartTime());
             result.setEndTime(savedShowTime.getEndTime());
