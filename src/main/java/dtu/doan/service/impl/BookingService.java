@@ -3,6 +3,7 @@ package dtu.doan.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import dtu.doan.dto.QRTicketDTO;
 import dtu.doan.model.Ticket;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,14 @@ public class BookingService {
     private QRCodeService qrCodeService;
 
     public void processBooking(Ticket ticket) {
-        // ... Logic xử lý đặt vé của bạn ...
-
-        // Tạo dữ liệu cho mã QR từ thông tin đặt vé
-        String qrData = generateQrData(ticket);
+       QRTicketDTO qrTicketDTO = new QRTicketDTO();
+       qrTicketDTO.setId(ticket.getId());
+       qrTicketDTO.setNameMovie(ticket.getShowTime().getMovie().getName());
+       qrTicketDTO.setCustomerName(ticket.getCustomer().getFullName());
+       qrTicketDTO.setStartTime(String.valueOf(ticket.getShowTime().getStartTime()));
+       qrTicketDTO.setChairs(ticket.getChairs().getName());
+       qrTicketDTO.setIsUsed(ticket.getUsed());
+        String qrData = generateQrData(qrTicketDTO);
 
         try {
             // Tạo mã QR
@@ -29,7 +34,7 @@ public class BookingService {
             String recipientEmail = ticket.getCustomer().getEmail(); // Lấy email của người dùng từ thông tin đặt vé
             String subject = "Thông tin vé xem phim của bạn";
             String emailBody = mailServices.generateEmailBody(ticket);
-            String qrCodeImageName = "ma_qr_ve_" + ticket.getCode() + ".png";
+            String qrCodeImageName = "ma_qr_ve_cua" + ticket.getCustomer() + ".png";
 
             mailServices.sendEmailWithQrCode(recipientEmail, subject, emailBody, qrCodeImage, qrCodeImageName);
 
@@ -44,7 +49,7 @@ public class BookingService {
     }
 
 
-    private String generateQrData(Ticket ticket) {
+    private String generateQrData(QRTicketDTO ticket) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
