@@ -33,12 +33,19 @@ const SectionTitle = styled.h3`
 
 interface MovieFormProps {
   form: FormInstance;
-  onFinish: (values: any) => Promise<void>;
+  onFinish: (values: any) => void;
   initialValues: Movie | null;
   onCancel?: () => void;
+  loading?: boolean;
 }
 
-const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, onCancel }) => {
+const MovieForm: React.FC<MovieFormProps> = ({
+  form,
+  onFinish,
+  initialValues,
+  onCancel,
+  loading,
+}) => {
   const normFile = (e: any) => {
     if (Array.isArray(e)) {
       return e;
@@ -53,7 +60,6 @@ const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, on
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
         message.success(`${info.file.name} tải lên thành công.`);
@@ -61,9 +67,7 @@ const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, on
         message.error(`${info.file.name} tải lên thất bại.`);
       }
     },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-    },
+    onDrop(e) {},
   };
 
   return (
@@ -112,7 +116,9 @@ const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, on
             <Form.Item
               name="director"
               label="Đạo diễn"
-              rules={[{ required: true, message: "Vui lòng nhập tên đạo diễn!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập tên đạo diễn!" },
+              ]}
             >
               <Input placeholder="Nhập tên đạo diễn" />
             </Form.Item>
@@ -138,18 +144,20 @@ const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, on
               rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
             >
               <Select placeholder="Chọn trạng thái">
-                <Option value="Đang chiếu">Đang chiếu</Option>
-                <Option value="Sắp chiếu">Sắp chiếu</Option>
-                <Option value="Đã chiếu">Đã chiếu</Option>
+                <Option value={1}>Đang chiếu</Option>
+                <Option value={2}>Sắp chiếu</Option>
+                <Option value={3}>Đã chiếu</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              name="rating"
-              label="Đánh giá (0-10)"
-            >
-              <InputNumber min={0} max={10} step={0.1} style={{ width: "100%" }} />
+            <Form.Item name="rating" label="Đánh giá (0-10)">
+              <InputNumber
+                min={0}
+                max={10}
+                step={0.1}
+                style={{ width: "100%" }}
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -205,22 +213,28 @@ const MovieForm: React.FC<MovieFormProps> = ({ form, onFinish, initialValues, on
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
-            <p className="ant-upload-text">Nhấp hoặc kéo file vào khu vực này để tải lên</p>
+            <p className="ant-upload-text">
+              Nhấp hoặc kéo file vào khu vực này để tải lên
+            </p>
             <p className="ant-upload-hint">Hỗ trợ tải lên một file hình ảnh</p>
           </Dragger>
         </Form.Item>
       </FormSection>
 
-      <div style={{ textAlign: 'right', marginTop: 24 }}>
-        <Button onClick={onCancel} style={{ marginRight: 8 }}>
+      <div style={{ textAlign: "right", marginTop: 24 }}>
+        <Button
+          onClick={onCancel}
+          style={{ marginRight: 8 }}
+          disabled={loading}
+        >
           Hủy
         </Button>
-        <Button type="primary" htmlType="submit">
-          {initialValues ? 'Cập nhật' : 'Thêm mới'}
+        <Button type="primary" htmlType="submit" loading={loading}>
+          {initialValues ? "Cập nhật" : "Thêm mới"}
         </Button>
       </div>
     </Form>
   );
 };
 
-export default MovieForm; 
+export default MovieForm;

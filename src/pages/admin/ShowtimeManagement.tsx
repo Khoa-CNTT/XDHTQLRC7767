@@ -21,9 +21,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  CalendarOutlined,
   SearchOutlined,
-  FilterOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -42,7 +40,7 @@ import {
   ShowtimeParams,
 } from "../../redux/slices/showtimeSlice";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 const PageHeader = styled.div`
@@ -111,8 +109,6 @@ const ShowtimeManagement: React.FC = () => {
 
   const handleSubmit = (values: any) => {
     const { movieId, roomId, showDate, startTime, pricePerShowTime } = values;
-    console.log(values);
-
     // Tìm phim để lấy thời lượng
     const selectedMovie = movieList?.data?.find(
       (movie: any) => movie.id === movieId
@@ -234,7 +230,7 @@ const ShowtimeManagement: React.FC = () => {
       title: "Giá vé",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => `${price.toLocaleString()}đ`,
+      render: (price: number) => `${price?.toLocaleString()}đ`,
     },
     {
       title: "Trạng thái",

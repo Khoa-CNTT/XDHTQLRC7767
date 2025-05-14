@@ -1,5 +1,14 @@
 import React from "react";
-import { Form, Select, DatePicker, Button, Row, Col, Divider } from "antd";
+import {
+  Form,
+  Select,
+  DatePicker,
+  Button,
+  Row,
+  Col,
+  Divider,
+  Input,
+} from "antd";
 import styled from "styled-components";
 import { FilterValues } from "../../pages/admin/MovieManagement";
 
@@ -31,6 +40,8 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
       status: null,
       genres: [],
       dateRange: null,
+      director: undefined,
+      actor: undefined,
     });
   };
 
@@ -47,7 +58,7 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
         onFinish={handleFinish}
       >
         <Row gutter={[16, 0]}>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12} md={6}>
             <Form.Item name="status" label="Trạng thái">
               <Select placeholder="Chọn trạng thái" allowClear>
                 <Option value="Đang chiếu">Đang chiếu</Option>
@@ -56,7 +67,7 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12} md={6}>
             <Form.Item name="genres" label="Thể loại">
               <Select mode="multiple" placeholder="Chọn thể loại" allowClear>
                 <Option value="Hành động">Hành động</Option>
@@ -78,7 +89,19 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item name="director" label="Đạo diễn">
+              <Input placeholder="Tìm theo đạo diễn" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item name="actor" label="Diễn viên">
+              <Input placeholder="Tìm theo diễn viên" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={[16, 0]}>
+          <Col xs={24} sm={12}>
             <Form.Item name="dateRange" label="Ngày phát hành">
               <RangePicker style={{ width: "100%" }} />
             </Form.Item>

@@ -1,12 +1,18 @@
 import React from "react";
 import { Button, Dropdown, Menu, Space } from "antd";
-import { DownOutlined, DeleteOutlined, ExportOutlined, TagOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  DeleteOutlined,
+  ExportOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
 
 interface MovieBulkActionsProps {
   selectedCount: number;
   onDelete: () => void;
   onExport?: () => void;
   onChangeStatus?: (status: string) => void;
+  loading?: boolean;
 }
 
 const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
@@ -14,21 +20,22 @@ const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
   onDelete,
   onExport,
   onChangeStatus,
+  loading,
 }) => {
   const statusMenu = (
     <Menu
       onClick={({ key }) => onChangeStatus && onChangeStatus(key as string)}
       items={[
         {
-          key: "Đang chiếu",
+          key: "1",
           label: "Đang chiếu",
         },
         {
-          key: "Sắp chiếu",
+          key: "2",
           label: "Sắp chiếu",
         },
         {
-          key: "Đã chiếu",
+          key: "3",
           label: "Đã chiếu",
         },
       ]}
@@ -41,19 +48,20 @@ const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
         danger
         icon={<DeleteOutlined />}
         onClick={onDelete}
+        loading={loading}
       >
         Xóa ({selectedCount})
       </Button>
-      
+
       {onExport && (
-        <Button icon={<ExportOutlined />} onClick={onExport}>
+        <Button icon={<ExportOutlined />} onClick={onExport} disabled={loading}>
           Xuất Excel
         </Button>
       )}
-      
+
       {onChangeStatus && (
-        <Dropdown overlay={statusMenu}>
-          <Button icon={<TagOutlined />}>
+        <Dropdown overlay={statusMenu} disabled={loading}>
+          <Button icon={<TagOutlined />} loading={loading}>
             Đổi trạng thái <DownOutlined />
           </Button>
         </Dropdown>
@@ -62,4 +70,4 @@ const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
   );
 };
 
-export default MovieBulkActions; 
+export default MovieBulkActions;

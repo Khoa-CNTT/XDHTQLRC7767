@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Button, Divider, message } from "antd";
+import { Button, message } from "antd";
 import {
   CheckCircleOutlined,
   PrinterOutlined,
@@ -16,6 +16,7 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
+import TicketInfoCard from "../../components/TicketInfoCard";
 
 const PageContainer = styled.div`
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -358,6 +359,7 @@ interface BookingData {
     address: string;
   };
   showtime: {
+    id?: number;
     date: any; // Using any to accommodate different date formats
     time: string;
     screen: string;
@@ -367,15 +369,30 @@ interface BookingData {
     ticketPrice: number;
     quantity: number;
     subtotal: number;
-    serviceFee: number;
     total: number;
   };
+  customerName?: string;
+  email?: string;
+  phoneNumber?: string;
+  customerId?: number;
+  seatsInfo?: any[]; // Thêm để truy cập thông tin ghế chi tiết
+}
+
+// Interface for ticket data
+interface TicketData {
+  id: number;
+  nameMovie: string;
+  startTime: string;
+  chairs: string;
+  customerName: string;
+  isUsed: boolean;
 }
 
 const InvoicePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [invoiceId, setInvoiceId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
 
@@ -383,7 +400,16 @@ const InvoicePage: React.FC = () => {
     try {
       // Kiểm tra xem có dữ liệu booking được truyền qua không
       if (location.state && location.state.bookingData) {
-        setBookingData(location.state.bookingData);
+        const receivedData = location.state.bookingData;
+        console.log("[INVOICE_PAGE] Received booking data:", receivedData);
+
+        // Log thông tin giá vé gốc để debug
+        console.log("[INVOICE_PAGE] Original pricing info:", {
+          ticketPrice: receivedData.pricing?.ticketPrice,
+          quantity: receivedData.pricing?.quantity,
+          subtotal: receivedData.pricing?.subtotal,
+          total: receivedData.pricing?.total,
+        });
 
         // Tạo mã hóa đơn ngẫu nhiên
         const randomId = Math.floor(100000 + Math.random() * 900000);
@@ -391,14 +417,66 @@ const InvoicePage: React.FC = () => {
 
         // Lấy ngày giờ hiện tại
         const now = new Date();
-        setInvoiceDate(now.toLocaleString());
+        setInvoiceDate(now?.toLocaleString());
+
+        // Sử dụng giá từ BookingPage
+        if (!receivedData.pricing) {
+          // Nếu không có thông tin pricing, tạo dữ liệu mặc định
+          console.warn("[INVOICE_PAGE] No pricing data found!");
+          const seatCount = receivedData.seats?.length || 1;
+          receivedData.pricing = {
+            ticketPrice: 90000, // Giá mặc định
+            quantity: seatCount,
+            subtotal: 90000 * seatCount,
+            total: 90000 * seatCount,
+          };
+        } else {
+          // Đảm bảo dữ liệu hợp lệ (không bắt buộc phải ghi đè giá trị từ BookingPage)
+          if (
+            isNaN(receivedData.pricing.ticketPrice) ||
+            receivedData.pricing.ticketPrice <= 0
+          ) {
+            console.warn(
+              "[INVOICE_PAGE] Invalid ticket price! Using default price."
+            );
+            receivedData.pricing.ticketPrice = 90000;
+          }
+
+          if (
+            isNaN(receivedData.pricing.quantity) ||
+            receivedData.pricing.quantity <= 0
+          ) {
+            receivedData.pricing.quantity = receivedData.seats?.length || 1;
+          }
+
+          // Tính lại tổng tiền nếu cần
+          if (
+            isNaN(receivedData.pricing.total) ||
+            receivedData.pricing.total <= 0
+          ) {
+            receivedData.pricing.total =
+              receivedData.pricing.ticketPrice * receivedData.pricing.quantity;
+          }
+        }
+
+        console.log("[INVOICE_PAGE] Final pricing data:", receivedData.pricing);
+        setBookingData(receivedData);
+
+        // Set ticket data if available
+        if (location.state.ticketData) {
+          setTicketData(location.state.ticketData);
+          console.log(
+            "[INVOICE_PAGE] Setting ticket data:",
+            location.state.ticketData
+          );
+        }
       } else {
         // Nếu không có dữ liệu, chuyển hướng về trang chủ
         message.error("Không tìm thấy thông tin đặt vé!");
         navigate("/");
       }
     } catch (error) {
-      console.error("Error in InvoicePage:", error);
+      console.error("[INVOICE_PAGE] Error processing booking data:", error);
       message.error("Đã xảy ra lỗi khi xử lý thông tin đặt vé!");
       navigate("/");
     }
@@ -507,7 +585,6 @@ const InvoicePage: React.FC = () => {
                     </InfoItem>
                   </InfoGrid>
                 </Section>
-
                 <Section>
                   <SectionTitle>
                     <TeamOutlined /> Thông tin ghế
@@ -518,29 +595,19 @@ const InvoicePage: React.FC = () => {
                     ))}
                   </SeatGrid>
                 </Section>
-
                 <Section>
                   <SectionTitle>
                     <BarcodeOutlined /> Chi tiết thanh toán
                   </SectionTitle>
-                  <PriceRow>
-                    <span>Giá vé x {bookingData.pricing.quantity}</span>
-                    <span>
-                      {bookingData.pricing.ticketPrice.toLocaleString()}đ x{" "}
-                      {bookingData.pricing.quantity}
-                    </span>
-                  </PriceRow>
-                  <PriceRow>
-                    <span>Phí dịch vụ</span>
-                    <span>
-                      {bookingData.pricing.serviceFee.toLocaleString()}đ
-                    </span>
-                  </PriceRow>
-                  <Divider style={{ margin: "10px 0" }} />
-                  <TotalRow>
-                    <span>Tổng cộng</span>
-                    <span>{bookingData.pricing.total.toLocaleString()}đ</span>
-                  </TotalRow>
+                  {bookingData.pricing ? (
+                    <TicketInfoCard
+                      ticketPrice={bookingData.pricing.ticketPrice}
+                      quantity={bookingData.pricing.quantity}
+                      total={bookingData.pricing.total}
+                    />
+                  ) : (
+                    <p>Không có thông tin giá vé</p>
+                  )}
                 </Section>
               </LeftColumn>
 

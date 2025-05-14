@@ -189,7 +189,7 @@ const ReportManagement: React.FC = () => {
       title: "Doanh thu (VNĐ)",
       dataIndex: "revenue",
       key: "revenue",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => value?.toLocaleString(),
       sorter: (a: any, b: any) => a.revenue - b.revenue,
     },
     {
@@ -238,7 +238,7 @@ const ReportManagement: React.FC = () => {
       title: "Doanh thu (VNĐ)",
       dataIndex: "revenue",
       key: "revenue",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => value?.toLocaleString(),
       sorter: (a: any, b: any) => a.revenue - b.revenue,
     },
   ];

@@ -8,8 +8,11 @@ import roomReducer from "./slices/room.slice";
 import showtimeReducer from "./slices/showtimeSlice";
 import promotionReducer from "./slices/promotionSlice";
 import paymentReducer from "./slices/paymentSlice";
+import ticketReducer from "./slices/ticketSlice";
 
 const sagaMiddleware = createSagaMiddleware();
+
+// Log middlewares để debug
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +23,7 @@ export const store = configureStore({
     showtime: showtimeReducer,
     promotion: promotionReducer,
     payment: paymentReducer,
+    ticket: ticketReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),

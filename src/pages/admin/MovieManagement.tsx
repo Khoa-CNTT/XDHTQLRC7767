@@ -21,6 +21,21 @@ import {
 import styled from "styled-components";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { Movie as ReduxMovie } from "../../redux/slices/movieSlice";
+
+// Import các actions từ movieSlice
+import {
+  getAdminMovieListRequest,
+  addMovieRequest,
+  updateMovieRequest,
+  deleteMovieRequest,
+  bulkDeleteMoviesRequest,
+  bulkUpdateStatusRequest,
+  MovieFilterParams,
+  resetAdminMovieState,
+} from "../../redux/slices/movieSlice";
 
 // Import các component
 import MovieFilter from "../../components/movies/MovieFilter";
@@ -28,14 +43,6 @@ import MovieForm from "../../components/movies/MovieForm";
 import MovieTable from "../../components/movies/MovieTable";
 import MovieDetail from "../../components/movies/MovieDetail";
 import MovieBulkActions from "../../components/movies/MovieBulkActions";
-import {
-  fetchMovies,
-  addMovie,
-  updateMovie,
-  deleteMovie,
-  bulkDeleteMovies,
-  bulkUpdateStatus,
-} from "../../services/movieService";
 
 const { Title } = Typography;
 
@@ -55,29 +62,50 @@ const StyledCard = styled.div`
 `;
 
 // Định nghĩa các interface
-export interface Movie {
-  id: number;
-  title: string;
-  director: string;
-  releaseDate?: string | null;
-  duration?: number;
-  genre?: string[];
-  status?: string;
-  poster?: string;
-  description?: string;
-  rating?: number;
+export interface Movie extends ReduxMovie {
+  director: string; // Ensure director is required
 }
 
 export interface FilterValues {
   status: string | null;
   genres: string[];
   dateRange: [Dayjs | null, Dayjs | null] | null;
+  director?: string;
+  actor?: string;
 }
 
 const MovieManagement: React.FC = () => {
+  // Redux
+  const dispatch = useDispatch();
+  const { data: movies, loading } = useSelector(
+    (state: RootState) => state.movie.adminMovieList
+  );
+
+  const {
+    success: addSuccess,
+    loading: addLoading,
+    error: addError,
+  } = useSelector((state: RootState) => state.movie.adminMovieAdd);
+
+  const {
+    success: updateSuccess,
+    loading: updateLoading,
+    error: updateError,
+  } = useSelector((state: RootState) => state.movie.adminMovieUpdate);
+
+  const {
+    success: deleteSuccess,
+    loading: deleteLoading,
+    error: deleteError,
+  } = useSelector((state: RootState) => state.movie.adminMovieDelete);
+
+  const {
+    success: bulkActionSuccess,
+    loading: bulkActionLoading,
+    error: bulkActionError,
+  } = useSelector((state: RootState) => state.movie.adminBulkActions);
+
   // State
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [isViewModalVisible, setIsViewModalVisible] = useState<boolean>(false);
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
@@ -88,6 +116,8 @@ const MovieManagement: React.FC = () => {
     status: null,
     genres: [],
     dateRange: null,
+    director: undefined,
+    actor: undefined,
   });
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [bulkActionVisible, setBulkActionVisible] = useState<boolean>(false);
@@ -97,25 +127,39 @@ const MovieManagement: React.FC = () => {
     loadMovies();
   }, []);
 
-  const loadMovies = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchMovies();
-      setMovies(data);
-    } catch (error) {
-      message.error("Không thể tải dữ liệu phim");
-    } finally {
-      setLoading(false);
+  // Process redux action responses
+  useEffect(() => {
+    if (addSuccess || updateSuccess || deleteSuccess || bulkActionSuccess) {
+      setIsModalVisible(false);
+      setCurrentMovie(null);
+      form.resetFields();
+
+      // Reset states
+      dispatch(resetAdminMovieState());
     }
+  }, [addSuccess, updateSuccess, deleteSuccess, bulkActionSuccess]);
+
+  const loadMovies = () => {
+    // Create filter params for API
+    const filterParams: MovieFilterParams = {};
+
+    if (searchText) filterParams.name = searchText;
+    if (filters.director) filterParams.director = filters.director;
+    if (filters.actor) filterParams.actor = filters.actor;
+    if (filters.genres?.length > 0) filterParams.genreName = filters.genres[0];
+
+    dispatch(getAdminMovieListRequest(filterParams));
   };
 
   // Handlers
   const handleSearch = (value: string) => {
     setSearchText(value);
+    loadMovies();
   };
 
   const handleFilterChange = (values: FilterValues) => {
     setFilters(values);
+    loadMovies();
   };
 
   const showModal = (movie: Movie | null = null) => {
@@ -143,53 +187,44 @@ const MovieManagement: React.FC = () => {
     form.resetFields();
   };
 
-  const handleSubmit = async (values: any) => {
-    try {
-      setLoading(true);
-      
-      // Xử lý ngày phát hành
-      const formattedValues = {
-        ...values,
-        releaseDate: values.releaseDate ? values.releaseDate.format('YYYY-MM-DD') : null,
-      };
+  const handleSubmit = (values: any) => {
+    // Xử lý ngày phát hành
+    const formattedValues = {
+      ...values,
+      releaseDate: values.releaseDate
+        ? values.releaseDate.format("YYYY-MM-DD")
+        : null,
+    };
 
-      // Xử lý poster nếu có
-      if (values.poster && values.poster.length > 0) {
-        // Trong thực tế, bạn sẽ upload file và lấy URL từ response
-        // Ở đây chỉ giả lập
-        formattedValues.poster = "https://via.placeholder.com/150x225";
-      }
+    // Xử lý poster nếu có
+    if (
+      values.poster &&
+      values.poster.fileList &&
+      values.poster.fileList.length > 0
+    ) {
+      // Trong thực tế, bạn sẽ upload file và lấy URL từ response
+      // Ở đây chỉ giả lập
+      formattedValues.poster =
+        values.poster.fileList[0].thumbUrl ||
+        "https://via.placeholder.com/150x225";
+    }
 
-      if (currentMovie) {
-        // Cập nhật phim
-        await updateMovie(currentMovie.id, formattedValues);
-        message.success("Cập nhật phim thành công!");
-      } else {
-        // Thêm phim mới
-        await addMovie(formattedValues);
-        message.success("Thêm phim mới thành công!");
-      }
-
-      handleCancel();
-      loadMovies();
-    } catch (error) {
-      message.error("Có lỗi xảy ra. Vui lòng thử lại!");
-    } finally {
-      setLoading(false);
+    if (currentMovie) {
+      // Cập nhật phim
+      dispatch(
+        updateMovieRequest({
+          id: currentMovie.id,
+          data: formattedValues,
+        })
+      );
+    } else {
+      // Thêm phim mới
+      dispatch(addMovieRequest(formattedValues));
     }
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      setLoading(true);
-      await deleteMovie(id);
-      message.success("Xóa phim thành công!");
-      loadMovies();
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi xóa phim!");
-    } finally {
-      setLoading(false);
-    }
+  const handleDelete = (id: number) => {
+    dispatch(deleteMovieRequest(id));
   };
 
   const handleRowSelectionChange = (selectedKeys: React.Key[]) => {
@@ -197,60 +232,31 @@ const MovieManagement: React.FC = () => {
     setBulkActionVisible(selectedKeys.length > 0);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      setLoading(true);
-      await bulkDeleteMovies(selectedRowKeys as number[]);
-      message.success(`Đã xóa ${selectedRowKeys.length} phim!`);
-      setSelectedRowKeys([]);
-      setBulkActionVisible(false);
-      loadMovies();
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi xóa phim!");
-    } finally {
-      setLoading(false);
-    }
+  const handleBulkDelete = () => {
+    dispatch(bulkDeleteMoviesRequest(selectedRowKeys as number[]));
+    setSelectedRowKeys([]);
+    setBulkActionVisible(false);
   };
 
-  const handleBulkChangeStatus = async (status: string) => {
-    try {
-      setLoading(true);
-      await bulkUpdateStatus(selectedRowKeys as number[], status);
-      message.success(`Đã cập nhật trạng thái cho ${selectedRowKeys.length} phim!`);
-      loadMovies();
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi cập nhật trạng thái!");
-    } finally {
-      setLoading(false);
-    }
+  const handleBulkChangeStatus = (status: string) => {
+    dispatch(
+      bulkUpdateStatusRequest({
+        ids: selectedRowKeys as number[],
+        status,
+      })
+    );
   };
 
-  // Lọc phim theo điều kiện tìm kiếm và bộ lọc
-  const filteredMovies = movies.filter((movie) => {
-    let matchesSearch = true;
+  // Lọc phim theo điều kiện bộ lọc
+  const filteredMovies = movies.filter((movie: ReduxMovie) => {
     let matchesFilters = true;
 
-    // Search filter
-    if (searchText) {
-      matchesSearch =
-        movie.title.toLowerCase().includes(searchText.toLowerCase()) ||
-        movie.director.toLowerCase().includes(searchText.toLowerCase());
-    }
-
-    // Status filter
+    // Status filter - client side
     if (filters.status) {
       matchesFilters = matchesFilters && movie.status === filters.status;
     }
 
-    // Genre filter
-    if (filters.genres && filters.genres.length > 0) {
-      matchesFilters =
-        (matchesFilters &&
-          movie.genre?.some((g) => filters.genres.includes(g))) ||
-        false;
-    }
-
-    // Date range filter
+    // Date range filter - client side
     if (
       filters.dateRange &&
       filters.dateRange[0] &&
@@ -264,8 +270,8 @@ const MovieManagement: React.FC = () => {
         matchesFilters && movieDate >= startDate && movieDate <= endDate;
     }
 
-    return matchesSearch && matchesFilters;
-  });
+    return matchesFilters;
+  }) as Movie[];
 
   return (
     <div>
@@ -288,7 +294,7 @@ const MovieManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={16}>
             <Input
-              placeholder="Tìm kiếm theo tên phim, đạo diễn..."
+              placeholder="Tìm kiếm theo tên phim..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => handleSearch(e.target.value)}
@@ -304,12 +310,13 @@ const MovieManagement: React.FC = () => {
               >
                 Bộ lọc
               </Button>
-              
+
               {bulkActionVisible && (
                 <MovieBulkActions
                   selectedCount={selectedRowKeys.length}
                   onDelete={handleBulkDelete}
                   onChangeStatus={handleBulkChangeStatus}
+                  loading={bulkActionLoading}
                 />
               )}
             </Space>
@@ -331,6 +338,7 @@ const MovieManagement: React.FC = () => {
           onDelete={handleDelete}
           selectedRowKeys={selectedRowKeys}
           onSelectChange={handleRowSelectionChange}
+          deleteLoading={deleteLoading}
         />
       </StyledCard>
 
@@ -347,6 +355,7 @@ const MovieManagement: React.FC = () => {
           onFinish={handleSubmit}
           initialValues={currentMovie}
           onCancel={handleCancel}
+          loading={currentMovie ? updateLoading : addLoading}
         />
       </Modal>
 

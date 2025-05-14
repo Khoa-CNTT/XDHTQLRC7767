@@ -17,7 +17,7 @@ export const ContentWrapper = styled.div`
   width: 80%;
   max-width: 1200px;
   margin: 0 auto;
-  
+
   @media (max-width: 768px) {
     width: 90%;
   }
@@ -32,28 +32,31 @@ export const PageTitle = styled.h1`
 
 export const StyledSteps = styled(Steps)`
   margin-bottom: 40px;
-  
+
   .ant-steps-item-title {
     font-size: 16px;
   }
-  
+
   .ant-steps-item-process .ant-steps-item-icon {
     background-color: #fd6b0a;
     border-color: #fd6b0a;
   }
-  
+
   .ant-steps-item-finish .ant-steps-item-icon {
     border-color: #fd6b0a;
   }
-  
+
   .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
     color: #fd6b0a;
   }
-  
-  .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title::after {
+
+  .ant-steps-item-finish
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title::after {
     background-color: #fd6b0a;
   }
-  
+
   @media (max-width: 768px) {
     .ant-steps-item-title {
       font-size: 14px;
@@ -66,7 +69,7 @@ export const StepContent = styled.div`
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  
+
   @media (max-width: 768px) {
     padding: 20px;
   }
@@ -77,11 +80,11 @@ export const MovieInfoCard = styled(Card)`
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  
+
   .ant-card-cover {
     height: 300px;
     overflow: hidden;
-    
+
     img {
       width: 100%;
       height: 100%;
@@ -89,11 +92,11 @@ export const MovieInfoCard = styled(Card)`
       object-position: center top;
     }
   }
-  
+
   .ant-card-body {
     padding: 20px;
   }
-  
+
   @media (max-width: 768px) {
     .ant-card-cover {
       height: 200px;
@@ -106,7 +109,7 @@ export const MovieTitle = styled.h2`
   margin-bottom: 16px;
   color: #333;
   font-weight: 600;
-  
+
   @media (max-width: 768px) {
     font-size: 20px;
   }
@@ -117,7 +120,7 @@ export const MovieMeta = styled.div`
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 16px;
-  
+
   @media (max-width: 768px) {
     gap: 12px;
   }
@@ -147,7 +150,7 @@ export const SectionTitle = styled.h3`
 export const StyledDatePicker = styled(DatePicker)`
   width: 100%;
   margin-bottom: 24px;
-  
+
   .ant-picker-input > input {
     font-size: 16px;
   }
@@ -167,20 +170,20 @@ export const CinemaCard = styled(Radio)`
   border: 1px solid #d9d9d9;
   border-radius: 8px;
   transition: all 0.3s ease;
-  
+
   &.ant-radio-wrapper-checked {
     border-color: #fd6b0a;
     background-color: rgba(253, 107, 10, 0.05);
   }
-  
+
   .ant-radio {
     top: 16px;
   }
-  
+
   .ant-radio-inner::after {
     background-color: #fd6b0a;
   }
-  
+
   .ant-radio-checked .ant-radio-inner {
     border-color: #fd6b0a;
   }
@@ -207,14 +210,15 @@ export const ShowtimeList = styled.div`
 
 export const ShowtimeButton = styled(Button)<{ $selected?: boolean }>`
   min-width: 100px;
-  background-color: ${props => props.$selected ? '#fd6b0a' : 'white'};
-  color: ${props => props.$selected ? 'white' : '#333'};
-  border-color: ${props => props.$selected ? '#fd6b0a' : '#d9d9d9'};
-  
-  &:hover, &:focus {
-    background-color: ${props => props.$selected ? '#e05c00' : '#f5f5f5'};
-    color: ${props => props.$selected ? 'white' : '#fd6b0a'};
-    border-color: ${props => props.$selected ? '#e05c00' : '#fd6b0a'};
+  background-color: ${(props) => (props.$selected ? "#fd6b0a" : "white")};
+  color: ${(props) => (props.$selected ? "white" : "#333")};
+  border-color: ${(props) => (props.$selected ? "#fd6b0a" : "#d9d9d9")};
+
+  &:hover,
+  &:focus {
+    background-color: ${(props) => (props.$selected ? "#e05c00" : "#f5f5f5")};
+    color: ${(props) => (props.$selected ? "white" : "#fd6b0a")};
+    border-color: ${(props) => (props.$selected ? "#e05c00" : "#fd6b0a")};
   }
 `;
 
@@ -262,8 +266,8 @@ export const LegendColor = styled.div<{ $color: string; $borderColor: string }>`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  background-color: ${props => props.$color};
-  border: 1px solid ${props => props.$borderColor};
+  background-color: ${(props) => props.$color};
+  border: 1px solid ${(props) => props.$borderColor};
 `;
 
 export const SeatsGrid = styled.div`
@@ -271,17 +275,21 @@ export const SeatsGrid = styled.div`
   grid-template-columns: repeat(12, 1fr);
   gap: 8px;
   margin-bottom: 24px;
-  
+
   @media (max-width: 768px) {
     gap: 6px;
   }
-  
+
   @media (max-width: 576px) {
     gap: 4px;
   }
 `;
 
-export const Seat = styled.div<{ $status: string; $type: string; $selected: boolean }>`
+export const Seat = styled.div<{
+  $status: string;
+  $type: string;
+  $selected: boolean;
+}>`
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -289,31 +297,33 @@ export const Seat = styled.div<{ $status: string; $type: string; $selected: bool
   font-size: 12px;
   font-weight: 600;
   border-radius: 4px;
-  cursor: ${props => props.$status === 'available' ? 'pointer' : 'not-allowed'};
-  background-color: ${props => {
-    if (props.$status === 'reserved') return '#ddd';
-    if (props.$selected) return '#fd6b0a';
-    return props.$type === 'vip' ? '#ffd700' : 'white';
+  cursor: ${(props) =>
+    props.$status === "available" ? "pointer" : "not-allowed"};
+  background-color: ${(props) => {
+    if (props.$status === "booked") return "#888";
+    if (props.$selected) return "#fd6b0a";
+    return props.$type === "vip" ? "#ffd700" : "white";
   }};
-  color: ${props => {
-    if (props.$status === 'reserved') return '#999';
-    if (props.$selected) return 'white';
-    return '#333';
+  color: ${(props) => {
+    if (props.$status === "booked") return "#fff";
+    if (props.$selected) return "white";
+    return "#333";
   }};
-  border: 1px solid ${props => {
-    if (props.$status === 'reserved') return '#ddd';
-    if (props.$selected) return '#fd6b0a';
-    return props.$type === 'vip' ? '#ffd700' : '#d9d9d9';
-  }};
-  
+  border: 1px solid
+    ${(props) => {
+      if (props.$status === "booked") return "#777";
+      if (props.$selected) return "#fd6b0a";
+      return props.$type === "vip" ? "#ffd700" : "#d9d9d9";
+    }};
+
   &:hover {
-    background-color: ${props => {
-      if (props.$status === 'reserved') return '#ddd';
-      if (props.$selected) return '#e05c00';
-      return props.$type === 'vip' ? '#ffe066' : '#f5f5f5';
+    background-color: ${(props) => {
+      if (props.$status === "booked") return "#888";
+      if (props.$selected) return "#e05c00";
+      return props.$type === "vip" ? "#ffe066" : "#f5f5f5";
     }};
   }
-  
+
   @media (max-width: 576px) {
     font-size: 10px;
   }
@@ -354,7 +364,8 @@ export const ButtonsContainer = styled.div`
 `;
 
 export const BackButton = styled(Button)`
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     color: #fd6b0a;
     border-color: #fd6b0a;
   }
@@ -363,12 +374,13 @@ export const BackButton = styled(Button)`
 export const NextButton = styled(Button)`
   background-color: #fd6b0a;
   border-color: #fd6b0a;
-  
-  &:hover, &:focus {
+
+  &:hover,
+  &:focus {
     background-color: #e05c00;
     border-color: #e05c00;
   }
-  
+
   &:disabled {
     background-color: #f5f5f5;
     border-color: #d9d9d9;

@@ -393,7 +393,7 @@ const TicketHistory: React.FC = () => {
 
                 <DetailItem>
                   <DetailIcon>💰</DetailIcon>
-                  {selectedTicket.totalPrice.toLocaleString("vi-VN")} VNĐ
+                  {selectedTicket.totalPrice?.toLocaleString("vi-VN")} VNĐ
                 </DetailItem>
               </DetailsContainer>
             </TicketDetails>

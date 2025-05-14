@@ -9,6 +9,9 @@ import {
   Spin,
   Steps,
   DatePicker as AntDatePicker,
+  notification,
+  Alert,
+  Button,
 } from "antd";
 import {
   CalendarOutlined,
@@ -76,30 +79,12 @@ interface Cinema {
 }
 
 // Giả lập dữ liệu ghế ngồi khi API chưa trả về dữ liệu
-const generateSeats = () => {
-  const rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-  const seatsPerRow = 10;
-  const seats = [];
-
-  for (let i = 0; i < rows.length; i++) {
-    for (let j = 1; j <= seatsPerRow; j++) {
-      const id = `${rows[i]}${j}`;
-      const type = i >= 7 ? "vip" : "standard"; // Hàng G-J là ghế VIP
-      const status = Math.random() < 0.2 ? "booked" : "available"; // 20% ghế đã được đặt
-      seats.push({ id, type, status });
-    }
-  }
-
-  return seats;
-};
 
 // Custom DatePicker để tránh lỗi TypeScript
 const DatePicker = (props: any) => {
   return <StyledDatePicker {...props} />;
 };
 
-// Giá vé
-const STANDARD_PRICE = 90000; // 90k VND
 const VIP_PRICE = 120000; // 120k VND
 
 const formatShowtime = (startTime: string, endTime: string) => {
@@ -133,18 +118,36 @@ const BookingPage: React.FC = () => {
   const { cinemaList, mockShowtimes } = useSelector(
     (state: RootState) => state.cinema
   );
-  const { showtimeWithChairs } = useSelector(
+  const { showtimeWithChairs, loading: showtimeLoading } = useSelector(
     (state: RootState) => state.showtime
   );
+  // Get user information from Redux state
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const [showtimes, setShowtimes] = useState<FormattedShowtime[]>([]);
 
   // Thêm state quản lý phương thức thanh toán
   const [paymentMethod, setPaymentMethod] = useState("vnpay");
 
+  // Interface cho thông tin ghế đã chọn
+  interface SelectedSeatInfo {
+    name: string;
+    id: number;
+  }
+
+  // State mới để lưu thông tin đầy đủ của ghế
+  const [selectedSeatsInfo, setSelectedSeatsInfo] = useState<
+    SelectedSeatInfo[]
+  >([]);
+
+  const [apiError, setApiError] = useState<string | null>(null);
+
   useEffect(() => {
-    dispatch(getBookingRequest({ id: id }));
-    dispatch(getCinemaListRequest());
+    if (id) {
+      dispatch(getBookingRequest({ id }));
+      dispatch(getCinemaListRequest());
+      setLoading(true);
+    }
   }, [id, dispatch]);
 
   // Thêm useEffect riêng để xử lý khi có dữ liệu
@@ -152,6 +155,10 @@ const BookingPage: React.FC = () => {
     if (movieBooking?.data) {
       setMovie(movieBooking.data);
       setLoading(false);
+    } else if (movieBooking?.error) {
+      setApiError("Không thể tải thông tin phim. Vui lòng thử lại sau.");
+      setLoading(false);
+      message.error("Không thể tải thông tin phim");
     }
   }, [movieBooking]);
 
@@ -168,15 +175,12 @@ const BookingPage: React.FC = () => {
       }));
 
       setSeats(formattedSeats);
-    } else {
-      // Fallback to generated seats if API does not return data
-      setSeats(generateSeats());
     }
   }, [showtimeWithChairs]);
 
   // Cập nhật useEffect khi có dữ liệu mockShowtimes từ API
   useEffect(() => {
-    if (mockShowtimes?.data) {
+    if (mockShowtimes?.data && Array.isArray(mockShowtimes.data)) {
       const formattedShowtimes = mockShowtimes.data.map((showtime: any) => ({
         id: showtime.id,
         time: formatShowtime(showtime.startTime, showtime.endTime),
@@ -185,10 +189,40 @@ const BookingPage: React.FC = () => {
     }
   }, [mockShowtimes]);
 
+  // Thêm xử lý lỗi khi lấy dữ liệu ghế
+  useEffect(() => {
+    if (showtimeWithChairs?.error) {
+      message.error("Không thể tải thông tin ghế ngồi. Vui lòng thử lại.");
+    }
+  }, [showtimeWithChairs?.error]);
+
+  // Thêm xử lý lỗi khi lấy dữ liệu showtime
+  useEffect(() => {
+    if (mockShowtimes?.error) {
+      message.error("Không thể tải lịch chiếu. Vui lòng thử lại.");
+    }
+  }, [mockShowtimes?.error]);
+
   // Xử lý khi chọn rạp chiếu
   const handleCinemaSelect = (cinemaId: string) => {
     setSelectedCinema(cinemaId);
     setSelectedShowtime(null);
+
+    if (selectedDate && id) {
+      try {
+        dispatch(
+          getMockShowtimeRequest({
+            date: selectedDate.format("DD-MM-YYYY"),
+            cinemaId: cinemaId,
+            movieId: id,
+          })
+        );
+      } catch (error) {
+        message.error("Không thể tải lịch chiếu. Vui lòng thử lại.");
+      }
+    } else {
+      message.warning("Vui lòng chọn ngày xem phim trước");
+    }
   };
 
   // Xử lý khi chọn ghế
@@ -205,6 +239,30 @@ const BookingPage: React.FC = () => {
     });
   };
 
+  // Cập nhật selectedSeatsInfo khi người dùng chọn/bỏ chọn ghế
+  useEffect(() => {
+    if (seats.length > 0) {
+      const seatsWithInfo = selectedSeats
+        .map((seatName) => {
+          const seatInfo = seats.find((s) => s.id === seatName);
+          const chairFromAPI = showtimeWithChairs?.data?.chairs.find(
+            (c) => c.name === seatName
+          );
+
+          if (seatInfo && chairFromAPI) {
+            return {
+              name: seatName,
+              id: chairFromAPI.id,
+            };
+          }
+          return null;
+        })
+        .filter((seat) => seat !== null) as SelectedSeatInfo[];
+
+      setSelectedSeatsInfo(seatsWithInfo);
+    }
+  }, [selectedSeats, seats, showtimeWithChairs]);
+
   // Tính tổng tiền
   const calculateTotalPrice = () => {
     return (
@@ -212,7 +270,7 @@ const BookingPage: React.FC = () => {
         const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "standard";
       }).length *
-        STANDARD_PRICE +
+        showtimeWithChairs?.data?.pricePerShowTime +
       selectedSeats.filter((id) => {
         const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "vip";
@@ -244,14 +302,18 @@ const BookingPage: React.FC = () => {
     }
 
     // Nếu chuyển sang bước chọn ghế, lấy thông tin ghế từ API
-    if (currentStep === 0) {
-      dispatch(getShowtimeWithChairsRequest({ id: selectedShowtime!.id }));
+    if (currentStep === 0 && selectedShowtime) {
+      try {
+        dispatch(getShowtimeWithChairsRequest({ id: selectedShowtime.id }));
+      } catch (error) {
+        message.error("Không thể tải thông tin ghế ngồi. Vui lòng thử lại.");
+        return;
+      }
     }
 
     if (currentStep === 2) {
       // Xử lý thanh toán
-      message.success("Đặt vé thành công!");
-      navigate("/");
+      handlePayment();
       return;
     }
 
@@ -266,13 +328,35 @@ const BookingPage: React.FC = () => {
   // Fix the DatePicker onChange type
   const handleDateChange = (date: any, dateString: string | string[]) => {
     setSelectedDate(date);
+    // Reset selected cinema and showtime when changing date
+    setSelectedShowtime(null);
+
+    if (selectedCinema && date && id) {
+      try {
+        dispatch(
+          getMockShowtimeRequest({
+            date: dayjs(date).format("DD-MM-YYYY"),
+            cinemaId: selectedCinema,
+            movieId: id,
+          })
+        );
+      } catch (error) {
+        message.error("Không thể tải lịch chiếu. Vui lòng thử lại.");
+      }
+    }
   };
 
-  // Cập nhật hàm handlePayment để xử lý thanh toán VNPay
+  // Cập nhật hàm handlePayment để xử lý lỗi VNPay
   const handlePayment = () => {
     // Kiểm tra xem người dùng đã chọn ghế chưa
     if (selectedSeats.length === 0) {
       message.error("Vui lòng chọn ít nhất một ghế!");
+      return;
+    }
+
+    // Kiểm tra người dùng đã đăng nhập chưa
+    if (!user || !user.id) {
+      message.error("Vui lòng đăng nhập để tiếp tục thanh toán!");
       return;
     }
 
@@ -284,46 +368,62 @@ const BookingPage: React.FC = () => {
       movie: {
         id: id || "",
         name: movie?.name || "Unknown Movie",
-        image: movie?.poster || "",
+        image: movie?.poster || movie?.imageUrl || "",
         duration: movie?.duration || "N/A",
       },
       cinema: {
-        name: "UBANFLIX Vincom Plaza Ngô Quyền",
-        address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
+        name:
+          findCinemaById(selectedCinema)?.name ||
+          "UBANFLIX Vincom Plaza Ngô Quyền",
+        address:
+          findCinemaById(selectedCinema)?.address ||
+          "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
       },
       showtime: {
+        id: selectedShowtime?.id,
         date: formattedDate,
         time: selectedShowtime?.time || "",
         screen: "Screen 1",
       },
       seats: selectedSeats,
+      seatsInfo: selectedSeatsInfo,
       pricing: {
-        ticketPrice: 90000, // Giá vé cơ bản
+        ticketPrice: showtimeWithChairs?.data?.price || 0,
         quantity: selectedSeats.length,
-        subtotal: 90000 * selectedSeats.length,
+        subtotal: (showtimeWithChairs?.data?.price || 0) * selectedSeats.length,
         serviceFee: 10000 * selectedSeats.length,
-        total: (90000 + 10000) * selectedSeats.length,
+        total:
+          ((showtimeWithChairs?.data?.price || 0) + 10000) *
+          selectedSeats.length,
       },
+      // Add customer information for ticket creation
+      customerName: user?.fullName || "",
+      email: user?.email || "",
+      phoneNumber: user?.phoneNumber || "",
+      customerId: user?.id,
     };
 
     // Lưu dữ liệu đặt vé vào localStorage trước khi chuyển hướng đến VNPay
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
-    console.log("Saved initial bookingData to localStorage:", bookingData);
 
     // Chọn phương thức thanh toán
     if (paymentMethod === "vnpay") {
-      // Tạo thông tin đơn hàng
-      const totalAmount = calculateTotalPrice();
-      const orderInfo = `Thanh toan ve xem phim ${movie?.name} - ${selectedSeats.length} ve`;
+      try {
+        // Tạo thông tin đơn hàng
+        const totalAmount = calculateTotalPrice();
+        const orderInfo = `Thanh toan ve xem phim ${movie?.name} - ${selectedSeats.length} ve`;
 
-      // Gọi API tạo URL thanh toán VNPAY
-      dispatch(
-        createPaymentRequest({
-          amount: totalAmount,
-          orderInfo,
-          bookingData,
-        })
-      );
+        // Gọi API tạo URL thanh toán VNPAY
+        dispatch(
+          createPaymentRequest({
+            amount: totalAmount,
+            orderInfo,
+            bookingData,
+          })
+        );
+      } catch (error) {
+        message.error("Không thể tạo thanh toán. Vui lòng thử lại sau.");
+      }
     } else {
       // Phương thức thanh toán khác hoặc thanh toán tại quầy
       message.success("Đặt vé thành công!");
@@ -343,7 +443,29 @@ const BookingPage: React.FC = () => {
       <PageContainer>
         <BookingContent>
           <ContentWrapper style={{ textAlign: "center", padding: "100px 0" }}>
-            <Spin size="large" />
+            <Spin size="large" tip="Đang tải thông tin phim..." />
+          </ContentWrapper>
+        </BookingContent>
+      </PageContainer>
+    );
+  }
+
+  if (apiError) {
+    return (
+      <PageContainer>
+        <BookingContent>
+          <ContentWrapper style={{ textAlign: "center", padding: "100px 0" }}>
+            <Alert
+              message="Lỗi"
+              description={apiError}
+              type="error"
+              showIcon
+              action={
+                <Button type="primary" onClick={() => navigate(-1)}>
+                  Quay lại
+                </Button>
+              }
+            />
           </ContentWrapper>
         </BookingContent>
       </PageContainer>
@@ -367,7 +489,12 @@ const BookingPage: React.FC = () => {
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
                   <MovieInfoCard
-                    cover={<img alt={movie?.name} src={movie?.imageUrl} />}
+                    cover={
+                      <img
+                        alt={movie?.name}
+                        src={movie?.imageUrl || movie?.poster}
+                      />
+                    }
                   >
                     <MovieTitle>{movie?.name}</MovieTitle>
                     <MovieMeta>
@@ -375,13 +502,16 @@ const BookingPage: React.FC = () => {
                         <CalendarOutlined /> Khởi chiếu: {movie?.releaseYear}
                       </MetaItem>
                       <MetaItem>
-                        <ClockCircleOutlined /> Thời lượng: {movie.duration}
+                        <ClockCircleOutlined /> Thời lượng:{" "}
+                        {movie?.duration || "N/A"}
                       </MetaItem>
                       <MetaItem>
-                        <StarOutlined /> Đánh giá: {movie?.rating}/10
+                        <StarOutlined /> Đánh giá: {movie?.rating || "N/A"}/10
                       </MetaItem>
                     </MovieMeta>
-                    <MovieDescription>{movie.description}</MovieDescription>
+                    <MovieDescription>
+                      {movie?.description || "Không có mô tả cho phim này."}
+                    </MovieDescription>
                   </MovieInfoCard>
 
                   <SectionTitle>Chọn ngày xem phim</SectionTitle>
@@ -405,14 +535,6 @@ const BookingPage: React.FC = () => {
                         checked={selectedCinema === cinema.id}
                         onChange={() => {
                           handleCinemaSelect(cinema.id);
-                          console.log(cinema.id);
-                          dispatch(
-                            getMockShowtimeRequest({
-                              date: dayjs(selectedDate).format("DD-MM-YYYY"),
-                              cinemaId: cinema.id,
-                              movieId: id,
-                            })
-                          );
                         }}
                         style={{ display: "block", marginBottom: "16px" }}
                       >
@@ -496,45 +618,57 @@ const BookingPage: React.FC = () => {
             <StepContent>
               <Row gutter={[24, 24]}>
                 <Col xs={24} md={16}>
-                  <SeatsContainer>
-                    <ScreenContainer>
-                      <Screen />
-                      <ScreenLabel>Màn hình</ScreenLabel>
-                    </ScreenContainer>
+                  {showtimeLoading ? (
+                    <div style={{ textAlign: "center", padding: "50px 0" }}>
+                      <Spin size="large" tip="Đang tải thông tin ghế ngồi..." />
+                    </div>
+                  ) : (
+                    <SeatsContainer>
+                      <ScreenContainer>
+                        <Screen />
+                        <ScreenLabel>Màn hình</ScreenLabel>
+                      </ScreenContainer>
 
-                    <SeatsGrid>
-                      {seats.map((seat) => (
-                        <Seat
-                          key={seat.id}
-                          $status={seat.status}
-                          $type={seat.type}
-                          $selected={selectedSeats.includes(seat.id)}
-                          onClick={() => handleSeatClick(seat.id)}
-                        >
-                          {seat.id}
-                        </Seat>
-                      ))}
-                    </SeatsGrid>
+                      <SeatsGrid>
+                        {seats.map((seat) => (
+                          <Seat
+                            key={seat.id}
+                            $status={seat.status}
+                            $type={seat.type}
+                            $selected={selectedSeats.includes(seat.id)}
+                            onClick={() => handleSeatClick(seat.id)}
+                          >
+                            {seat.id}
+                          </Seat>
+                        ))}
+                      </SeatsGrid>
 
-                    <SeatLegend>
-                      <LegendItem>
-                        <LegendColor $color="white" $borderColor="#d9d9d9" />
-                        Ghế thường
-                      </LegendItem>
-                      <LegendItem>
-                        <LegendColor $color="#ffd700" $borderColor="#ffd700" />
-                        Ghế VIP
-                      </LegendItem>
-                      <LegendItem>
-                        <LegendColor $color="#fd6b0a" $borderColor="#fd6b0a" />
-                        Đang chọn
-                      </LegendItem>
-                      <LegendItem>
-                        <LegendColor $color="#ddd" $borderColor="#ddd" />
-                        Đã đặt
-                      </LegendItem>
-                    </SeatLegend>
-                  </SeatsContainer>
+                      <SeatLegend>
+                        <LegendItem>
+                          <LegendColor $color="white" $borderColor="#d9d9d9" />
+                          Ghế thường
+                        </LegendItem>
+                        <LegendItem>
+                          <LegendColor
+                            $color="#ffd700"
+                            $borderColor="#ffd700"
+                          />
+                          Ghế VIP
+                        </LegendItem>
+                        <LegendItem>
+                          <LegendColor
+                            $color="#fd6b0a"
+                            $borderColor="#fd6b0a"
+                          />
+                          Đang chọn
+                        </LegendItem>
+                        <LegendItem>
+                          <LegendColor $color="#888" $borderColor="#777" />
+                          Đã đặt
+                        </LegendItem>
+                      </SeatLegend>
+                    </SeatsContainer>
+                  )}
                 </Col>
 
                 <Col xs={24} md={8}>
@@ -586,8 +720,8 @@ const BookingPage: React.FC = () => {
                           selectedSeats.filter((id) => {
                             const seat = seats.find((s) => s.id === id);
                             return seat && seat.type === "standard";
-                          }).length * STANDARD_PRICE
-                        ).toLocaleString("vi-VN")}{" "}
+                          }).length * showtimeWithChairs?.data?.pricePerShowTime
+                        )?.toLocaleString("vi-VN")}{" "}
                         VNĐ
                       </SummaryValue>
                     </SummaryItem>
@@ -608,13 +742,13 @@ const BookingPage: React.FC = () => {
                             const seat = seats.find((s) => s.id === id);
                             return seat && seat.type === "vip";
                           }).length * VIP_PRICE
-                        ).toLocaleString("vi-VN")}{" "}
+                        )?.toLocaleString("vi-VN")}{" "}
                         VNĐ
                       </SummaryValue>
                     </SummaryItem>
                     <TotalPrice>
-                      Tổng tiền: {calculateTotalPrice().toLocaleString("vi-VN")}{" "}
-                      VNĐ
+                      Tổng tiền:{" "}
+                      {calculateTotalPrice()?.toLocaleString("vi-VN")} VNĐ
                     </TotalPrice>
                   </SummaryCard>
                 </Col>
@@ -724,7 +858,7 @@ const BookingPage: React.FC = () => {
                   <SummaryCard>
                     <SummaryItem>
                       <SummaryLabel>Phim:</SummaryLabel>
-                      <SummaryValue>{movie.title}</SummaryValue>
+                      <SummaryValue>{movie?.name || movie?.title}</SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
                       <SummaryLabel>Ngày chiếu:</SummaryLabel>
@@ -751,8 +885,8 @@ const BookingPage: React.FC = () => {
                     </SummaryItem>
                     <Divider style={{ margin: "12px 0" }} />
                     <TotalPrice>
-                      Tổng tiền: {calculateTotalPrice().toLocaleString("vi-VN")}{" "}
-                      VNĐ
+                      Tổng tiền:{" "}
+                      {calculateTotalPrice()?.toLocaleString("vi-VN")} VNĐ
                     </TotalPrice>
                   </SummaryCard>
                 </Col>

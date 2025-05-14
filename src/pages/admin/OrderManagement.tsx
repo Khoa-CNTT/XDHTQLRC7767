@@ -84,7 +84,9 @@ const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [dateRange, setDateRange] = useState<
+    [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
+  >(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
   const [currentOrder, setCurrentOrder] = useState<OrderDetail | null>(null);
@@ -315,7 +317,7 @@ const OrderManagement: React.FC = () => {
       title: "Tổng tiền",
       dataIndex: "totalAmount",
       key: "totalAmount",
-      render: (amount: number) => `${amount.toLocaleString()}đ`,
+      render: (amount: number) => `${amount?.toLocaleString()}đ`,
     },
     {
       title: "Trạng thái",
@@ -388,11 +390,7 @@ const OrderManagement: React.FC = () => {
             </Popconfirm>
           )}
           {record.status === "Đã thanh toán" && (
-            <Button
-              type="default"
-              icon={<PrinterOutlined />}
-              size="small"
-            />
+            <Button type="default" icon={<PrinterOutlined />} size="small" />
           )}
         </Space>
       ),
@@ -526,7 +524,7 @@ const OrderManagement: React.FC = () => {
                       (sum, item) => sum + item.price * item.quantity,
                       0
                     )
-                  ).toLocaleString()}
+                  )?.toLocaleString()}
                   đ
                 </Col>
               </Row>
@@ -536,7 +534,7 @@ const OrderManagement: React.FC = () => {
                     {item.name} (x{item.quantity})
                   </Col>
                   <Col span={8} style={{ textAlign: "right" }}>
-                    {(item.price * item.quantity).toLocaleString()}đ
+                    {(item.price * item.quantity)?.toLocaleString()}đ
                   </Col>
                 </Row>
               ))}
@@ -547,7 +545,7 @@ const OrderManagement: React.FC = () => {
                 </Col>
                 <Col span={8} style={{ textAlign: "right" }}>
                   <Text strong>
-                    {currentOrder.totalAmount.toLocaleString()}đ
+                    {currentOrder.totalAmount?.toLocaleString()}đ
                   </Text>
                 </Col>
               </Row>

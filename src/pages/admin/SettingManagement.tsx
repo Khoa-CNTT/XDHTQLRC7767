@@ -91,7 +91,7 @@ const SettingsManagement: React.FC = () => {
   const [paymentForm] = Form.useForm();
   const [securityForm] = Form.useForm();
   const [roomForm] = Form.useForm();
-  
+
   const [loading, setLoading] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
@@ -123,7 +123,7 @@ const SettingsManagement: React.FC = () => {
       isActive: true,
     },
   ]);
-  
+
   const [rooms, setRooms] = useState<Room[]>([
     {
       id: 1,
@@ -154,10 +154,12 @@ const SettingsManagement: React.FC = () => {
       isActive: true,
     },
   ]);
-  
+
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
-  const [currentPayment, setCurrentPayment] = useState<PaymentMethod | null>(null);
+  const [currentPayment, setCurrentPayment] = useState<PaymentMethod | null>(
+    null
+  );
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
   // Handlers
@@ -166,7 +168,6 @@ const SettingsManagement: React.FC = () => {
     setTimeout(() => {
       setLoading(false);
       message.success("Cài đặt chung đã được lưu thành công!");
-      console.log("General settings:", values);
     }, 1000);
   };
 
@@ -175,7 +176,6 @@ const SettingsManagement: React.FC = () => {
     setTimeout(() => {
       setLoading(false);
       message.success("Cài đặt email đã được lưu thành công!");
-      console.log("Email settings:", values);
     }, 1000);
   };
 
@@ -269,7 +269,11 @@ const SettingsManagement: React.FC = () => {
       method.id === id ? { ...method, isActive } : method
     );
     setPaymentMethods(updatedPayments);
-    message.success(`${isActive ? "Kích hoạt" : "Vô hiệu hóa"} phương thức thanh toán thành công!`);
+    message.success(
+      `${
+        isActive ? "Kích hoạt" : "Vô hiệu hóa"
+      } phương thức thanh toán thành công!`
+    );
   };
 
   const handleToggleRoomStatus = (id: number, isActive: boolean) => {
@@ -277,7 +281,9 @@ const SettingsManagement: React.FC = () => {
       room.id === id ? { ...room, isActive } : room
     );
     setRooms(updatedRooms);
-    message.success(`${isActive ? "Kích hoạt" : "Vô hiệu hóa"} phòng chiếu thành công!`);
+    message.success(
+      `${isActive ? "Kích hoạt" : "Vô hiệu hóa"} phòng chiếu thành công!`
+    );
   };
 
   const handleCancel = () => {
@@ -461,16 +467,29 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="siteName"
                       label="Tên website"
-                      rules={[{ required: true, message: "Vui lòng nhập tên website!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập tên website!",
+                        },
+                      ]}
                     >
-                      <Input prefix={<GlobalOutlined />} placeholder="Tên website" />
+                      <Input
+                        prefix={<GlobalOutlined />}
+                        placeholder="Tên website"
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
                     <Form.Item
                       name="currency"
                       label="Đơn vị tiền tệ"
-                      rules={[{ required: true, message: "Vui lòng chọn đơn vị tiền tệ!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng chọn đơn vị tiền tệ!",
+                        },
+                      ]}
                     >
                       <Select placeholder="Chọn đơn vị tiền tệ">
                         <Option value="VND">VND (Việt Nam Đồng)</Option>
@@ -479,10 +498,7 @@ const SettingsManagement: React.FC = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item
-                  name="siteDescription"
-                  label="Mô tả website"
-                >
+                <Form.Item name="siteDescription" label="Mô tả website">
                   <TextArea rows={3} placeholder="Mô tả ngắn về website" />
                 </Form.Item>
               </FormSection>
@@ -494,7 +510,9 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="address"
                       label="Địa chỉ"
-                      rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+                      rules={[
+                        { required: true, message: "Vui lòng nhập địa chỉ!" },
+                      ]}
                     >
                       <Input prefix={<HomeOutlined />} placeholder="Địa chỉ" />
                     </Form.Item>
@@ -503,9 +521,17 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="phone"
                       label="Số điện thoại"
-                      rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập số điện thoại!",
+                        },
+                      ]}
                     >
-                      <Input prefix={<PhoneOutlined />} placeholder="Số điện thoại" />
+                      <Input
+                        prefix={<PhoneOutlined />}
+                        placeholder="Số điện thoại"
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -523,10 +549,7 @@ const SettingsManagement: React.FC = () => {
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
-                    <Form.Item
-                      name="workingHours"
-                      label="Giờ làm việc"
-                    >
+                    <Form.Item name="workingHours" label="Giờ làm việc">
                       <Input placeholder="Giờ làm việc" />
                     </Form.Item>
                   </Col>
@@ -540,7 +563,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="ticketCancellationTime"
                       label="Thời gian hủy vé (phút)"
-                      rules={[{ required: true, message: "Vui lòng nhập thời gian hủy vé!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập thời gian hủy vé!",
+                        },
+                      ]}
                     >
                       <InputNumber
                         style={{ width: "100%" }}
@@ -574,7 +602,12 @@ const SettingsManagement: React.FC = () => {
               </FormSection>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  icon={<SaveOutlined />}
+                >
                   Lưu cài đặt
                 </Button>
               </Form.Item>
@@ -612,7 +645,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="smtpServer"
                       label="Máy chủ SMTP"
-                      rules={[{ required: true, message: "Vui lòng nhập máy chủ SMTP!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập máy chủ SMTP!",
+                        },
+                      ]}
                     >
                       <Input placeholder="Máy chủ SMTP" />
                     </Form.Item>
@@ -621,9 +659,16 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="smtpPort"
                       label="Cổng SMTP"
-                      rules={[{ required: true, message: "Vui lòng nhập cổng SMTP!" }]}
+                      rules={[
+                        { required: true, message: "Vui lòng nhập cổng SMTP!" },
+                      ]}
                     >
-                      <InputNumber style={{ width: "100%" }} min={1} max={65535} placeholder="Cổng SMTP" />
+                      <InputNumber
+                        style={{ width: "100%" }}
+                        min={1}
+                        max={65535}
+                        placeholder="Cổng SMTP"
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -632,7 +677,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="smtpUsername"
                       label="Tên đăng nhập SMTP"
-                      rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập SMTP!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập tên đăng nhập SMTP!",
+                        },
+                      ]}
                     >
                       <Input placeholder="Tên đăng nhập SMTP" />
                     </Form.Item>
@@ -641,7 +691,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="smtpPassword"
                       label="Mật khẩu SMTP"
-                      rules={[{ required: true, message: "Vui lòng nhập mật khẩu SMTP!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập mật khẩu SMTP!",
+                        },
+                      ]}
                     >
                       <Input.Password placeholder="Mật khẩu SMTP" />
                     </Form.Item>
@@ -663,7 +718,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="senderName"
                       label="Tên người gửi"
-                      rules={[{ required: true, message: "Vui lòng nhập tên người gửi!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập tên người gửi!",
+                        },
+                      ]}
                     >
                       <Input placeholder="Tên người gửi" />
                     </Form.Item>
@@ -673,7 +733,10 @@ const SettingsManagement: React.FC = () => {
                       name="senderEmail"
                       label="Email người gửi"
                       rules={[
-                        { required: true, message: "Vui lòng nhập email người gửi!" },
+                        {
+                          required: true,
+                          message: "Vui lòng nhập email người gửi!",
+                        },
                         { type: "email", message: "Email không hợp lệ!" },
                       ]}
                     >
@@ -685,12 +748,15 @@ const SettingsManagement: React.FC = () => {
 
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    icon={<SaveOutlined />}
+                  >
                     Lưu cài đặt
                   </Button>
-                  <Button>
-                    Gửi email thử nghiệm
-                  </Button>
+                  <Button>Gửi email thử nghiệm</Button>
                 </Space>
               </Form.Item>
             </Form>
@@ -789,7 +855,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="passwordMinLength"
                       label="Độ dài tối thiểu của mật khẩu"
-                      rules={[{ required: true, message: "Vui lòng nhập độ dài tối thiểu!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập độ dài tối thiểu!",
+                        },
+                      ]}
                     >
                       <InputNumber style={{ width: "100%" }} min={6} max={20} />
                     </Form.Item>
@@ -833,7 +904,13 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="loginAttempts"
                       label="Số lần đăng nhập thất bại tối đa"
-                      rules={[{ required: true, message: "Vui lòng nhập số lần đăng nhập thất bại tối đa!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message:
+                            "Vui lòng nhập số lần đăng nhập thất bại tối đa!",
+                        },
+                      ]}
                     >
                       <InputNumber style={{ width: "100%" }} min={1} max={10} />
                     </Form.Item>
@@ -842,7 +919,12 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="lockoutDuration"
                       label="Thời gian khóa tài khoản (phút)"
-                      rules={[{ required: true, message: "Vui lòng nhập thời gian khóa tài khoản!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập thời gian khóa tài khoản!",
+                        },
+                      ]}
                     >
                       <InputNumber style={{ width: "100%" }} min={5} max={60} />
                     </Form.Item>
@@ -853,9 +935,18 @@ const SettingsManagement: React.FC = () => {
                     <Form.Item
                       name="sessionTimeout"
                       label="Thời gian hết hạn phiên (phút)"
-                      rules={[{ required: true, message: "Vui lòng nhập thời gian hết hạn phiên!" }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập thời gian hết hạn phiên!",
+                        },
+                      ]}
                     >
-                      <InputNumber style={{ width: "100%" }} min={15} max={120} />
+                      <InputNumber
+                        style={{ width: "100%" }}
+                        min={15}
+                        max={120}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12}>
@@ -871,7 +962,12 @@ const SettingsManagement: React.FC = () => {
               </FormSection>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  icon={<SaveOutlined />}
+                >
                   Lưu cài đặt
                 </Button>
               </Form.Item>
@@ -882,7 +978,11 @@ const SettingsManagement: React.FC = () => {
 
       {/* Modal thêm/sửa phương thức thanh toán */}
       <Modal
-        title={currentPayment ? "Sửa phương thức thanh toán" : "Thêm phương thức thanh toán"}
+        title={
+          currentPayment
+            ? "Sửa phương thức thanh toán"
+            : "Thêm phương thức thanh toán"
+        }
         visible={isPaymentModalVisible}
         onCancel={handleCancel}
         footer={null}
@@ -895,14 +995,24 @@ const SettingsManagement: React.FC = () => {
           <Form.Item
             name="name"
             label="Tên phương thức"
-            rules={[{ required: true, message: "Vui lòng nhập tên phương thức thanh toán!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập tên phương thức thanh toán!",
+              },
+            ]}
           >
             <Input placeholder="Tên phương thức thanh toán" />
           </Form.Item>
           <Form.Item
             name="type"
             label="Loại"
-            rules={[{ required: true, message: "Vui lòng chọn loại phương thức thanh toán!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng chọn loại phương thức thanh toán!",
+              },
+            ]}
           >
             <Select placeholder="Chọn loại phương thức thanh toán">
               <Option value="card">Thẻ tín dụng/ghi nợ</Option>
@@ -914,9 +1024,17 @@ const SettingsManagement: React.FC = () => {
           <Form.Item
             name="fee"
             label="Phí (%)"
-            rules={[{ required: true, message: "Vui lòng nhập phí thanh toán!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập phí thanh toán!" },
+            ]}
           >
-            <InputNumber style={{ width: "100%" }} min={0} max={10} step={0.1} placeholder="Phí thanh toán (%)" />
+            <InputNumber
+              style={{ width: "100%" }}
+              min={0}
+              max={10}
+              step={0.1}
+              placeholder="Phí thanh toán (%)"
+            />
           </Form.Item>
           <Form.Item>
             <Space>
@@ -936,29 +1054,39 @@ const SettingsManagement: React.FC = () => {
         onCancel={handleCancel}
         footer={null}
       >
-        <Form
-          form={roomForm}
-          layout="vertical"
-          onFinish={handleRoomSubmit}
-        >
+        <Form form={roomForm} layout="vertical" onFinish={handleRoomSubmit}>
           <Form.Item
             name="name"
             label="Tên phòng"
-            rules={[{ required: true, message: "Vui lòng nhập tên phòng chiếu!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập tên phòng chiếu!" },
+            ]}
           >
             <Input placeholder="Tên phòng chiếu" />
           </Form.Item>
           <Form.Item
             name="capacity"
             label="Sức chứa (ghế)"
-            rules={[{ required: true, message: "Vui lòng nhập sức chứa phòng chiếu!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập sức chứa phòng chiếu!",
+              },
+            ]}
           >
-            <InputNumber style={{ width: "100%" }} min={1} max={500} placeholder="Sức chứa phòng chiếu" />
+            <InputNumber
+              style={{ width: "100%" }}
+              min={1}
+              max={500}
+              placeholder="Sức chứa phòng chiếu"
+            />
           </Form.Item>
           <Form.Item
             name="type"
             label="Loại phòng"
-            rules={[{ required: true, message: "Vui lòng chọn loại phòng chiếu!" }]}
+            rules={[
+              { required: true, message: "Vui lòng chọn loại phòng chiếu!" },
+            ]}
           >
             <Select placeholder="Chọn loại phòng chiếu">
               <Option value="2D">2D</Option>

@@ -109,8 +109,6 @@ function* createShowtimeSaga(
     });
   }
 }
-
-// Saga gốc
 export default function* showtimeSaga() {
   yield takeEvery(getShowtimeListRequest.type, getShowtimeListSaga);
   yield takeEvery(createShowtimeRequest.type, createShowtimeSaga);
