@@ -44,6 +44,7 @@ public class RoomServiceImpl implements RoomService {
             for (int j = 1; j <= cols; j++) {
                 SeatFormat c = new SeatFormat();
                 c.setName(rowLetter + String.valueOf(j));
+                c.setRoom(room1);
                 seatFormats.add(c);
             }
         }
@@ -53,7 +54,7 @@ public class RoomServiceImpl implements RoomService {
         room1.setStatus("ACTIVE");
         room1.setSeats(seatFormats);
         room1.setCinema(cinema);
-         roomRepository.save(room1);
+        roomRepository.save(room1);
         return null;
     }
 }
