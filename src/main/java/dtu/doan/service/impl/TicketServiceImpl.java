@@ -61,7 +61,7 @@ public class TicketServiceImpl implements TicketService {
             chair.setStatus("BOOKED");
             Ticket ticket = new Ticket();
             ticket.setUsed(false);
-            ticket.setType(dto.getType());
+            ticket.setType(chair.getType());
             ticket.setShowTime(showTime);
             ticket.setCustomer(customer);
             ticket.setChairs(chair);

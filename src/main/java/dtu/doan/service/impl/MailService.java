@@ -155,6 +155,7 @@ public class MailService {
         LocalTime startTime =ticket.getShowTime().getStartTime(); // Giờ bắt đầu
         LocalTime endTime = ticket.getShowTime().getEndTime(); // Giờ kết thúc
         String seatNumber = ticket.getChairs().getName(); // Số ghế
+        String type= ticket.getType(); // loai
         String cinemaName = ticket.getShowTime().getRoom().getCinema().getName(); // Cụm rạp
         String roomName = ticket.getShowTime().getRoom().getName(); // Phòng chiếu
 
@@ -228,6 +229,7 @@ public class MailService {
                     <p><strong>📅 Ngày chiếu:</strong> %s</p>
                     <p><strong>🕒 Thời gian:</strong> %s - %s</p>
                     <p><strong>🪑 Số ghế:</strong> %s</p>
+                    <p><strong>🪑 Loại ghế:</strong> %s</p>
                     <p><strong>📍 Cụm rạp:</strong> %s</p>
                     <p><strong>🏠 Phòng chiếu:</strong> %s</p>
                 </div>
@@ -242,6 +244,7 @@ public class MailService {
                 startTime,
                 endTime,
                 seatNumber,
+                type,
                 cinemaName,
                 roomName
         );

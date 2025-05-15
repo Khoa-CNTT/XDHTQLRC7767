@@ -113,12 +113,11 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 chair.setName(seatFormat.getName());
                 chair.setStatus("AVAILABLE");
                 chair.setShowTime(savedShowTime);
+                chair.setType(seatFormat.getType());
                 chairs.add(chair);
             }
             chairRepository.saveAll(chairs);
 
-            // Nếu bạn có ChairRepository thì cần saveAll:
-            // chairRepository.saveAll(chairs);
 
             // Trả kết quả về
             result.setStartTime(savedShowTime.getStartTime());

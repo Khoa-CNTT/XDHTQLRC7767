@@ -13,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketRequestDTO {
-    private String type;
     private Double price;
     private Long id_showTime;
     private Long id_customer;
