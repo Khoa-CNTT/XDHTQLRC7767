@@ -1,6 +1,7 @@
 package dtu.doan.service;
 
 
+import dtu.doan.dto.CustomerDTO;
 import dtu.doan.model.Customer;
 
 import java.util.List;
@@ -11,7 +12,11 @@ public interface CustomerService  {
     void updateCustomerDetails(String customerId, String fullName, String email, String phoneNumber);
     void deleteCustomer(String customerId);
     Customer getCustomerById(String customerId);
-    List<Customer> getAllCustomers();
+    List<CustomerDTO> getAllCustomers();
 
     Customer getCustomerByEmail(String email);
+
+    CustomerDTO updateCustomer(CustomerDTO customerDTO);
+    void deleteCustomer(Long id);
+    void disableCustomerAccount(Long id);
 }
