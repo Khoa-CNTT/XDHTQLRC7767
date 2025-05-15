@@ -6,6 +6,7 @@ import dtu.doan.model.Room;
 import dtu.doan.model.SeatFormat;
 import dtu.doan.repository.CinemaRepository;
 import dtu.doan.repository.RoomRepository;
+import dtu.doan.repository.SeatFormatRepository;
 import dtu.doan.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ public class RoomServiceImpl implements RoomService {
     private RoomRepository roomRepository;
     @Autowired
     private CinemaRepository cinemaRepository;
+    @Autowired
+    private SeatFormatRepository seatFormatRepository;
     @Override
     public List<Room> findAllRooms() {
         return roomRepository.findAll();
@@ -55,7 +58,7 @@ public class RoomServiceImpl implements RoomService {
                 if (currentSeatIndex >= capacity) break;
 
                 SeatFormat c = new SeatFormat();
-                c.setName(rowLetter + String.valueOf(j)); // ✅ sửa tên đúng kiểu A1, A2
+                c.setName(rowLetter + String.valueOf(j));
                 c.setRoom(room1);
 
                 if (currentSeatIndex >= capacity - 10) {
@@ -67,6 +70,7 @@ public class RoomServiceImpl implements RoomService {
                 seatFormats.add(c);
             }
         }
+        seatFormatRepository.saveAll(seatFormats);
 
         room1.setSeats(seatFormats);
         roomRepository.save(room1);
