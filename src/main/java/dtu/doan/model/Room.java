@@ -29,6 +29,7 @@ public class Room {
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private Set<SeatFormat> seats;
 
 
