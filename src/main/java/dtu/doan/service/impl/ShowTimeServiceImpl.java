@@ -12,6 +12,7 @@ import dtu.doan.repository.ShowTimeRepository;
 import dtu.doan.service.ShowTimeService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -135,6 +136,16 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             return null;
         }
     }
+    @Override
+    public List<LocalDate> findDistinctDatesByMovieId(Long movieId) {
+        return showTimeRepository.findTop5UpcomingDatesByMovieId(movieId, PageRequest.of(0, 5));
+    }
+
+    @Override
+    public List<ShowTime> findShowTimesByMovieIdAndDate(Long movieId, LocalDate date) {
+        return showTimeRepository.findShowTimesByMovieIdAndDate(movieId,date);
+    }
+
 
 
 

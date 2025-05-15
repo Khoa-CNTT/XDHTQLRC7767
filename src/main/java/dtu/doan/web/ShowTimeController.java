@@ -10,10 +10,12 @@ import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -60,6 +62,22 @@ public class ShowTimeController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+    // ✅ 6. Lấy các ngày chiếu theo movieId (phục vụ UI tab ngày)
+    @GetMapping("/dates/{movieId}")
+    public ResponseEntity<List<LocalDate>> getAvailableDatesByMovie(@PathVariable Long movieId) {
+        List<LocalDate> dates = showTimeService.findDistinctDatesByMovieId(movieId);
+        return ResponseEntity.ok(dates);
+    }
+
+    // ✅ 7. Lấy các suất chiếu theo movieId + ngày cụ thể (phục vụ UI theo giờ)
+    @GetMapping("/{movieId}/times")
+    public ResponseEntity<List<ShowTime>> getShowTimesByMovieAndDate(
+            @PathVariable Long movieId,
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        List<ShowTime> showTimes = showTimeService.findShowTimesByMovieIdAndDate(movieId, date);
+        return ResponseEntity.ok(showTimes);
     }
 
     }
