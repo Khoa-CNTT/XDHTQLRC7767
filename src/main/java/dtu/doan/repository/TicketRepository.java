@@ -17,6 +17,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("UPDATE Ticket t SET t.used = true WHERE t.id = ?1")
     void updateTicketStatusById(Long id);
 
+    @Query("SELECT t FROM Ticket t WHERE t.customer.id = ?1")
+    List<Ticket> findAllByCustomerId(Long customerId);
 
 
 }
