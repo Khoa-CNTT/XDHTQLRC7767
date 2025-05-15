@@ -32,7 +32,7 @@ public class CommentController {
     }
 
     // Get all approved comments for a movie
-    @GetMapping("/commentByMovieAndUser")
+    @GetMapping("/commentByMovieAndUser") // screen movie detail
     public ResponseEntity<List<Comment>> getCommentsByMovie(@RequestParam(value = "userId",required = false) Long userId,
                                                             @RequestParam(value = "movieId", required = true) Long movieId) {
         try {
@@ -69,6 +69,17 @@ public class CommentController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Comment not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    @GetMapping("/admin/commentsByMovie") // Admin
+    public ResponseEntity<List<Comment>> getCommentsByMovieForAdmin(@RequestParam Long movieId) {
+        try {
+            List<Comment> comments = service.getCommentsByMovie(movieId);
+            return new ResponseEntity<>(comments, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 

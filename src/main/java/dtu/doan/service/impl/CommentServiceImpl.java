@@ -72,6 +72,11 @@ public class CommentServiceImpl implements CommentService {
         return repository.findAllVisibleComments(userId,movieId);
     }
 
+    @Override
+    public List<Comment> getCommentsByMovie(Long movieId) {
+        return repository.findByMovieId(movieId);
+    }
+
     public String processSentimentScore(SentimentDTO sentimentDTO) {
         float score = sentimentDTO.getScore();
         if (score < 0.0) {
