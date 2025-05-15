@@ -1,6 +1,7 @@
 package dtu.doan.repository;
 
 import dtu.doan.model.ShowTime;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +52,17 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
 
+    @Query("""
+    SELECT DISTINCT s.date
+    FROM ShowTime s
+    WHERE s.movie.id = :movieId
+      AND s.status = 'ACTIVE'
+      AND s.date >= CURRENT_DATE
+    ORDER BY s.date ASC
+""")
+    List<LocalDate> findTop5UpcomingDatesByMovieId(@Param("movieId") Long movieId, Pageable pageable);
+
+
+    @Query("SELECT s FROM ShowTime s WHERE s.movie.id = :movieId AND s.date = :date AND s.status = 'ACTIVE'")
+    List<ShowTime> findShowTimesByMovieIdAndDate(@Param("movieId") Long movieId, @Param("date") LocalDate date);
 }
