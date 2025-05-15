@@ -20,4 +20,5 @@ public class MovieRequestDTO {
     private int ageLimit;
     private String content;
     private List<Long> genreIds;
+    private String backdrop;
 }

@@ -40,5 +40,6 @@ public class Movie {
     private Set<MovieGenre> movieGenres;
     private LocalDate releaseDate;
     private int status;
+    private String backdrop;
 }
 
