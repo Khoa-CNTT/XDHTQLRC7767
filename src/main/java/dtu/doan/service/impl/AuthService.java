@@ -73,6 +73,7 @@ public class AuthService {
                 customer.setAccount(account);
                 customer.setEmail(email);
                 customer.setFullName(name);
+                customer.setIsDelete(false);
                 customerRepository.save(customer);
             }
             return jwtUtils.generateToken(email);

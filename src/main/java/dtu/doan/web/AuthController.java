@@ -182,6 +182,7 @@ public class AuthController {
         customer.setEmail(newAccount.getUsername());
         customer.setFullName(request.getFullName());
         customer.setPhoneNumber(request.getPhoneNumber());
+        customer.setIsDelete(false);
         customerRepository.save(customer);
         String token = verificationService.createVerificationTokenForUser(account);
         mailService.sendVerificationEmail(username, token);
@@ -189,7 +190,7 @@ public class AuthController {
     }
 
     // Xac thuc email sau khi dang ki
-    @PostMapping("/confirm")
+    @GetMapping("/confirm")
     public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
         try {
             if (!verificationService.validateVerificationToken(token)) {
