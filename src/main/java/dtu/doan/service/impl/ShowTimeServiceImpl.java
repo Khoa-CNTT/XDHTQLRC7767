@@ -78,9 +78,17 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     public ShowListCreatedResponeDTO create(ShowListDTO showListDTO) {
         Movie movie = movieRepository.getById(showListDTO.getMovieId());
         Room room = roomRepository.getById(showListDTO.getRoomId());
+
+        if (showListDTO.getStartTime() == null) {
+            throw new IllegalArgumentException("Start time must not be null");
+        }
+
         int duration = movie.getDuration();
         LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
-        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(showListDTO.getShowDate(), showListDTO.getStartTime(), endTime);
+        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(
+                showListDTO.getShowDate(), showListDTO.getStartTime(), endTime
+        );
+
         ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
 
         if (showTimesCheck.isEmpty()) {
@@ -93,8 +101,9 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             showTime.setRoom(room);
             showTime.setStatus("ACTIVE");
 
-            // Lấy danh sách ChairFormat từ Room
-            List<SeatFormat> seatFormats = (List<SeatFormat>) room.getSeats(); // Giả sử Room có quan hệ với SeatFormat
+            // Lấy danh sách SeatFormat từ Room
+            List<SeatFormat> seatFormats = new ArrayList<>(room.getSeats()); // ✅ chuyển Set → List
+
             List<Chair> chairs = new ArrayList<>();
             ShowTime savedShowTime = showTimeRepository.save(showTime);
 
@@ -106,9 +115,12 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 chair.setShowTime(savedShowTime);
                 chairs.add(chair);
             }
+            chairRepository.saveAll(chairs);
 
+            // Nếu bạn có ChairRepository thì cần saveAll:
+            // chairRepository.saveAll(chairs);
 
-
+            // Trả kết quả về
             result.setStartTime(savedShowTime.getStartTime());
             result.setEndTime(savedShowTime.getEndTime());
             result.setPricePerShowTime(savedShowTime.getPricePerShowTime());
@@ -118,11 +130,13 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             result.setMovieName(savedShowTime.getMovie().getName());
             result.setRoomName(savedShowTime.getRoom().getName());
             result.setStatus(savedShowTime.getStatus());
+
             return result;
         } else {
             return null;
         }
     }
+
 
 
 }
