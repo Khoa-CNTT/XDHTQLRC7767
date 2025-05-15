@@ -60,6 +60,7 @@ public class MovieServiceImpl implements MovieService {
         movieEntity.setAgeLimit(movie.getAgeLimit());
         movieEntity.setContent(movie.getContent());
         movieEntity.setDelete(false);
+        movieEntity.setBackdrop(movie.getBackdrop());
         Movie savedMovie = repository.save(movieEntity);
 
         if (movie.getGenreIds() != null && !movie.getGenreIds().isEmpty()) {
@@ -96,6 +97,7 @@ public class MovieServiceImpl implements MovieService {
         savedMovieResponse.setAgeLimit(savedMovie.getAgeLimit());
         savedMovieResponse.setContent(savedMovie.getContent());
         savedMovieResponse.setMovieGenres(genreRepository.getGenreByMovieId(savedMovie.getId()));
+        savedMovieResponse.setBackdrop(savedMovie.getBackdrop());
         return savedMovieResponse;
 
     }
@@ -129,6 +131,7 @@ public class MovieServiceImpl implements MovieService {
             movieResponseDTO.setSubtitle(movie.getSubtitle());
             movieResponseDTO.setAgeLimit(movie.getAgeLimit());
             movieResponseDTO.setContent(movie.getContent());
+            movieResponseDTO.setBackdrop(movie.getBackdrop());
             List<Genre> genres =  genreRepository.getGenreByMovieId(movie.getId());
             movieResponseDTO.setMovieGenres(genres);
 

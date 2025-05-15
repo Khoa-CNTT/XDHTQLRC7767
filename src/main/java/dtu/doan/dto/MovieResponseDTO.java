@@ -22,5 +22,6 @@ public class MovieResponseDTO {
     private String content;
 
     private List<Genre> movieGenres;
+    private String backdrop;
 
 }
