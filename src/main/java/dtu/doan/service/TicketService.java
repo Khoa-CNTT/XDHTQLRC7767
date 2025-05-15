@@ -12,4 +12,5 @@ public interface TicketService  {
     TicketResponeDTO saveTickets(TicketRequestDTO dto);
     void updateTicketStatus(Long id);
     Ticket getTicketByid(Long id);
+    List<Ticket> getTicketByCustomer(Long id);
 }

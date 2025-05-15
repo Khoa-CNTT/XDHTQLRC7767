@@ -37,6 +37,11 @@ public class TicketController {
          Ticket ticket = ticketService.getTicketByid(id);
         return ResponseEntity.ok(ticket);
     }
+    @GetMapping("/customer/{id}")
+    public ResponseEntity<List<Ticket>> getTicketByCustomerId(@PathVariable Long id) {
+        List<Ticket> tickets = ticketService.getTicketByCustomer(id);
+        return ResponseEntity.ok(tickets);
+    }
 
 
 }

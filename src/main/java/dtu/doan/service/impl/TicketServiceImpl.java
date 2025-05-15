@@ -101,6 +101,11 @@ public class TicketServiceImpl implements TicketService {
     public Ticket getTicketByid(Long id) {
         return ticketRepository.getById(id);
     }
+
+    @Override
+    public List<Ticket> getTicketByCustomer(Long id) {
+        return ticketRepository.findAllByCustomerId(id);
+    }
 //    @Scheduled(fixedRate = 60000) // chạy mỗi 60 giây
 //    public void updateSeatStatusAfterShowtime() {
 //        LocalDateTime now = LocalDateTime.now();
