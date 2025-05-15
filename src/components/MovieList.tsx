@@ -444,7 +444,7 @@ const MovieList: React.FC = () => {
                   >
                     <MovieCard>
                       <MoviePoster>
-                        <PosterImage src={movie.poster} alt={movie.title} />
+                        <PosterImage src={movie?.image} alt={movie.title} />
                         <PosterOverlay className="overlay">
                           <Link to={`/movie/${movie.id}`}>
                             <DetailButton icon={<InfoCircleOutlined />}>

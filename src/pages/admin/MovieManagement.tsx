@@ -196,18 +196,8 @@ const MovieManagement: React.FC = () => {
         : null,
     };
 
-    // Xử lý poster nếu có
-    if (
-      values.poster &&
-      values.poster.fileList &&
-      values.poster.fileList.length > 0
-    ) {
-      // Trong thực tế, bạn sẽ upload file và lấy URL từ response
-      // Ở đây chỉ giả lập
-      formattedValues.poster =
-        values.poster.fileList[0].thumbUrl ||
-        "https://via.placeholder.com/150x225";
-    }
+    // No need to process poster as CloudinaryUpload already provides the URL directly
+    // The 'poster' field now contains the Cloudinary secure_url
 
     if (currentMovie) {
       // Cập nhật phim

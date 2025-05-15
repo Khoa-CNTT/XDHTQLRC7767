@@ -728,20 +728,6 @@ const MovieDetail: React.FC = () => {
     "2023-11-04",
     "2023-11-05",
   ];
-  const cinemas = [
-    {
-      id: "1",
-      name: "UBANFLIX Vincom Plaza Ngô Quyền",
-      address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
-      showtimes: ["10:30", "13:15", "15:45", "18:20", "20:50"],
-    },
-    {
-      id: "2",
-      name: "UBANFLIX Lotte Mart Đà Nẵng",
-      address: "6 Nại Nam, Hải Châu, Đà Nẵng",
-      showtimes: ["09:45", "12:30", "14:50", "17:15", "19:40", "22:10"],
-    },
-  ];
 
   if (movieLoading) {
     return (
@@ -788,12 +774,10 @@ const MovieDetail: React.FC = () => {
   const processedMovie: MovieDTO = {
     id: movie?.id || id || "",
     title: movie?.name || movie?.title || "Chưa có tiêu đề",
-    poster:
-      movie?.imageUrl ||
-      movie?.poster ||
-      "https://via.placeholder.com/300x450?text=No+Poster",
+    poster: movie?.imageUrl,
     backdrop:
-      movie?.backdrop ||
+      movie?.imageUrl ||
+      movie?.image ||
       "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
     rating: movie?.rating || 0,
     releaseDate: movie?.releaseYear

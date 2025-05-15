@@ -368,7 +368,7 @@ const BookingPage: React.FC = () => {
       movie: {
         id: id || "",
         name: movie?.name || "Unknown Movie",
-        image: movie?.poster || movie?.imageUrl || "",
+        image: movie?.image || movie?.imageUrl || "",
         duration: movie?.duration || "N/A",
       },
       cinema: {

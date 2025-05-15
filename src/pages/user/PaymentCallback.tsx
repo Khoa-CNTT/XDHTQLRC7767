@@ -38,7 +38,7 @@ const PaymentCallback: React.FC = () => {
   const { loading, paymentResult, error, bookingData } = useSelector(
     (state: RootState) => state.payment
   );
-  const { createTicket } = useSelector((state: RootState) => state.ticket);
+  const { createTicket } = useSelector((state: RootState) => state.ticket); 
   const [localBookingData, setLocalBookingData] = useState<any>(null);
 
   // Theo dõi xem đã xử lý callback chưa để tránh xử lý nhiều lần

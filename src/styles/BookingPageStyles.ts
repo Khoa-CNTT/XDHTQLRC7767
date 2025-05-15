@@ -1,7 +1,6 @@
 import styled from "styled-components";
-import { Layout, Steps, Button, Card, Radio, DatePicker, Select } from "antd";
-import { motion } from "framer-motion";
-
+import { Layout, Steps, Button, Card, Radio, DatePicker } from "antd";
+  
 const { Content } = Layout;
 
 export const PageContainer = styled(Layout)`

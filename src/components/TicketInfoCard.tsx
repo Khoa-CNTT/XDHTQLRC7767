@@ -48,13 +48,13 @@ const TicketInfoCard: React.FC<TicketInfoCardProps> = ({
       <PriceRow>
         <span>Giá vé x {displayQuantity}</span>
         <span>
-          {displayTicketPrice / 2}đ x {displayQuantity}
+          {displayTicketPrice}đ x {displayQuantity}
         </span>
       </PriceRow>
       <Divider style={{ margin: "10px 0" }} />
       <TotalRow>
         <span>Tổng cộng</span>
-        <span>{displayTicketPrice}đ</span>
+        <span>{displayTicketPrice * displayQuantity}đ</span>
       </TotalRow>
     </StyledCard>
   );

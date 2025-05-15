@@ -1,25 +1,14 @@
 import React from "react";
-import {
-  Form,
-  Input,
-  Select,
-  DatePicker,
-  InputNumber,
-  Button,
-  Space,
-  Upload,
-  message,
-} from "antd";
-import { InboxOutlined, UploadOutlined } from "@ant-design/icons";
+import { Form, Input, Select, DatePicker, InputNumber, Button } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import { Movie } from "../../pages/admin/MovieManagement";
-import type { UploadProps, FormInstance } from "antd";
+import type { FormInstance } from "antd";
 import { Row, Col } from "antd";
+import CloudinaryUpload from "../common/CloudinaryUpload";
 
 const { Option } = Select;
 const { TextArea } = Input;
-const { Dragger } = Upload;
 
 const FormSection = styled.div`
   margin-bottom: 24px;
@@ -33,7 +22,7 @@ const SectionTitle = styled.h3`
 
 interface MovieFormProps {
   form: FormInstance;
-  onFinish: (values: any) => void;
+  onFinish: (values: Movie) => void;
   initialValues: Movie | null;
   onCancel?: () => void;
   loading?: boolean;
@@ -46,30 +35,6 @@ const MovieForm: React.FC<MovieFormProps> = ({
   onCancel,
   loading,
 }) => {
-  const normFile = (e: any) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e?.fileList;
-  };
-
-  const uploadProps: UploadProps = {
-    name: "file",
-    multiple: false,
-    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} tải lên thành công.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} tải lên thất bại.`);
-      }
-    },
-    onDrop(e) {},
-  };
-
   return (
     <Form
       form={form}
@@ -206,18 +171,13 @@ const MovieForm: React.FC<MovieFormProps> = ({
         <Form.Item
           name="poster"
           label="Poster phim"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
+          rules={[{ required: true, message: "Vui lòng tải lên poster phim!" }]}
         >
-          <Dragger maxCount={1} listType="picture" accept="image/*">
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">
-              Nhấp hoặc kéo file vào khu vực này để tải lên
-            </p>
-            <p className="ant-upload-hint">Hỗ trợ tải lên một file hình ảnh</p>
-          </Dragger>
+          <CloudinaryUpload
+            label="Tải lên poster phim"
+            value={initialValues?.poster || ""}
+            onChange={(url) => form.setFieldValue("poster", url)}
+          />
         </Form.Item>
       </FormSection>
 

@@ -27,7 +27,7 @@ export interface MovieHomeResponseDTO {
   description: string;
   duration: number;
   releaseDate: string;
-  poster: string;
+  image: string;
   // Thêm các thuộc tính khác nếu cần
 }
 
