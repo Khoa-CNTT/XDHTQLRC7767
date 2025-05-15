@@ -42,9 +42,9 @@ public class TicketController {
     @GetMapping("/customer/{id}")
     public ResponseEntity<List<TicketHistoryDTO>> getTicketByCustomerId(@PathVariable Long id) {
         List<Ticket> tickets1 = ticketService.getTicketByCustomer(id);
-        List<TicketHistoryDTO> ticketsRespone= new ArrayList<>();
+        List<TicketHistoryDTO> ticketsRespone = new ArrayList<>();
 
-        for(Ticket ticket : tickets1){
+        for (Ticket ticket : tickets1) {
             TicketHistoryDTO ticketHistoryDTO = new TicketHistoryDTO();
             ticketHistoryDTO.setId(ticket.getId());
             ticketHistoryDTO.setDate(String.valueOf(ticket.getShowTime().getDate()));
@@ -52,10 +52,14 @@ public class TicketController {
             ticketHistoryDTO.setCinemaName(ticket.getShowTime().getRoom().getCinema().getName());
             ticketHistoryDTO.setMovieName(ticket.getShowTime().getMovie().getName());
             ticketsRespone.add(ticketHistoryDTO);
-        }
+            if (ticket.getUsed()) {
+                ticketHistoryDTO.setStatus("Đã sử dụng");
 
+            }
+            ticketHistoryDTO.setStatus("Chưa sử dụng");
+
+
+        }
         return ResponseEntity.ok(ticketsRespone);
     }
-
-
 }
