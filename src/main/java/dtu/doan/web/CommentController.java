@@ -61,4 +61,16 @@ public class CommentController {
             return new ResponseEntity<>("Error approving comment: " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long id) {
+        try {
+            service.deleteComment(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Comment not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+
 }
