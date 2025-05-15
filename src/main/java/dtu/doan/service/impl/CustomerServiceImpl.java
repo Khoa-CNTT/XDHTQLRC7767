@@ -1,7 +1,9 @@
 package dtu.doan.service.impl;
 
 import dtu.doan.dto.CustomerDTO;
+import dtu.doan.model.Account;
 import dtu.doan.model.Customer;
+import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     @Autowired
     CustomerRepository repository;
+    @Autowired
+    AccountRepository accountRepository;
+
     @Override
     public void registerCustomer(String fullName, String email, String password, String phoneNumber) {
 
@@ -64,8 +69,15 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteCustomer(Long id) {
         Customer customer = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+        Account account = accountRepository.findByUsername(customer.getEmail());
+        if (account == null) {
+            throw new RuntimeException("Account not found");
+        }
         customer.setIsDelete(true);
+        account.setIsDelete(true);
+        accountRepository.save(account);
         repository.save(customer);
+
     }
 
     @Override

@@ -4,6 +4,7 @@ package dtu.doan.web;
 import dtu.doan.dto.CustomerDTO;
 import dtu.doan.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +22,13 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        service.deleteCustomer(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
+        try{
+            service.deleteCustomer(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception exception){
+            return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}/disable")

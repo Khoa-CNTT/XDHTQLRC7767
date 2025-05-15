@@ -163,7 +163,7 @@ public class MovieServiceImpl implements MovieService {
         dto.setId(movie.getId());
         dto.setTitle(movie.getName());
         dto.setDuration(movie.getDuration() + " PHÚT");
-        dto.setReleaseDate(movie.getReleaseDate().isBefore(LocalDate.now()) ? "ĐANG CHIẾU" : "SẮP CHIẾU");
+        dto.setReleaseDate(String.valueOf(movie.getReleaseDate()));
         dto.setImage(movie.getImageUrl());
         List<Genre> genres = genreRepository.getGenreByMovieId(movie.getId());
         dto.setGenres(genres);
