@@ -16,6 +16,7 @@ public class SeatFormat {
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
+    private String type; // "VIP", "NORMAL", "COUPLE", "DISABLED"
     @Override
     public int hashCode() {
         return Objects.hash(name); // ✅ KHÔNG dùng `room`

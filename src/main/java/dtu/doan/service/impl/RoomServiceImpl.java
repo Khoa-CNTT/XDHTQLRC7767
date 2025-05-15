@@ -34,27 +34,43 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     @Override
     public Void createRoomWithSeats(RoomDTO room) {
-        int rows = 5;
-        int cols = 10;
+        int capacity = room.getCapacity();  // Tổng số ghế
+        int cols = 10;                      // Số cột mỗi hàng
+        int rows = (int) Math.ceil((double) capacity / cols); // Tính số hàng
+
         Set<SeatFormat> seatFormats = new HashSet<>();
         Cinema cinema = cinemaRepository.findByid(room.getCinemaID());
         Room room1 = new Room();
+
+        room1.setName(room.getName());
+        room1.setType(room.getType());
+        room1.setCapacity(capacity);
+        room1.setStatus("ACTIVE");
+        room1.setCinema(cinema);
+
         for (int i = 0; i < rows; i++) {
             char rowLetter = (char) ('A' + i);
             for (int j = 1; j <= cols; j++) {
+                int currentSeatIndex = i * cols + (j - 1);
+                if (currentSeatIndex >= capacity) break;
+
                 SeatFormat c = new SeatFormat();
-                c.setName(rowLetter + String.valueOf(j));
+                c.setName(rowLetter + String.valueOf(j)); // ✅ sửa tên đúng kiểu A1, A2
                 c.setRoom(room1);
+
+                if (currentSeatIndex >= capacity - 10) {
+                    c.setType("COUPLE");
+                } else {
+                    c.setType("STANDARD");
+                }
+
                 seatFormats.add(c);
             }
         }
-        room1.setName(room.getName());
-        room1.setType(room.getType());
-        room1.setCapacity(50);
-        room1.setStatus("ACTIVE");
+
         room1.setSeats(seatFormats);
-        room1.setCinema(cinema);
         roomRepository.save(room1);
         return null;
     }
+
 }
