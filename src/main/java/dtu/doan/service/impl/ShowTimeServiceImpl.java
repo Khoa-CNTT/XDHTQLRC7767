@@ -1,9 +1,6 @@
 package dtu.doan.service.impl;
 
-import dtu.doan.dto.ChairDTO;
-import dtu.doan.dto.ShowListCreatedResponeDTO;
-import dtu.doan.dto.ShowListDTO;
-import dtu.doan.dto.ShowTimeWithChairsDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.*;
 import dtu.doan.repository.ChairRepository;
 import dtu.doan.repository.MovieRepository;
@@ -16,15 +13,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
+
 import dtu.doan.model.ShowTime;
-import dtu.doan.repository.ShowTimeRepository;
-import dtu.doan.service.ShowTimeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
@@ -86,8 +79,11 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         int duration = movie.getDuration();
         LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
-        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetween(
-                showListDTO.getShowDate(), showListDTO.getStartTime(), endTime
+        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetweenAndRoom(
+                showListDTO.getShowDate(),
+                showListDTO.getStartTime(),
+                endTime,
+                room.getId()
         );
 
         ShowListCreatedResponeDTO result = new ShowListCreatedResponeDTO();
@@ -142,8 +138,29 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     }
 
     @Override
-    public List<ShowTime> findShowTimesByMovieIdAndDate(Long movieId, LocalDate date) {
-        return showTimeRepository.findShowTimesByMovieIdAndDate(movieId,date);
+    public List<ShowTimeListByLocation> findShowTimesByMovieIdAndDate(Long movieId, LocalDate date) {
+        List<ShowTime> showTimes = showTimeRepository.findShowTimesByMovieIdAndDate(movieId, date);
+        Map<Long, ShowTimeListByLocation> cinemaMap = new HashMap<>();
+
+        for (ShowTime showTime : showTimes) {
+            Cinema cinema = showTime.getRoom().getCinema();
+            Long cinemaId = cinema.getId();
+
+            // Nếu cinema chưa có trong map, thêm vào
+            if (!cinemaMap.containsKey(cinemaId)) {
+                ShowTimeListByLocation dto = new ShowTimeListByLocation();
+                dto.setName(cinema.getName());
+                dto.setAddress(cinema.getAddress());
+                dto.setShowtimes(new ArrayList<>());
+                cinemaMap.put(cinemaId, dto);
+            }
+
+            // Thêm giờ chiếu vào DTO
+            String time = showTime.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+            cinemaMap.get(cinemaId).getShowtimes().add(time);
+        }
+
+        return new ArrayList<>(cinemaMap.values());
     }
 
 

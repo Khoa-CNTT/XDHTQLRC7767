@@ -9,4 +9,5 @@ public class TicketHistoryDTO {
     private String date;
     private String cinemaName;
     private String startTime;
+    private String status;
 }

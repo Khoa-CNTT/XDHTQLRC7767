@@ -46,11 +46,13 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     @Query("SELECT s FROM ShowTime s WHERE  " +
             "FUNCTION('TIMESTAMP', s.date, s.endTime) <= CURRENT_TIMESTAMP")
     List<ShowTime> findByStatusAndDateBeforeNow();
-    @Query("SELECT s FROM ShowTime s WHERE s.date = :date AND s.startTime >= :startTime AND s.startTime < :endTime")
-    List<ShowTime> findShowTimesByDateAndStartTimeBetween(
+    @Query("SELECT s FROM ShowTime s WHERE s.date = :date AND s.startTime >= :startTime AND s.startTime < :endTime AND s.room.id = :roomId")
+    List<ShowTime> findShowTimesByDateAndStartTimeBetweenAndRoom(
             @Param("date") LocalDate date,
             @Param("startTime") LocalTime startTime,
-            @Param("endTime") LocalTime endTime);
+            @Param("endTime") LocalTime endTime,
+            @Param("roomId") Long roomId
+    );
 
     @Query("""
     SELECT DISTINCT s.date
