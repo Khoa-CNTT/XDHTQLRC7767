@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Menu, Typography, Avatar, Dropdown, Button } from "antd";
 import {
   DashboardOutlined,
@@ -17,6 +17,9 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
+import { RootState } from "../redux/store";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -146,10 +149,28 @@ const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Log để debug
+  console.log("AdminLayout rendered - user:", user);
+
+  useEffect(() => {
+    // Kiểm tra nếu user không có quyền admin, chuyển hướng về trang login
+    if (!user || !user.account || user.account.role !== "ADMIN") {
+      console.log("AdminLayout - User không có quyền admin:", user);
+      dispatch(logout());
+      navigate("/admin/login");
+    } else {
+      console.log("AdminLayout - User có quyền admin:", user?.account?.role);
+    }
+  }, [user, dispatch, navigate]);
 
   const handleLogout = () => {
-    // Implement logout logic
-    navigate("/login");
+    // Dispatch logout action để xóa thông tin user và token
+    dispatch(logout());
+    // Sau khi logout, chuyển hướng đến trang login
+    navigate("/admin/login");
   };
 
   const userMenu = (

@@ -8,6 +8,29 @@ interface PaymentState {
   error: string | null;
   paymentResult: any;
   bookingData: any | null;
+  // New states for payment statistics
+  paymentsPage: {
+    data: Payment[];
+    loading: boolean;
+    error: string | null;
+    totalPages: number;
+    currentPage: number;
+  };
+  yearlyRevenue: {
+    data: MonthlyRevenue[];
+    loading: boolean;
+    error: string | null;
+  };
+  dailyRevenue: {
+    data: DailyRevenueDTO | null;
+    loading: boolean;
+    error: string | null;
+  };
+  statisticsData: {
+    data: PaymentStatistic[];
+    loading: boolean;
+    error: string | null;
+  };
 }
 
 // Định nghĩa kiểu dữ liệu cho request thanh toán
@@ -23,6 +46,50 @@ interface PaymentSuccessResponse {
   bookingData?: any;
 }
 
+// New interfaces for payment statistics
+export interface Payment {
+  id: number;
+  amount: number;
+  date: string;
+  status: string;
+  type: string;
+  ticketId?: number;
+  customerId?: number;
+  customerName?: string;
+  // Add other payment fields as needed
+}
+
+export type MonthlyRevenue = [number, number];
+
+export interface DailyRevenueDTO {
+  date: string;
+  totalRevenue: number;
+  ticketCount: number;
+}
+
+export interface PaymentStatistic {
+  date: string;
+  amount: number;
+  count: number;
+}
+
+export interface PaymentPageParams {
+  page: number;
+}
+
+export interface YearlyRevenueParams {
+  year: number;
+}
+
+export interface DailyRevenueParams {
+  date: string;
+}
+
+export interface StatisticsParams {
+  startDate: string;
+  endDate: string;
+}
+
 // Trạng thái ban đầu
 const initialState: PaymentState = {
   paymentUrl: null,
@@ -31,6 +98,28 @@ const initialState: PaymentState = {
   error: null,
   paymentResult: null,
   bookingData: null,
+  paymentsPage: {
+    data: [],
+    loading: false,
+    error: null,
+    totalPages: 0,
+    currentPage: 0,
+  },
+  yearlyRevenue: {
+    data: [],
+    loading: false,
+    error: null,
+  },
+  dailyRevenue: {
+    data: null,
+    loading: false,
+    error: null,
+  },
+  statisticsData: {
+    data: [],
+    loading: false,
+    error: null,
+  },
 };
 
 // Tạo slice
@@ -87,6 +176,89 @@ const paymentSlice = createSlice({
       state.paymentResult = null;
       state.bookingData = null;
     },
+
+    // New reducers for payment statistics
+    getPaymentsPageRequest: (
+      state,
+      action: PayloadAction<PaymentPageParams>
+    ) => {
+      state.paymentsPage.loading = true;
+      state.paymentsPage.error = null;
+    },
+    getPaymentsPageSuccess: (
+      state,
+      action: PayloadAction<{
+        content: Payment[];
+        totalPages: number;
+        number: number;
+      }>
+    ) => {
+      state.paymentsPage.loading = false;
+      state.paymentsPage.data = action.payload.content;
+      state.paymentsPage.totalPages = action.payload.totalPages;
+      state.paymentsPage.currentPage = action.payload.number;
+    },
+    getPaymentsPageFailure: (state, action: PayloadAction<string>) => {
+      state.paymentsPage.loading = false;
+      state.paymentsPage.error = action.payload;
+    },
+
+    getYearlyRevenueRequest: (
+      state,
+      action: PayloadAction<YearlyRevenueParams>
+    ) => {
+      state.yearlyRevenue.loading = true;
+      state.yearlyRevenue.error = null;
+    },
+    getYearlyRevenueSuccess: (
+      state,
+      action: PayloadAction<Array<[number, number]>>
+    ) => {
+      state.yearlyRevenue.loading = false;
+      // Raw data is already transformed in the saga to include all 12 months
+      state.yearlyRevenue.data = action.payload;
+    },
+    getYearlyRevenueFailure: (state, action: PayloadAction<string>) => {
+      state.yearlyRevenue.loading = false;
+      state.yearlyRevenue.error = action.payload;
+    },
+
+    getDailyRevenueRequest: (
+      state,
+      action: PayloadAction<DailyRevenueParams>
+    ) => {
+      state.dailyRevenue.loading = true;
+      state.dailyRevenue.error = null;
+    },
+    getDailyRevenueSuccess: (state, action: PayloadAction<DailyRevenueDTO>) => {
+      state.dailyRevenue.loading = false;
+      state.dailyRevenue.data = action.payload;
+    },
+    getDailyRevenueFailure: (state, action: PayloadAction<string>) => {
+      state.dailyRevenue.loading = false;
+      state.dailyRevenue.error = action.payload;
+    },
+
+    getPaymentStatisticsRequest: (
+      state,
+      action: PayloadAction<StatisticsParams>
+    ) => {
+      state.statisticsData.loading = true;
+      state.statisticsData.error = null;
+    },
+    getPaymentStatisticsSuccess: (state, action: PayloadAction<any[]>) => {
+      state.statisticsData.loading = false;
+      // Transform backend data to match frontend PaymentStatistic interface
+      state.statisticsData.data = action.payload.map((item: any[]) => ({
+        date: item[0],
+        amount: item[1],
+        count: item[2],
+      }));
+    },
+    getPaymentStatisticsFailure: (state, action: PayloadAction<string>) => {
+      state.statisticsData.loading = false;
+      state.statisticsData.error = action.payload;
+    },
   },
 });
 
@@ -99,6 +271,19 @@ export const {
   handlePaymentReturnSuccess,
   handlePaymentReturnFailure,
   resetPaymentState,
+  // New exports for payment statistics
+  getPaymentsPageRequest,
+  getPaymentsPageSuccess,
+  getPaymentsPageFailure,
+  getYearlyRevenueRequest,
+  getYearlyRevenueSuccess,
+  getYearlyRevenueFailure,
+  getDailyRevenueRequest,
+  getDailyRevenueSuccess,
+  getDailyRevenueFailure,
+  getPaymentStatisticsRequest,
+  getPaymentStatisticsSuccess,
+  getPaymentStatisticsFailure,
 } = paymentSlice.actions;
 
 // Export reducer

@@ -994,12 +994,7 @@ const MovieDetail: React.FC = () => {
     id: movie?.id || id || "0",
     title: movie?.name || movie?.title || "Chưa có tiêu đề",
     poster: movie?.imageUrl || "",
-    backdrop:
-      typeof movie?.backdrop === "string"
-        ? movie.backdrop
-        : typeof movie?.image === "string"
-        ? movie.image
-        : "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
+    backdrop: movie.backdrop,
     rating: movie?.rating || 0,
     releaseDate: movie?.releaseYear
       ? `${movie.releaseYear}`

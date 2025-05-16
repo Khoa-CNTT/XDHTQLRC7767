@@ -155,6 +155,7 @@ const LoginPage: React.FC = () => {
       loginRequest({
         username: values.email.trim().toLowerCase(),
         password: values.password,
+        isUserLogin: true,
       })
     );
   };

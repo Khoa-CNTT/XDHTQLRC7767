@@ -27,6 +27,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import PrivateRoute from "./components/PrivateRoute";
 import GuestRoute from "./components/GuestRoute";
+import AdminRoute from "./components/AdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
 import EmailVerificationPage from "./pages/user/EmailVerificationPage";
 import LoadingScreen from "./components/common/LoadingScreen";
@@ -61,18 +62,31 @@ const AppContent = () => {
   const { loading: userInfoLoading } = useSelector(
     (state: RootState) => state.auth.userInfo
   );
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  // Thêm log debug
+  console.log("AppContent - isAuthenticated:", isAuthenticated);
+  console.log("AppContent - user:", user);
+  console.log("AppContent - userInfoLoading:", userInfoLoading);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    // Chỉ gọi getUserInfoRequest khi có token và không phải token admin mock
+    // (Token admin mock được xử lý riêng trong admin login page)
     if (token) {
+      console.log("AppContent - Có token, gọi getUserInfoRequest");
       dispatch(getUserInfoRequest());
     }
   }, [dispatch]);
 
   if (userInfoLoading) {
+    console.log("AppContent - Đang loading thông tin user");
     return <LoadingScreen />;
   }
 
+  console.log("AppContent - Render AppRoutes");
   return (
     <StyledLayout>
       <AppRoutes />
@@ -121,8 +135,10 @@ const AppRoutes = () => {
           <Route path="/booking/:id" element={<BookingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+      </Route>
 
-        {/* Admin Routes */}
+      {/* Admin Routes - Yêu cầu quyền Admin */}
+      <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />

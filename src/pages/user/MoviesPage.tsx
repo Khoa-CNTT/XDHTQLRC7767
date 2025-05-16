@@ -234,6 +234,7 @@ const MovieInfo = styled.div`
 `;
 
 const MovieTags = styled.div`
+  height: 70px;
   margin-bottom: 15px;
   min-height: 30px;
   display: flex;

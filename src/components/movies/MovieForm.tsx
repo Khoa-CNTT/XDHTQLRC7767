@@ -27,10 +27,15 @@ interface Genre {
   name: string;
 }
 
+// Extended Movie interface to include genreIds
+interface ExtendedMovie extends Movie {
+  genreIds?: number[];
+}
+
 interface MovieFormProps {
   form: FormInstance;
-  onFinish: (values: Movie) => void;
-  initialValues: Movie | null;
+  onFinish: (values: ExtendedMovie) => void;
+  initialValues: ExtendedMovie | null;
   onCancel?: () => void;
   loading?: boolean;
 }
@@ -81,28 +86,48 @@ const MovieForm: React.FC<MovieFormProps> = ({
     fetchGenres();
   }, []);
 
-  // Custom form submission handler to format date properly
+  // Custom form submission handler to format data properly for API
   const handleFormSubmit = (
-    values: Partial<Movie & { releaseDate: unknown }>
+    values: Partial<ExtendedMovie & { releaseDate: unknown }>
   ) => {
     // Format the release date for API
+    const { genre, ...restValues } = values;
     const formattedValues = {
-      ...values,
-      releaseDate: values.releaseDate
-        ? dayjs.isDayjs(values.releaseDate)
-          ? values.releaseDate.format("YYYY-MM-DD")
-          : values.releaseDate
+      ...restValues,
+      releaseDate: restValues.releaseDate
+        ? dayjs.isDayjs(restValues.releaseDate)
+          ? restValues.releaseDate.format("YYYY-MM-DD")
+          : restValues.releaseDate
         : undefined,
       // Extract releaseYear from the date for API compatibility
-      releaseYear: values.releaseDate
-        ? dayjs.isDayjs(values.releaseDate)
-          ? values.releaseDate.year()
-          : new Date(String(values.releaseDate)).getFullYear()
+      releaseYear: restValues.releaseDate
+        ? dayjs.isDayjs(restValues.releaseDate)
+          ? restValues.releaseDate.year()
+          : new Date(String(restValues.releaseDate)).getFullYear()
         : undefined,
+      // Convert genre names to genre IDs
+      genreIds: genre
+        ? genres.filter((g) => genre.includes(g.name)).map((g) => g.id)
+        : [],
+      // Map poster to imageUrl (needed for API compatibility)
+      imageUrl: restValues.poster,
+      // Map backdrop to backdropUrl (needed for API compatibility)
+      backdrop: restValues.backdrop,
     };
 
-    onFinish(formattedValues as Movie);
+    onFinish(formattedValues as ExtendedMovie);
   };
+
+  // Map initial genreIds to genre names for form display
+  useEffect(() => {
+    if (initialValues?.genreIds && genres.length > 0) {
+      const genreNames = initialValues.genreIds
+        .map((id: number) => genres.find((g) => g.id === id)?.name)
+        .filter(Boolean) as string[];
+
+      form.setFieldsValue({ genre: genreNames });
+    }
+  }, [initialValues?.genreIds, genres, form]);
 
   return (
     <Form

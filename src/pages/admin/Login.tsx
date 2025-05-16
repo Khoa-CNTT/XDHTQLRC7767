@@ -3,8 +3,11 @@ import { Form, Input, Button, Card, message, Typography } from "antd";
 import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../redux/slices/authSlice";
+import { authService } from "../../services/authService";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Container = styled.div`
   min-height: 100vh;
@@ -81,27 +84,30 @@ const Logo = styled.div`
   margin-bottom: 8px;
 `;
 
-const StyledForm = styled(Form)`
-  .ant-form-item {
-    margin-bottom: 24px;
-  }
-
-  .ant-input-affix-wrapper {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #d9d9d9;
-    transition: all 0.3s;
-
-    &:hover,
-    &:focus {
-      border-color: #1890ff;
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+// Thêm CSS cho form login
+const LoginFormStyles = styled.div`
+  .login-form {
+    .ant-form-item {
+      margin-bottom: 24px;
     }
-  }
 
-  .ant-input-prefix {
-    margin-right: 12px;
-    color: #bfbfbf;
+    .ant-input-affix-wrapper {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #d9d9d9;
+      transition: all 0.3s;
+
+      &:hover,
+      &:focus {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+      }
+    }
+
+    .ant-input-prefix {
+      margin-right: 12px;
+      color: #bfbfbf;
+    }
   }
 `;
 
@@ -127,35 +133,103 @@ const SubmitButton = styled(Button)`
   }
 `;
 
-type LoginFormValues = {
+interface LoginFormValues {
   username: string;
   password: string;
-};
+}
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
-  const onFinish = async (values: LoginFormValues) => {
+  const onFinish = (values: LoginFormValues) => {
     setLoading(true);
-    try {
-      // Tại đây sẽ thêm logic xác thực với backend
-      // Ví dụ:
-      // const response = await fetch('/api/admin/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(values),
-      // });
 
-      // Giả lập đăng nhập thành công
-      setTimeout(() => {
-        message.success("Đăng nhập thành công!");
-        navigate("/admin/dashboard");
-      }, 1500);
-    } catch (error) {
-      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
-    } finally {
+    // Gọi API đăng nhập thực thụ
+    const loginToBackend = async () => {
+      try {
+        // Dùng authService.login để gọi API login thực tế
+        const token = await authService.login({
+          username: values.username,
+          password: values.password,
+        });
+
+        // Sau khi có token, lấy thông tin user từ backend
+        const userInfo = await authService.getInfoUser();
+
+        // Kiểm tra xem user có role Admin không
+        // Role nằm trong account.role
+        if (userInfo && userInfo.account && userInfo.account.role === "ADMIN") {
+          // Nếu là Admin, cho phép đăng nhập
+          dispatch(
+            loginSuccess({
+              user: userInfo,
+              token,
+            })
+          );
+
+          message.success("Đăng nhập thành công!");
+
+          // Đảm bảo setLoading(false) được gọi trước khi chuyển hướng
+          setLoading(false);
+
+          // Delay chuyển hướng một chút để đảm bảo state đã được cập nhật
+          setTimeout(() => {
+            console.log("Chuyển hướng admin tới dashboard");
+            navigate("/admin/dashboard");
+          }, 500);
+        } else {
+          // Nếu không phải Admin, hiển thị thông báo lỗi
+          localStorage.removeItem("token"); // Xóa token đã lưu
+          message.error("Bạn không có quyền truy cập vào trang quản trị!");
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Lỗi đăng nhập:", error);
+        message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+        setLoading(false);
+      }
+    };
+
+    // Nếu đang ở môi trường phát triển, có thể mock đăng nhập
+    if (
+      process.env.NODE_ENV === "development" &&
+      values.username === "admin" &&
+      values.password === "admin"
+    ) {
+      // Tạo user admin với role là Admin
+      const adminUser = {
+        id: "1",
+        email: values.username,
+        fullName: "Admin User",
+        phoneNumber: "",
+        points: 0,
+        account: {
+          role: "ADMIN",
+        },
+      };
+
+      // Tạo token
+      const token = "admin-auth-token-" + Date.now();
+
+      // Lưu token vào localStorage
+      localStorage.setItem("token", token);
+
+      // Dispatch action login thành công với role Admin
+      dispatch(loginSuccess({ user: adminUser, token }));
+
+      message.success("Đăng nhập thành công!");
       setLoading(false);
+
+      // Delay chuyển hướng một chút để đảm bảo state đã được cập nhật
+      setTimeout(() => {
+        console.log("Chuyển hướng admin tới dashboard");
+        navigate("/admin/dashboard");
+      }, 500);
+    } else {
+      // Gọi hàm login thực tế
+      loginToBackend();
     }
   };
 
@@ -166,34 +240,44 @@ const AdminLogin: React.FC = () => {
           <Logo>ADMIN PORTAL</Logo>
           <Text type="secondary">Đăng nhập để quản lý hệ thống</Text>
         </LogoContainer>
-        <StyledForm name="admin_login" onFinish={onFinish} size="large">
-          <Form.Item
-            name="username"
-            rules={[
-              { required: true, message: "Vui lòng nhập tên đăng nhập!" },
-            ]}
+        <LoginFormStyles>
+          <Form
+            name="admin_login"
+            onFinish={onFinish}
+            size="large"
+            className="login-form"
           >
-            <Input prefix={<UserOutlined />} placeholder="Tên đăng nhập" />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="Mật khẩu" />
-          </Form.Item>
-
-          <Form.Item>
-            <SubmitButton
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              icon={<LoginOutlined />}
+            <Form.Item
+              name="username"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên đăng nhập!" },
+              ]}
             >
-              Đăng nhập
-            </SubmitButton>
-          </Form.Item>
-        </StyledForm>
+              <Input prefix={<UserOutlined />} placeholder="Tên đăng nhập" />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Mật khẩu"
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <SubmitButton
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                icon={<LoginOutlined />}
+              >
+                Đăng nhập
+              </SubmitButton>
+            </Form.Item>
+          </Form>
+        </LoginFormStyles>
       </StyledCard>
     </Container>
   );
