@@ -19,4 +19,5 @@ public interface CustomerService  {
     CustomerDTO updateCustomer(CustomerDTO customerDTO);
     void deleteCustomer(Long id);
     void disableCustomerAccount(Long id,boolean status);
+    Long sumById();
 }

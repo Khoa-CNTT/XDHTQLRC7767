@@ -89,6 +89,11 @@ public class CustomerServiceImpl implements CustomerService {
         repository.save(customer);
     }
 
+    @Override
+    public Long sumById() {
+        return repository.sumById();
+    }
+
 
     private CustomerDTO convertToDTO(Customer customer) {
         CustomerDTO dto = new CustomerDTO();

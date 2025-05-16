@@ -60,4 +60,9 @@ public class CustomerController {
             return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
         }
     }
+    @GetMapping("/sum")
+    public ResponseEntity<Long> sumById() {
+        Long sum = service.sumById();
+        return new ResponseEntity<>(sum, HttpStatus.OK);
+    }
 }
