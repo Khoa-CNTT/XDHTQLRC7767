@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Input, Select, DatePicker, InputNumber, Button } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -6,6 +6,7 @@ import { Movie } from "../../pages/admin/MovieManagement";
 import type { FormInstance } from "antd";
 import { Row, Col } from "antd";
 import CloudinaryUpload from "../common/CloudinaryUpload";
+import axiosInstance from "../../utils/axiosConfig";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -19,6 +20,12 @@ const SectionTitle = styled.h3`
   margin-bottom: 16px;
   color: #333;
 `;
+
+// Define Genre interface
+interface Genre {
+  id: number;
+  name: string;
+}
 
 interface MovieFormProps {
   form: FormInstance;
@@ -35,11 +42,73 @@ const MovieForm: React.FC<MovieFormProps> = ({
   onCancel,
   loading,
 }) => {
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [genresLoading, setGenresLoading] = useState(false);
+
+  // Fetch genres from API
+  useEffect(() => {
+    const fetchGenres = async () => {
+      setGenresLoading(true);
+      try {
+        const response = await axiosInstance.get("/api/genres");
+        setGenres(response.data);
+      } catch (error) {
+        console.error("Failed to fetch genres:", error);
+        // Use default genres if API fails
+        setGenres([
+          { id: 1, name: "Hành động" },
+          { id: 2, name: "Phiêu lưu" },
+          { id: 3, name: "Hoạt hình" },
+          { id: 4, name: "Hài" },
+          { id: 5, name: "Tội phạm" },
+          { id: 6, name: "Tài liệu" },
+          { id: 7, name: "Chính kịch" },
+          { id: 8, name: "Gia đình" },
+          { id: 9, name: "Giả tưởng" },
+          { id: 10, name: "Lịch sử" },
+          { id: 11, name: "Kinh dị" },
+          { id: 12, name: "Âm nhạc" },
+          { id: 13, name: "Bí ẩn" },
+          { id: 14, name: "Lãng mạn" },
+          { id: 15, name: "Khoa học viễn tưởng" },
+          { id: 16, name: "Chiến tranh" },
+        ]);
+      } finally {
+        setGenresLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
+
+  // Custom form submission handler to format date properly
+  const handleFormSubmit = (
+    values: Partial<Movie & { releaseDate: unknown }>
+  ) => {
+    // Format the release date for API
+    const formattedValues = {
+      ...values,
+      releaseDate: values.releaseDate
+        ? dayjs.isDayjs(values.releaseDate)
+          ? values.releaseDate.format("YYYY-MM-DD")
+          : values.releaseDate
+        : undefined,
+      // Extract releaseYear from the date for API compatibility
+      releaseYear: values.releaseDate
+        ? dayjs.isDayjs(values.releaseDate)
+          ? values.releaseDate.year()
+          : new Date(String(values.releaseDate)).getFullYear()
+        : undefined,
+    };
+
+    onFinish(formattedValues as Movie);
+  };
+
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onFinish}
+      onFinish={handleFormSubmit}
       initialValues={{
         status: "Sắp chiếu",
         genre: [],
@@ -96,7 +165,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
                 { required: true, message: "Vui lòng chọn ngày phát hành!" },
               ]}
             >
-              <DatePicker style={{ width: "100%" }} />
+              <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
             </Form.Item>
           </Col>
         </Row>
@@ -127,6 +196,44 @@ const MovieForm: React.FC<MovieFormProps> = ({
           </Col>
         </Row>
 
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="country" label="Quốc gia">
+              <Input placeholder="Nhập quốc gia sản xuất" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="language" label="Ngôn ngữ">
+              <Input placeholder="Nhập ngôn ngữ phim" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="subtitle" label="Phụ đề">
+              <Input placeholder="Nhập phụ đề phim" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="ageLimit" label="Giới hạn tuổi">
+              <InputNumber
+                min={0}
+                style={{ width: "100%" }}
+                placeholder="Nhập giới hạn tuổi"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item name="actor" label="Diễn viên">
+              <Input placeholder="Nhập danh sách diễn viên" />
+            </Form.Item>
+          </Col>
+        </Row>
+
         <Form.Item
           name="genre"
           label="Thể loại"
@@ -137,23 +244,16 @@ const MovieForm: React.FC<MovieFormProps> = ({
             },
           ]}
         >
-          <Select mode="multiple" placeholder="Chọn thể loại">
-            <Option value="Hành động">Hành động</Option>
-            <Option value="Phiêu lưu">Phiêu lưu</Option>
-            <Option value="Hoạt hình">Hoạt hình</Option>
-            <Option value="Hài">Hài</Option>
-            <Option value="Tội phạm">Tội phạm</Option>
-            <Option value="Tài liệu">Tài liệu</Option>
-            <Option value="Chính kịch">Chính kịch</Option>
-            <Option value="Gia đình">Gia đình</Option>
-            <Option value="Giả tưởng">Giả tưởng</Option>
-            <Option value="Lịch sử">Lịch sử</Option>
-            <Option value="Kinh dị">Kinh dị</Option>
-            <Option value="Âm nhạc">Âm nhạc</Option>
-            <Option value="Bí ẩn">Bí ẩn</Option>
-            <Option value="Lãng mạn">Lãng mạn</Option>
-            <Option value="Khoa học viễn tưởng">Khoa học viễn tưởng</Option>
-            <Option value="Chiến tranh">Chiến tranh</Option>
+          <Select
+            mode="multiple"
+            placeholder="Chọn thể loại"
+            loading={genresLoading}
+          >
+            {genres.map((genre) => (
+              <Option key={genre.id} value={genre.name}>
+                {genre.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
       </FormSection>
@@ -168,6 +268,10 @@ const MovieForm: React.FC<MovieFormProps> = ({
           <TextArea rows={4} placeholder="Nhập mô tả phim" />
         </Form.Item>
 
+        <Form.Item name="content" label="Nội dung">
+          <TextArea rows={4} placeholder="Nhập nội dung chi tiết của phim" />
+        </Form.Item>
+
         <Form.Item
           name="poster"
           label="Poster phim"
@@ -177,6 +281,20 @@ const MovieForm: React.FC<MovieFormProps> = ({
             label="Tải lên poster phim"
             value={initialValues?.poster || ""}
             onChange={(url) => form.setFieldValue("poster", url)}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="backdrop"
+          label="Hình nền phim"
+          rules={[
+            { required: true, message: "Vui lòng tải lên hình nền phim!" },
+          ]}
+        >
+          <CloudinaryUpload
+            label="Tải lên hình nền phim"
+            value={initialValues?.backdrop || ""}
+            onChange={(url) => form.setFieldValue("backdrop", url)}
           />
         </Form.Item>
       </FormSection>

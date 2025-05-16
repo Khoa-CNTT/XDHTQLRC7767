@@ -10,21 +10,28 @@ import {
   getShowtimeWithChairsRequest,
   getShowtimeWithChairsSuccess,
   getShowtimeWithChairsFailure,
+  searchShowtimesRequest,
+  searchShowtimesSuccess,
+  searchShowtimesFailure,
+  ShowtimeParams,
 } from "../slices/showtimeSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axiosConfig";
 import { notificationUtils } from "../../utils/notificationConfig";
 
-interface ShowtimeParams {
-  date?: string;
-  cinemaId?: number;
-  movieId?: number;
+interface AxiosError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message?: string;
 }
 
 // Lấy danh sách lịch chiếu
 function* getShowtimeListSaga(
   action?: PayloadAction<ShowtimeParams>
-): Generator<any, void, any> {
+): Generator<unknown, void, unknown> {
   try {
     const params = action?.payload || {};
     let url = "/api/showtime";
@@ -44,10 +51,11 @@ function* getShowtimeListSaga(
 
     const response = yield call(axiosInstance.get, url);
     yield put(getShowtimeListSuccess(response.data));
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as AxiosError;
     yield put(
       getShowtimeListFailure(
-        error.response?.data?.message || "Không thể lấy danh sách lịch chiếu"
+        err.response?.data?.message || "Không thể lấy danh sách lịch chiếu"
       )
     );
     notificationUtils.error({
@@ -60,7 +68,7 @@ function* getShowtimeListSaga(
 // Lấy showtime với danh sách ghế
 function* getShowtimeWithChairsSaga(
   action: PayloadAction<{ id: number }>
-): Generator<any, void, any> {
+): Generator<unknown, void, unknown> {
   try {
     const { id } = action.payload;
     const response = yield call(
@@ -68,10 +76,11 @@ function* getShowtimeWithChairsSaga(
       `/api/showtime/${id}/with-chairs`
     );
     yield put(getShowtimeWithChairsSuccess(response.data));
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as AxiosError;
     yield put(
       getShowtimeWithChairsFailure(
-        error.response?.data?.message || "Không thể lấy thông tin ghế ngồi"
+        err.response?.data?.message || "Không thể lấy thông tin ghế ngồi"
       )
     );
     notificationUtils.error({
@@ -84,7 +93,7 @@ function* getShowtimeWithChairsSaga(
 // Tạo lịch chiếu mới
 function* createShowtimeSaga(
   action: PayloadAction<ShowListDTO>
-): Generator<any, void, any> {
+): Generator<unknown, void, unknown> {
   try {
     const response = yield call(
       axiosInstance.post,
@@ -96,21 +105,60 @@ function* createShowtimeSaga(
       message: "Thành công",
       description: "Tạo lịch chiếu mới thành công",
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as AxiosError;
     yield put(
       createShowtimeFailure(
-        error.response?.data?.message || "Không thể tạo lịch chiếu mới"
+        err.response?.data?.message || "Không thể tạo lịch chiếu mới"
       )
     );
     notificationUtils.error({
       message: "Lỗi",
       description:
-        error.response?.data?.message || "Không thể tạo lịch chiếu mới",
+        err.response?.data?.message || "Không thể tạo lịch chiếu mới",
     });
   }
 }
+
+// Tìm kiếm lịch chiếu
+function* searchShowtimeSaga(
+  action?: PayloadAction<ShowtimeParams>
+): Generator<unknown, void, unknown> {
+  try {
+    const params = action?.payload || {};
+
+    // Always use the search-showtime endpoint with params object
+    const axiosParams: Record<string, string> = {};
+    // Make sure to pass empty strings rather than undefined
+    axiosParams.movieName = params.movieName || "";
+    axiosParams.roomName = params.roomName || "";
+    axiosParams.date = params.date || "";
+
+    const response = yield call(
+      axiosInstance.get,
+      "/api/showtime/search-showtime",
+      {
+        params: axiosParams,
+      }
+    );
+    yield put(searchShowtimesSuccess(response.data));
+  } catch (error) {
+    const err = error as AxiosError;
+    yield put(
+      searchShowtimesFailure(
+        err.response?.data?.message || "Không thể tìm kiếm lịch chiếu"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể tìm kiếm lịch chiếu",
+    });
+  }
+}
+
 export default function* showtimeSaga() {
   yield takeEvery(getShowtimeListRequest.type, getShowtimeListSaga);
   yield takeEvery(createShowtimeRequest.type, createShowtimeSaga);
   yield takeEvery(getShowtimeWithChairsRequest.type, getShowtimeWithChairsSaga);
+  yield takeEvery(searchShowtimesRequest.type, searchShowtimeSaga);
 }

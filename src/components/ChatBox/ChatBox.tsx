@@ -1,19 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { chatService } from "../../services/chatService";
-import { Button, Input, Typography, Space, Spin } from "antd";
+import { Button, Input, Typography, Space } from "antd";
 import {
   SendOutlined,
   MessageOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
+import { useChat } from "../../hooks/useChat";
 
 const { Text } = Typography;
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
 
 const ChatBoxContainer = styled.div<{ isOpen: boolean }>`
   position: fixed;
@@ -179,9 +174,8 @@ const TypingDot = styled.span`
 
 const ChatBox: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages, isLoading, sendMessage } = useChat();
   const [inputMessage, setInputMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -195,34 +189,8 @@ const ChatBox: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const userMessage: Message = {
-      role: "user",
-      content: inputMessage,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    await sendMessage(inputMessage);
     setInputMessage("");
-    setIsLoading(true);
-
-    try {
-      const response = await chatService.sendMessage(inputMessage);
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: response.response,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      const errorMessage: Message = {
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again later.",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (

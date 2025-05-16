@@ -4,16 +4,19 @@ import {
   Button,
   Input,
   Space,
-  message,
   Tag,
   Tooltip,
   Popconfirm,
+  Modal,
+  Form,
+  Select,
 } from "antd";
 import {
   SearchOutlined,
   LockOutlined,
   UnlockOutlined,
   DeleteOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,10 +24,14 @@ import {
   getCustomerListRequest,
   deleteCustomerRequest,
   disableCustomerRequest,
+  enableCustomerRequest,
+  updateCustomerRequest,
   Customer,
 } from "../../redux/slices/customerSlice";
 import { RootState } from "../../redux/store";
 import type { Key } from "react";
+
+const { Option } = Select;
 
 const ActionButton = styled(Button)`
   margin-right: 8px;
@@ -48,6 +55,9 @@ const CustomerManagement: React.FC = () => {
     (state: RootState) => state.customer.customerList
   );
   const [searchText, setSearchText] = useState("");
+  const [form] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(getCustomerListRequest());
@@ -61,13 +71,45 @@ const CustomerManagement: React.FC = () => {
     if (isEnabled) {
       dispatch(disableCustomerRequest(id));
     } else {
-      // Handle enable functionality if needed
-      message.info("Chức năng kích hoạt tài khoản chưa được hỗ trợ");
+      dispatch(enableCustomerRequest(id));
     }
   };
 
   const handleSearch = (value: string) => {
     setSearchText(value);
+  };
+
+  const handleEdit = (record: Customer) => {
+    form.setFieldsValue({
+      fullName: record.fullName,
+      email: record.email,
+      phoneNumber: record.phoneNumber,
+      address: record.address || "",
+      gender: record.gender,
+      cardId: record.cardId || "",
+      username: record.username,
+      isEnable: record.isEnable,
+    });
+    setEditingId(record.id);
+    setIsModalVisible(true);
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleModalOk = () => {
+    form.validateFields().then((values) => {
+      if (editingId) {
+        const updatedCustomer: Customer = {
+          id: editingId,
+          ...values,
+          isDelete: false, // Assume not deleted since we're updating
+        };
+        dispatch(updateCustomerRequest(updatedCustomer));
+        setIsModalVisible(false);
+      }
+    });
   };
 
   // Filter customers based on search text
@@ -156,6 +198,14 @@ const CustomerManagement: React.FC = () => {
       key: "action",
       render: (text: string, record: Customer) => (
         <Space size="small">
+          <Tooltip title="Chỉnh sửa">
+            <ActionButton
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              type="primary"
+              size="small"
+            />
+          </Tooltip>
           <Tooltip title={record.isEnable ? "Vô hiệu hóa" : "Kích hoạt"}>
             <ActionButton
               icon={record.isEnable ? <LockOutlined /> : <UnlockOutlined />}
@@ -201,6 +251,67 @@ const CustomerManagement: React.FC = () => {
           pagination={{ pageSize: 10 }}
         />
       </TableContainer>
+
+      <Modal
+        title="Chỉnh sửa thông tin khách hàng"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+        okText="Cập nhật"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="fullName"
+            label="Họ tên"
+            rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: "Vui lòng nhập email" },
+              { type: "email", message: "Email không hợp lệ" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="phoneNumber"
+            label="Số điện thoại"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="address" label="Địa chỉ">
+            <Input />
+          </Form.Item>
+          <Form.Item name="gender" label="Giới tính">
+            <Select>
+              <Option value={true}>Nam</Option>
+              <Option value={false}>Nữ</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="cardId" label="CMND/CCCD">
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="username"
+            label="Tên đăng nhập"
+            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+          >
+            <Input disabled />
+          </Form.Item>
+          <Form.Item name="isEnable" label="Trạng thái">
+            <Select>
+              <Option value={true}>Hoạt động</Option>
+              <Option value={false}>Không hoạt động</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

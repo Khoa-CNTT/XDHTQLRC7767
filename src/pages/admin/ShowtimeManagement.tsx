@@ -34,10 +34,10 @@ import { getRoomListRequest } from "../../redux/slices/room.slice";
 import {
   Showtime,
   createShowtimeRequest,
-  getShowtimeListRequest,
   resetCreateShowtimeState,
   ShowListDTO,
   ShowtimeParams,
+  searchShowtimesRequest,
 } from "../../redux/slices/showtimeSlice";
 
 const { Title } = Typography;
@@ -59,6 +59,7 @@ const ShowtimeManagement: React.FC = () => {
   const [currentShowtime, setCurrentShowtime] = useState<Showtime | null>(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState<string>("");
+  const [searchRoomText, setSearchRoomText] = useState<string>("");
   const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
   const dispatch = useDispatch();
 
@@ -73,7 +74,13 @@ const ShowtimeManagement: React.FC = () => {
   useEffect(() => {
     dispatch(getCinemaListRequest());
     dispatch(getMovieListRequest());
-    dispatch(getShowtimeListRequest()); // Pass empty object to match the updated saga
+    // Always use search endpoint with empty parameters for consistency
+    const emptyParams: ShowtimeParams = {
+      movieName: "",
+      roomName: "",
+      date: "",
+    };
+    dispatch(searchShowtimesRequest(emptyParams));
   }, [dispatch]);
 
   // Xử lý kết quả sau khi tạo lịch chiếu
@@ -92,10 +99,15 @@ const ShowtimeManagement: React.FC = () => {
 
     if (showtime) {
       form.setFieldsValue({
-        ...showtime,
+        cinemaId: showtime.room.cinema.id,
+        roomId: showtime.room.id,
+        movieId: showtime.movie.id,
         showDate: dayjs(showtime.date),
         startTime: dayjs(showtime.startTime, "HH:mm"),
+        pricePerShowTime: showtime.pricePerShowTime,
       });
+      // Load rooms for this cinema
+      dispatch(getRoomListRequest({ id: showtime.room.cinema.id }));
     } else {
       form.resetFields();
     }
@@ -142,52 +154,52 @@ const ShowtimeManagement: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchText(value);
-    // Search for showtimes based on movieName and roomName
-    dispatch(getShowtimeListRequest());
+    performSearch(value, searchRoomText, filterDate);
+  };
+
+  const handleRoomSearch = (value: string) => {
+    setSearchRoomText(value);
+    performSearch(searchText, value, filterDate);
   };
 
   const handleDateFilter = (date: Dayjs | null) => {
     setFilterDate(date);
-
-    if (date) {
-      // Filter by date - properly typed now
-      const params: ShowtimeParams = {
-        date: date.format("YYYY-MM-DD"),
-      };
-      dispatch(getShowtimeListRequest(params));
-    } else {
-      // If date filter is cleared, fetch all showtimes
-      dispatch(getShowtimeListRequest());
-    }
+    performSearch(searchText, searchRoomText, date);
   };
 
-  // Use client-side filtering since we're still implementing server-side filtering
-  const filteredShowtimes = showtimeList.data.filter((showtime) => {
-    let matchesSearch = true;
-    let matchesDate = true;
+  const performSearch = (
+    movieName: string = searchText,
+    roomName: string = searchRoomText,
+    date: Dayjs | null = filterDate
+  ) => {
+    // Create params object for search
+    const params: ShowtimeParams = {};
 
-    if (searchText) {
-      matchesSearch =
-        showtime.movieTitle.toLowerCase().includes(searchText.toLowerCase()) ||
-        showtime.roomName.toLowerCase().includes(searchText.toLowerCase());
+    if (movieName) {
+      params.movieName = movieName;
     }
 
-    if (filterDate) {
-      matchesDate = showtime.date === filterDate.format("YYYY-MM-DD");
+    if (roomName) {
+      params.roomName = roomName;
     }
 
-    return matchesSearch && matchesDate;
-  });
+    if (date) {
+      params.date = date.format("YYYY-MM-DD");
+    }
+
+    // Always dispatch searchShowtimesRequest with params
+    dispatch(searchShowtimesRequest(params));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Đang mở bán":
+      case "ACTIVE":
         return "green";
-      case "Sắp mở bán":
+      case "PENDING":
         return "blue";
-      case "Đã đóng":
+      case "INACTIVE":
         return "red";
-      case "Đã chiếu":
+      case "FINISHED":
         return "gray";
       default:
         return "default";
@@ -203,13 +215,18 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Phim",
-      dataIndex: "movieTitle",
-      key: "movieTitle",
+      key: "movie",
+      render: (_: unknown, record: Showtime) => record.movie.name,
     },
     {
       title: "Phòng",
-      dataIndex: "roomName",
-      key: "roomName",
+      key: "room",
+      render: (_: unknown, record: Showtime) => record.room.name,
+    },
+    {
+      title: "Rạp",
+      key: "cinema",
+      render: (_: unknown, record: Showtime) => record.room.cinema.name,
     },
     {
       title: "Ngày chiếu",
@@ -228,8 +245,8 @@ const ShowtimeManagement: React.FC = () => {
     },
     {
       title: "Giá vé",
-      dataIndex: "price",
-      key: "price",
+      dataIndex: "pricePerShowTime",
+      key: "pricePerShowTime",
       render: (price: number) => `${price?.toLocaleString()}đ`,
     },
     {
@@ -238,33 +255,6 @@ const ShowtimeManagement: React.FC = () => {
       key: "status",
       render: (status: string) => (
         <Tag color={getStatusColor(status)}>{status}</Tag>
-      ),
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_: unknown, record: Showtime) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => showModal(record)}
-          />
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa lịch chiếu này?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-            />
-          </Popconfirm>
-        </Space>
       ),
     },
   ];
@@ -286,10 +276,19 @@ const ShowtimeManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col span={8}>
             <Input
-              placeholder="Tìm kiếm theo tên phim, phòng..."
+              placeholder="Tìm kiếm theo tên phim..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col span={8}>
+            <Input
+              placeholder="Tìm kiếm theo tên phòng..."
+              prefix={<SearchOutlined />}
+              value={searchRoomText}
+              onChange={(e) => handleRoomSearch(e.target.value)}
               allowClear
             />
           </Col>
@@ -308,7 +307,7 @@ const ShowtimeManagement: React.FC = () => {
 
       <Table
         columns={columns}
-        dataSource={filteredShowtimes}
+        dataSource={showtimeList.data}
         rowKey="id"
         loading={showtimeList.loading}
         pagination={{ pageSize: 10 }}

@@ -31,6 +31,17 @@ export interface CustomerState {
     error: string | null;
     success: boolean;
   };
+  enableCustomer: {
+    loading: boolean;
+    error: string | null;
+    success: boolean;
+  };
+  updateCustomer: {
+    loading: boolean;
+    error: string | null;
+    success: boolean;
+    data: Customer | null;
+  };
 }
 
 // Initial state
@@ -49,6 +60,17 @@ const initialState: CustomerState = {
     loading: false,
     error: null,
     success: false,
+  },
+  enableCustomer: {
+    loading: false,
+    error: null,
+    success: false,
+  },
+  updateCustomer: {
+    loading: false,
+    error: null,
+    success: false,
+    data: null,
   },
 };
 
@@ -118,6 +140,55 @@ const customerSlice = createSlice({
       state.disableCustomer.success = false;
     },
 
+    // Enable customer account
+    enableCustomerRequest: {
+      reducer: (state) => {
+        state.enableCustomer.loading = true;
+        state.enableCustomer.error = null;
+        state.enableCustomer.success = false;
+      },
+      prepare: (id: number) => ({ payload: id }),
+    },
+    enableCustomerSuccess: (state, action: PayloadAction<number>) => {
+      state.enableCustomer.loading = false;
+      state.enableCustomer.success = true;
+      // Update the customer status in the list
+      state.customerList.data = state.customerList.data.map((customer) =>
+        customer.id === action.payload
+          ? { ...customer, isEnable: true }
+          : customer
+      );
+    },
+    enableCustomerFailure: (state, action: PayloadAction<string>) => {
+      state.enableCustomer.loading = false;
+      state.enableCustomer.error = action.payload;
+      state.enableCustomer.success = false;
+    },
+
+    // Update customer
+    updateCustomerRequest: {
+      reducer: (state) => {
+        state.updateCustomer.loading = true;
+        state.updateCustomer.error = null;
+        state.updateCustomer.success = false;
+      },
+      prepare: (customer: Customer) => ({ payload: customer }),
+    },
+    updateCustomerSuccess: (state, action: PayloadAction<Customer>) => {
+      state.updateCustomer.loading = false;
+      state.updateCustomer.success = true;
+      state.updateCustomer.data = action.payload;
+      // Update the customer in the list
+      state.customerList.data = state.customerList.data.map((customer) =>
+        customer.id === action.payload.id ? action.payload : customer
+      );
+    },
+    updateCustomerFailure: (state, action: PayloadAction<string>) => {
+      state.updateCustomer.loading = false;
+      state.updateCustomer.error = action.payload;
+      state.updateCustomer.success = false;
+    },
+
     // Reset states
     resetCustomerState: (state) => {
       state.deleteCustomer.loading = false;
@@ -126,6 +197,12 @@ const customerSlice = createSlice({
       state.disableCustomer.loading = false;
       state.disableCustomer.error = null;
       state.disableCustomer.success = false;
+      state.enableCustomer.loading = false;
+      state.enableCustomer.error = null;
+      state.enableCustomer.success = false;
+      state.updateCustomer.loading = false;
+      state.updateCustomer.error = null;
+      state.updateCustomer.success = false;
     },
   },
 });
@@ -141,6 +218,12 @@ export const {
   disableCustomerRequest,
   disableCustomerSuccess,
   disableCustomerFailure,
+  enableCustomerRequest,
+  enableCustomerSuccess,
+  enableCustomerFailure,
+  updateCustomerRequest,
+  updateCustomerSuccess,
+  updateCustomerFailure,
   resetCustomerState,
 } = customerSlice.actions;
 

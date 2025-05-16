@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Select,
@@ -11,6 +11,7 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { FilterValues } from "../../pages/admin/MovieManagement";
+import axiosInstance from "../../utils/axiosConfig";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -28,11 +29,37 @@ interface MovieFilterProps {
   initialValues: FilterValues;
 }
 
+// Define Genre interface
+interface Genre {
+  id: number;
+  name: string;
+}
+
 const MovieFilter: React.FC<MovieFilterProps> = ({
   onFilterChange,
   initialValues,
 }) => {
   const [form] = Form.useForm();
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch genres from API
+  useEffect(() => {
+    const fetchGenres = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get("/api/genres");
+        setGenres(response.data);
+      } catch (error) {
+        console.error("Failed to fetch genres:", error);
+        // Use default genres if API fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const handleReset = () => {
     form.resetFields();
@@ -69,23 +96,17 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item name="genres" label="Thể loại">
-              <Select mode="multiple" placeholder="Chọn thể loại" allowClear>
-                <Option value="Hành động">Hành động</Option>
-                <Option value="Phiêu lưu">Phiêu lưu</Option>
-                <Option value="Hoạt hình">Hoạt hình</Option>
-                <Option value="Hài">Hài</Option>
-                <Option value="Tội phạm">Tội phạm</Option>
-                <Option value="Tài liệu">Tài liệu</Option>
-                <Option value="Chính kịch">Chính kịch</Option>
-                <Option value="Gia đình">Gia đình</Option>
-                <Option value="Giả tưởng">Giả tưởng</Option>
-                <Option value="Lịch sử">Lịch sử</Option>
-                <Option value="Kinh dị">Kinh dị</Option>
-                <Option value="Âm nhạc">Âm nhạc</Option>
-                <Option value="Bí ẩn">Bí ẩn</Option>
-                <Option value="Lãng mạn">Lãng mạn</Option>
-                <Option value="Khoa học viễn tưởng">Khoa học viễn tưởng</Option>
-                <Option value="Chiến tranh">Chiến tranh</Option>
+              <Select
+                mode="multiple"
+                placeholder="Chọn thể loại"
+                allowClear
+                loading={loading}
+              >
+                {genres.map((genre) => (
+                  <Option key={genre.id} value={genre.name}>
+                    {genre.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>

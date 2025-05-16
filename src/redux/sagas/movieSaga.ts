@@ -15,6 +15,10 @@ import {
   getUpcomingMoviesRequest,
   getUpcomingMoviesSuccess,
   getUpcomingMoviesFailure,
+  getShowTimesRequest,
+  getShowTimesSuccess,
+  getShowTimesFailure,
+  ShowtimeParams,
   getCommentsRequest,
   getCommentsSuccess,
   getCommentsFailure,
@@ -102,6 +106,11 @@ interface BulkUpdateStatusAction {
     ids: number[];
     status: string;
   };
+}
+
+interface GetShowTimesAction {
+  type: string;
+  payload: ShowtimeParams;
 }
 
 // Get user info saga
@@ -279,11 +288,14 @@ export function* getAdminMovieListSaga(
       id: movie.id,
       title: movie.name,
       director: movie.director || "",
-      releaseDate: movie.releaseYear ? `${movie.releaseYear}-01-01` : undefined,
+      releaseDate:
+        movie.releaseDate ||
+        (movie.releaseYear ? `${movie.releaseYear}-01-01` : undefined),
       duration: movie.duration || 0,
       genre: movie.movieGenres?.map((g: any) => g.name) || [],
       status: movie.status || 1,
       poster: movie.imageUrl || "https://via.placeholder.com/150x225",
+      backdrop: movie.backdropUrl || "",
       description: movie.description || "",
       rating: movie.rating || 0,
       actor: movie.actor || "",
@@ -315,24 +327,42 @@ export function* addMovieSaga(
   try {
     const movie = action.payload;
 
+    // Get genres mapping from the API
+    const genresResponse = yield call(axiosInstance.get, "/api/genres");
+    const genresMapping = genresResponse.data.reduce((acc: any, genre: any) => {
+      acc[genre.name] = genre.id;
+      return acc;
+    }, {});
+
+    // Map genre names to IDs
+    const genreIds =
+      movie.genre
+        ?.map((genreName) => genresMapping[genreName] || null)
+        .filter((id) => id !== null) || [];
+
+    // Extract year from releaseDate, or use the full date if available
+    const releaseYear = movie.releaseDate
+      ? parseInt(movie.releaseDate.substring(0, 4))
+      : new Date().getFullYear();
+
     // Transform frontend Movie interface to backend MovieRequestDTO
     const movieRequest = {
       name: movie.title,
       description: movie.description || "",
       imageUrl: movie.poster || "",
+      backdropUrl: movie.backdrop || "",
       director: movie.director || "",
       actor: movie.actor || "",
       duration: movie.duration || 0,
-      releaseYear: movie.releaseDate
-        ? parseInt(movie.releaseDate.substring(0, 4))
-        : new Date().getFullYear(),
+      releaseYear: releaseYear, // Keep releaseYear as it's required by the backend
+      releaseDate: movie.releaseDate || "", // Also include full releaseDate
       rating: movie.rating || 0,
       country: movie.country || "",
       language: movie.language || "",
       subtitle: movie.subtitle || "",
       ageLimit: movie.ageLimit || 0,
       content: movie.content || "",
-      genreIds: [], // Would need to map genre names to IDs
+      genreIds: genreIds,
       status: movie.status || 1,
     };
 
@@ -343,17 +373,21 @@ export function* addMovieSaga(
     );
 
     // Transform response to frontend Movie format
+    // Prioritize the full releaseDate if available, otherwise create from releaseYear
     const newMovie = {
       id: response.data.id,
       title: response.data.name,
       director: response.data.director || "",
-      releaseDate: response.data.releaseYear
-        ? `${response.data.releaseYear}-01-01`
-        : undefined,
+      releaseDate:
+        response.data.releaseDate ||
+        (response.data.releaseYear
+          ? `${response.data.releaseYear}-01-01`
+          : undefined),
       duration: response.data.duration || 0,
       genre: response.data.movieGenres?.map((g: any) => g.name) || [],
       status: response.data.status || 1,
       poster: response.data.imageUrl || "https://via.placeholder.com/150x225",
+      backdrop: response.data.backdropUrl || "",
       description: response.data.description || "",
       rating: response.data.rating || 0,
       actor: response.data.actor || "",
@@ -393,25 +427,44 @@ export function* updateMovieSaga(
     const movieResponse = yield call(axiosInstance.get, `/api/movies/${id}`);
     const existingMovie = movieResponse.data;
 
+    // Get genres mapping from the API
+    const genresResponse = yield call(axiosInstance.get, "/api/genres");
+    const genresMapping = genresResponse.data.reduce((acc: any, genre: any) => {
+      acc[genre.name] = genre.id;
+      return acc;
+    }, {});
+
+    // Map genre names to IDs if genre is provided in update data
+    const genreIds = data.genre
+      ? data.genre
+          .map((genreName) => genresMapping[genreName] || null)
+          .filter((id) => id !== null)
+      : existingMovie.movieGenres?.map((g: any) => g.id) || [];
+
+    // Extract year from releaseDate
+    const releaseYear = data.releaseDate
+      ? parseInt(data.releaseDate.substring(0, 4))
+      : existingMovie.releaseYear;
+
     // Merge with updates
     const movieRequest = {
       id: id,
       name: data.title || existingMovie.name,
       description: data.description || existingMovie.description,
       imageUrl: data.poster || existingMovie.imageUrl,
+      backdropUrl: data.backdrop || existingMovie.backdropUrl || "",
       director: data.director || existingMovie.director,
       actor: data.actor || existingMovie.actor || "",
       duration: data.duration || existingMovie.duration,
-      releaseYear: data.releaseDate
-        ? parseInt(data.releaseDate.substring(0, 4))
-        : existingMovie.releaseYear,
+      releaseYear: releaseYear, // Keep releaseYear as it's required by the backend
+      releaseDate: data.releaseDate || existingMovie.releaseDate || "", // Also include full releaseDate
       rating: data.rating !== undefined ? data.rating : existingMovie.rating,
       country: data.country || existingMovie.country || "",
       language: data.language || existingMovie.language || "",
       subtitle: data.subtitle || existingMovie.subtitle || "",
       ageLimit: data.ageLimit || existingMovie.ageLimit || 0,
       content: data.content || existingMovie.content || "",
-      genreIds: existingMovie.movieGenres?.map((g: any) => g.id) || [],
+      genreIds: genreIds,
       status: data.status || existingMovie.status || 1,
     };
 
@@ -423,17 +476,21 @@ export function* updateMovieSaga(
     );
 
     // Transform response to frontend Movie format
+    // Prioritize the full releaseDate if available, otherwise create from releaseYear
     const updatedMovie = {
       id: response.data.id,
       title: response.data.name,
       director: response.data.director || "",
-      releaseDate: response.data.releaseYear
-        ? `${response.data.releaseYear}-01-01`
-        : undefined,
+      releaseDate:
+        response.data.releaseDate ||
+        (response.data.releaseYear
+          ? `${response.data.releaseYear}-01-01`
+          : undefined),
       duration: response.data.duration || 0,
       genre: response.data.movieGenres?.map((g: any) => g.name) || [],
       status: response.data.status || data.status || existingMovie.status || 1,
       poster: response.data.imageUrl || "https://via.placeholder.com/150x225",
+      backdrop: response.data.backdropUrl || "",
       description: response.data.description || "",
       rating: response.data.rating || 0,
       actor: response.data.actor || "",
@@ -554,6 +611,42 @@ export function* bulkUpdateStatusSaga(
   }
 }
 
+// Lấy lịch chiếu theo phim và ngày
+export function* getShowTimesSaga(
+  action: GetShowTimesAction
+): Generator<any, void, any> {
+  try {
+    const { movieId, date } = action.payload;
+    const response = yield call(
+      axiosInstance.get,
+      `/api/showtime/${movieId}/times`,
+      {
+        params: { date },
+      }
+    );
+
+    // Chuẩn hóa dữ liệu response nếu cần
+    let showtimes = response.data;
+
+    // Kiểm tra xem response có format mới hay cũ
+    // Format mới: có [{ name, address, showtimes: ["05:20", "04:00", "07:00"] }]
+    // Format cũ: [{ cinema: { id, name, address }, showTimes: [{ id, startTime, ... }] }]
+
+    // Kiểm tra nếu đã có định dạng đúng thì trả về nguyên bản
+    yield put(getShowTimesSuccess(showtimes));
+  } catch (error: any) {
+    yield put(
+      getShowTimesFailure(
+        error.response?.data?.message || "Không thể lấy lịch chiếu phim"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể lấy lịch chiếu phim cho ngày đã chọn",
+    });
+  }
+}
+
 // Root auth saga
 export default function* movieSaga() {
   yield takeEvery(getMovieListRequest.type, getMovieListSaga);
@@ -561,6 +654,7 @@ export default function* movieSaga() {
   yield takeEvery(getBookingRequest.type, getBookingSaga);
   yield takeEvery(getNowShowingMoviesRequest.type, getNowShowingMoviesSaga);
   yield takeEvery(getUpcomingMoviesRequest.type, getUpcomingMoviesSaga);
+  yield takeEvery(getShowTimesRequest.type, getShowTimesSaga);
   yield takeEvery(getCommentsRequest.type, getCommentsSaga);
   yield takeEvery(addCommentRequest.type, addCommentSaga);
 

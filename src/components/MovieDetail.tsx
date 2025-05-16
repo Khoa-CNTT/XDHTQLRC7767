@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Row,
@@ -28,6 +28,8 @@ import {
   UserOutlined,
   SendOutlined,
   StarFilled,
+  EnvironmentOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,6 +39,7 @@ import {
   addCommentRequest,
   resetAddCommentState,
   Comment as CommentType,
+  getShowTimesRequest,
 } from "../redux/slices/movieSlice";
 import { RootState } from "../redux/store";
 
@@ -74,11 +77,11 @@ interface MovieDTO {
   language?: string; // Từ API trả về
   subtitle?: string; // Từ API trả về
   ageLimit?: number; // Từ API trả về
-  content?: any; // Từ API trả về
+  content?: unknown; // Từ API trả về
   movieGenres?: MovieGenre[]; // Từ API trả về
   genre?: string[]; // Tên trường cũ
   cast?: Actor[]; // Tên trường cũ
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 // Interface cho currentUser
@@ -92,6 +95,15 @@ interface User {
   birthday?: string;
   points: number;
   isVerified?: boolean;
+}
+
+// Define comment interface for CustomComment
+interface CommentProps {
+  author: string;
+  avatar: string;
+  content: React.ReactNode;
+  datetime: string;
+  children?: React.ReactNode;
 }
 
 // Styled Components
@@ -331,82 +343,231 @@ const ShowtimeSection = styled.div`
 
 const ShowtimeTitle = styled.h3`
   color: white;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
+  position: relative;
   display: inline-block;
+
+  &:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #00bfff, rgba(0, 191, 255, 0.2));
+    border-radius: 3px;
+  }
 `;
 
 const DateList = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 0;
   overflow-x: auto;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+  border-radius: 4px;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 191, 255, 0.5) rgba(255, 255, 255, 0.1);
 
   &::-webkit-scrollbar {
     height: 6px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(0, 191, 255, 0.5);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
   }
 `;
 
 const DateItem = styled(Button)<{ $active?: boolean }>`
-  min-width: 100px;
-  background-color: ${(props) => (props.$active ? "#00bfff" : "transparent")};
+  min-width: 80px;
+  background-color: ${(props) => (props.$active ? "#00bfff" : "#1e2747")};
   color: ${(props) => (props.$active ? "white" : "#ccc")};
-  border: 1px solid ${(props) => (props.$active ? "#00bfff" : "#ccc")};
-  border-radius: 20px;
+  border: none;
+  border-radius: 0;
+  height: 56px;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+
+  .date-day {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+  }
+
+  .date-date {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
 
   &:hover {
-    background-color: #00bfff;
+    background-color: ${(props) => (props.$active ? "#00bfff" : "#2a3554")};
     color: white;
-    border-color: #00bfff;
   }
 `;
 
 const CinemaList = styled.div`
-  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 const CinemaItem = styled.div`
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  border-left: 4px solid #00bfff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
 `;
 
 const CinemaName = styled.h4`
   color: white;
-  font-size: 18px;
+  font-size: 20px;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+
+  &:before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #00bfff;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
 `;
 
 const CinemaAddress = styled.div`
   color: #ccc;
   font-size: 14px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  padding-left: 16px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.2);
 `;
 
 const ShowtimeList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
 `;
 
 const ShowtimeItem = styled(Button)`
-  min-width: 80px;
-  background-color: transparent;
+  height: auto;
+  background-color: rgba(255, 255, 255, 0.05);
   color: white;
-  border: 1px solid #00bfff;
+  border: 1px solid rgba(0, 191, 255, 0.5);
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px;
+  border-radius: 10px;
+
+  .time {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00bfff;
+    margin-bottom: 6px;
+  }
+
+  .room {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 6px;
+  }
+
+  .price {
+    font-size: 13px;
+    color: #ffd700;
+    font-weight: 500;
+  }
 
   &:hover {
-    background-color: #00bfff;
+    background-color: rgba(0, 191, 255, 0.15);
     color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 7px 15px rgba(0, 191, 255, 0.25);
+    border-color: #00bfff;
   }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(0, 191, 255, 0.2);
+  }
+`;
+
+const NoShowtimesMessage = styled.div`
+  color: white;
+  text-align: center;
+  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  margin-top: 10px;
+
+  p {
+    margin-bottom: 15px;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: white;
+  text-align: center;
+  padding: 30px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 16px;
+  border: 1px dashed rgba(255, 0, 0, 0.3);
+  margin-top: 10px;
+
+  p {
+    margin-bottom: 15px;
+    color: #ffcccc;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-top: 10px;
 `;
 
 // New styled components for comments
@@ -593,6 +754,13 @@ const MovieDetail: React.FC = () => {
     error: commentsError,
   } = useSelector((state: RootState) => state.movie.comments);
 
+  // Get showtimes from Redux store
+  const {
+    data: showTimesByLocation,
+    loading: loadingShowtimes,
+    error: showtimeError,
+  } = useSelector((state: RootState) => state.movie.showTimes);
+
   // Get add comment status
   const {
     loading: addCommentLoading,
@@ -606,7 +774,7 @@ const MovieDetail: React.FC = () => {
   // Format comments data for display
   const comments = commentsData.map((comment: CommentType) => ({
     id: comment.id,
-    author: comment.user?.fullName || "Người dùng ẩn danh",
+    author: comment.user?.username || "Người dùng ẩn danh",
     avatar:
       comment.user?.avatar ||
       "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
@@ -622,7 +790,7 @@ const MovieDetail: React.FC = () => {
     content,
     datetime,
     children,
-  }: any) => (
+  }: CommentProps) => (
     <CommentItem>
       <CommentAvatar>
         <Avatar src={avatar} alt={author} size={40} />
@@ -637,6 +805,11 @@ const MovieDetail: React.FC = () => {
       </CommentContent>
     </CommentItem>
   );
+
+  // Function to fetch showtimes for a given date
+  const fetchShowtimes = (movieId: string, date: string) => {
+    dispatch(getShowTimesRequest({ movieId, date }));
+  };
 
   useEffect(() => {
     // Dispatch action to fetch movie details using the ID from URL
@@ -654,10 +827,14 @@ const MovieDetail: React.FC = () => {
   }, [dispatch, id, currentUser?.id]);
 
   useEffect(() => {
-    // Auto-select today's date
-    const today = new Date().toISOString().split("T")[0];
+    // Auto-select today's date and fetch showtimes for today
+    const today = new Date().toISOString().split("T")[0]; // ISO format: YYYY-MM-DD
     setSelectedDate(today);
-  }, []);
+
+    if (id) {
+      fetchShowtimes(id, today);
+    }
+  }, [id, dispatch]);
 
   useEffect(() => {
     // Reset comment form when comment is successfully added
@@ -691,12 +868,26 @@ const MovieDetail: React.FC = () => {
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
+    if (id) {
+      fetchShowtimes(id, date);
+    }
   };
 
-  const handleShowtimeSelect = (cinema: string, time: string) => {
-    navigate(
-      `/booking/${id}?cinema=${cinema}&date=${selectedDate}&time=${time}`
-    );
+  const handleShowtimeSelect = (showtimeId: number) => {
+    // Check if user is logged in
+    if (!currentUser) {
+      message.warning("Vui lòng đăng nhập để đặt vé");
+      // You could redirect to login page here
+      return;
+    }
+
+    // Navigate to booking page with the showtime ID and movie ID
+    if (showtimeId) {
+      navigate(`/booking/showtime/${showtimeId}`);
+    } else {
+      // Fallback to direct movie booking if no showtime ID
+      navigate(`/booking/${id}`);
+    }
   };
 
   const handleCommentSubmit = () => {
@@ -726,15 +917,19 @@ const MovieDetail: React.FC = () => {
     return (sum / comments.length).toFixed(1);
   };
 
-  // Mock data for showtimes
+  // Generate dates for the next 7 days
   const generateDates = () => {
     const dates = [];
     const today = new Date();
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date();
       date.setDate(today.getDate() + i);
-      dates.push(date.toISOString().split("T")[0]);
+      const dateStr = date.toISOString().split("T")[0]; // ISO format: YYYY-MM-DD
+      dates.push({
+        date: dateStr,
+        isToday: i === 0,
+      });
     }
 
     return dates;
@@ -742,27 +937,16 @@ const MovieDetail: React.FC = () => {
 
   const dates = generateDates();
 
-  // Mock cinema data
-  const cinemas = [
-    {
-      id: "cinema1",
-      name: "CGV Vincom Center",
-      address: "Số 72 Lê Thánh Tôn, Phường Bến Nghé, Quận 1, TP.HCM",
-      showtimes: ["10:30", "13:00", "15:30", "18:00", "20:30", "22:45"],
-    },
-    {
-      id: "cinema2",
-      name: "Galaxy Cinema Nguyễn Du",
-      address: "116 Nguyễn Du, Phường Bến Thành, Quận 1, TP.HCM",
-      showtimes: ["09:45", "12:15", "14:45", "17:15", "19:45", "22:15"],
-    },
-    {
-      id: "cinema3",
-      name: "Lotte Cinema Nowzone",
-      address: "235 Nguyễn Văn Cừ, Phường Nguyễn Cư Trinh, Quận 1, TP.HCM",
-      showtimes: ["10:00", "12:30", "15:00", "17:30", "20:00", "22:30"],
-    },
-  ];
+  // Add a method to go to next day
+  const goToNextDay = () => {
+    // Find the index of the current selected date
+    const currentIndex = dates.findIndex((d) => d.date === selectedDate);
+
+    // If we have a next day available, select it
+    if (currentIndex < dates.length - 1) {
+      handleDateSelect(dates[currentIndex + 1].date);
+    }
+  };
 
   if (movieLoading) {
     return (
@@ -807,13 +991,15 @@ const MovieDetail: React.FC = () => {
 
   // Ensure we have all required fields with default values if needed
   const processedMovie: MovieDTO = {
-    id: movie?.id || id || "",
+    id: movie?.id || id || "0",
     title: movie?.name || movie?.title || "Chưa có tiêu đề",
-    poster: movie?.imageUrl,
+    poster: movie?.imageUrl || "",
     backdrop:
-      movie?.backdrop ||
-      movie?.image ||
-      "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
+      typeof movie?.backdrop === "string"
+        ? movie.backdrop
+        : typeof movie?.image === "string"
+        ? movie.image
+        : "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
     rating: movie?.rating || 0,
     releaseDate: movie?.releaseYear
       ? `${movie.releaseYear}`
@@ -830,10 +1016,10 @@ const MovieDetail: React.FC = () => {
     cast: movie?.actor
       ? [{ name: movie.actor, role: "Diễn viên chính" }]
       : movie?.cast || [],
-    country: movie?.country,
-    language: movie?.language,
-    subtitle: movie?.subtitle,
-    ageLimit: movie?.ageLimit,
+    country: movie?.country || "",
+    language: movie?.language || "",
+    subtitle: movie?.subtitle || "",
+    ageLimit: movie?.ageLimit || 0,
   };
 
   return (
@@ -955,7 +1141,7 @@ const MovieDetail: React.FC = () => {
                         {Array.isArray(processedMovie.cast) &&
                         processedMovie.cast.length > 0 ? (
                           processedMovie.cast.map(
-                            (actor: any, index: number) => (
+                            (actor: Actor, index: number) => (
                               <CastItem key={index}>
                                 <CastName>
                                   {actor.name || "Chưa cập nhật"}
@@ -1114,48 +1300,195 @@ const MovieDetail: React.FC = () => {
                 </StyledTabs>
 
                 <ShowtimeSection>
-                  <SectionHeader>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
                     <ShowtimeTitle>Lịch chiếu phim</ShowtimeTitle>
-                  </SectionHeader>
 
-                  <DateList>
-                    {dates.map((date, index) => (
-                      <DateItem
-                        key={index}
-                        $active={selectedDate === date}
-                        onClick={() => handleDateSelect(date)}
-                      >
-                        {new Date(date).toLocaleDateString("vi-VN", {
-                          weekday: "short",
-                          day: "numeric",
-                          month: "numeric",
-                        })}
-                      </DateItem>
-                    ))}
-                  </DateList>
+                    <DateList>
+                      {dates.map((dateObj, index) => {
+                        const dateForDisplay = new Date(dateObj.date);
+                        const dayNames = [
+                          "CN",
+                          "T2",
+                          "T3",
+                          "T4",
+                          "T5",
+                          "T6",
+                          "T7",
+                        ];
+                        const dayOfWeek = dayNames[dateForDisplay.getDay()];
+                        const dayOfMonth = dateForDisplay.getDate();
+                        const month = dateForDisplay.getMonth() + 1;
 
-                  {selectedDate && (
-                    <CinemaList>
-                      {cinemas.map((cinema) => (
-                        <CinemaItem key={cinema.id}>
-                          <CinemaName>{cinema.name}</CinemaName>
-                          <CinemaAddress>{cinema.address}</CinemaAddress>
-                          <ShowtimeList>
-                            {cinema.showtimes.map((time, index) => (
-                              <ShowtimeItem
-                                key={index}
-                                onClick={() =>
-                                  handleShowtimeSelect(cinema.id, time)
-                                }
-                              >
-                                {time}
-                              </ShowtimeItem>
-                            ))}
-                          </ShowtimeList>
-                        </CinemaItem>
-                      ))}
-                    </CinemaList>
-                  )}
+                        return (
+                          <DateItem
+                            key={index}
+                            $active={selectedDate === dateObj.date}
+                            onClick={() => handleDateSelect(dateObj.date)}
+                          >
+                            {dateObj.isToday ? (
+                              <>
+                                <span className="date-day">Hôm nay</span>
+                                <span className="date-date">{`${dayOfMonth}/${month}`}</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="date-day">{dayOfWeek}</span>
+                                <span className="date-date">{`${dayOfMonth}/${month}`}</span>
+                              </>
+                            )}
+                          </DateItem>
+                        );
+                      })}
+                    </DateList>
+
+                    {selectedDate && (
+                      <CinemaList>
+                        {loadingShowtimes ? (
+                          <LoadingContainer>
+                            <Skeleton active paragraph={{ rows: 4 }} />
+                          </LoadingContainer>
+                        ) : showtimeError ? (
+                          <ErrorMessage>
+                            <p>{showtimeError}</p>
+                            <Button
+                              type="primary"
+                              onClick={() =>
+                                fetchShowtimes(id || "0", selectedDate || "")
+                              }
+                              style={{ marginTop: "10px" }}
+                            >
+                              Thử lại
+                            </Button>
+                          </ErrorMessage>
+                        ) : showTimesByLocation.length > 0 ? (
+                          showTimesByLocation.map((locationData, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 * idx, duration: 0.5 }}
+                            >
+                              <CinemaItem>
+                                <CinemaName>
+                                  <EnvironmentOutlined
+                                    style={{
+                                      marginRight: "8px",
+                                      color: "#00bfff",
+                                    }}
+                                  />
+                                  {locationData.cinema?.name ||
+                                    locationData.name}
+                                </CinemaName>
+                                <CinemaAddress>
+                                  {locationData.cinema?.address ||
+                                    locationData.address}
+                                </CinemaAddress>
+                                <ShowtimeList>
+                                  {locationData.showTimes &&
+                                    locationData.showTimes.map(
+                                      (showtime, index) => (
+                                        <motion.div
+                                          key={`st-${index}`}
+                                          initial={{ opacity: 0, scale: 0.9 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          transition={{
+                                            delay: 0.05 * index,
+                                            duration: 0.3,
+                                          }}
+                                        >
+                                          <ShowtimeItem
+                                            onClick={() =>
+                                              handleShowtimeSelect(
+                                                showtime.id || 0
+                                              )
+                                            }
+                                          >
+                                            <div className="time">
+                                              {showtime.startTime.substring(
+                                                0,
+                                                5
+                                              )}
+                                            </div>
+                                            <div className="room">
+                                              <ProjectOutlined
+                                                style={{
+                                                  marginRight: "4px",
+                                                  fontSize: "10px",
+                                                }}
+                                              />
+                                              {showtime.roomName ||
+                                                "Phòng chiếu"}
+                                            </div>
+                                            {showtime.pricePerShowTime && (
+                                              <div className="price">
+                                                {showtime.pricePerShowTime.toLocaleString()}{" "}
+                                                VND
+                                              </div>
+                                            )}
+                                          </ShowtimeItem>
+                                        </motion.div>
+                                      )
+                                    )}
+
+                                  {locationData.showtimes &&
+                                    locationData.showtimes.map(
+                                      (time, index) => (
+                                        <motion.div
+                                          key={`st-${index}`}
+                                          initial={{ opacity: 0, scale: 0.9 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          transition={{
+                                            delay: 0.05 * index,
+                                            duration: 0.3,
+                                          }}
+                                        >
+                                          <ShowtimeItem
+                                            onClick={() =>
+                                              handleShowtimeSelect(index)
+                                            }
+                                          >
+                                            <div className="time">{time}</div>
+                                            <div className="room">
+                                              <ProjectOutlined
+                                                style={{
+                                                  marginRight: "4px",
+                                                  fontSize: "10px",
+                                                }}
+                                              />
+                                              Phòng chiếu
+                                            </div>
+                                            <div className="price">
+                                              75.000 VND
+                                            </div>
+                                          </ShowtimeItem>
+                                        </motion.div>
+                                      )
+                                    )}
+                                </ShowtimeList>
+                              </CinemaItem>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <NoShowtimesMessage>
+                            <p>Không có lịch chiếu cho ngày này</p>
+                            <Button
+                              type="primary"
+                              onClick={goToNextDay}
+                              disabled={
+                                selectedDate === dates[dates.length - 1].date
+                              }
+                            >
+                              Xem ngày tiếp theo
+                            </Button>
+                          </NoShowtimesMessage>
+                        )}
+                      </CinemaList>
+                    )}
+                  </motion.div>
                 </ShowtimeSection>
               </motion.div>
             </Col>

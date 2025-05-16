@@ -191,8 +191,11 @@ const MovieManagement: React.FC = () => {
     // Xử lý ngày phát hành
     const formattedValues = {
       ...values,
+      // Ensure we handle both dayjs objects and string dates
       releaseDate: values.releaseDate
-        ? values.releaseDate.format("YYYY-MM-DD")
+        ? dayjs.isDayjs(values.releaseDate)
+          ? values.releaseDate.format("YYYY-MM-DD")
+          : values.releaseDate
         : null,
     };
 

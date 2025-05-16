@@ -11,6 +11,7 @@ export interface Movie {
   genre?: string[]; // Danh sách tên genre
   status?: string | number; // Status có thể là chuỗi hoặc số (1, 2, 3)
   poster?: string; // Tương ứng với imageUrl từ backend
+  backdrop?: string; // Hình ảnh nền
   rating?: number;
   actor?: string;
   country?: string;
@@ -37,6 +38,37 @@ export interface MovieFilterParams {
   director?: string;
   actor?: string;
   genreName?: string;
+}
+
+// Định nghĩa các kiểu cho showtimes
+export interface Cinema {
+  id?: number;
+  name: string;
+  address: string;
+}
+
+export interface ShowTime {
+  id?: number;
+  startTime: string;
+  endTime?: string;
+  pricePerShowTime?: number;
+  roomName?: string;
+  roomId?: number;
+}
+
+// Cập nhật interface để hỗ trợ cả hai định dạng API có thể trả về
+export interface ShowTimeListByLocation {
+  cinema?: Cinema;
+  showTimes?: ShowTime[];
+  // Format mới
+  name?: string;
+  address?: string;
+  showtimes?: string[];
+}
+
+export interface ShowtimeParams {
+  movieId: number | string;
+  date: string;
 }
 
 // Định nghĩa kiểu cho comment
@@ -69,12 +101,12 @@ export interface MovieState {
     error: string | null;
   };
   movieDetail: {
-    data: {};
+    data: Movie | Record<string, unknown>;
     loading: boolean;
     error: string | null;
   };
   movieBooking: {
-    data: {};
+    data: Record<string, unknown>;
     loading: boolean;
     error: string | null;
   };
@@ -85,6 +117,11 @@ export interface MovieState {
   };
   upcomingMovies: {
     data: MovieHomeResponseDTO[];
+    loading: boolean;
+    error: string | null;
+  };
+  showTimes: {
+    data: ShowTimeListByLocation[];
     loading: boolean;
     error: string | null;
   };
@@ -149,6 +186,11 @@ const initialState: MovieState = {
     error: null,
   },
   upcomingMovies: {
+    data: [],
+    loading: false,
+    error: null,
+  },
+  showTimes: {
     data: [],
     loading: false,
     error: null,
@@ -269,6 +311,22 @@ const movieSlice = createSlice({
     getUpcomingMoviesFailure: (state, action: PayloadAction<string>) => {
       state.upcomingMovies.loading = false;
       state.upcomingMovies.error = action.payload;
+    },
+    // Get showtimes for a movie by date
+    getShowTimesRequest: (state, action: PayloadAction<ShowtimeParams>) => {
+      state.showTimes.loading = true;
+      state.showTimes.error = null;
+    },
+    getShowTimesSuccess: (
+      state,
+      action: PayloadAction<ShowTimeListByLocation[]>
+    ) => {
+      state.showTimes.loading = false;
+      state.showTimes.data = action.payload;
+    },
+    getShowTimesFailure: (state, action: PayloadAction<string>) => {
+      state.showTimes.loading = false;
+      state.showTimes.error = action.payload;
     },
     // Get comments for a movie
     getCommentsRequest: (state, action) => {
@@ -454,6 +512,9 @@ export const {
   getUpcomingMoviesRequest,
   getUpcomingMoviesSuccess,
   getUpcomingMoviesFailure,
+  getShowTimesRequest,
+  getShowTimesSuccess,
+  getShowTimesFailure,
   getCommentsRequest,
   getCommentsSuccess,
   getCommentsFailure,

@@ -3,15 +3,47 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 // Định nghĩa kiểu cho lịch chiếu
 export interface Showtime {
   id: number;
-  movieId: number;
-  movieTitle: string;
-  roomId: number;
-  roomName: string;
-  date: string;
   startTime: string;
   endTime: string;
-  price: number;
+  pricePerShowTime: number;
+  date: string;
   status: string;
+  movie: {
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string;
+    director: string;
+    actor: string;
+    duration: number;
+    releaseYear: number;
+    rating: number;
+    country: string;
+    language: string;
+    subtitle: string;
+    ageLimit: number;
+    content: string;
+    releaseDate: string;
+    status: number;
+    backdrop: string;
+    delete: boolean;
+  };
+  room: {
+    id: number;
+    name: string;
+    type: string;
+    capacity: number;
+    status: string;
+    cinema: {
+      id: number;
+      name: string;
+      address: string;
+      phone: string;
+      email: string;
+      imageUrl: string;
+      delete: boolean;
+    };
+  };
 }
 
 // Định nghĩa kiểu cho showtime DTOs
@@ -25,15 +57,47 @@ export interface ShowListDTO {
 
 export interface ShowListCreatedResponeDTO {
   id: number;
-  movieId: number;
-  movieTitle: string;
-  roomId: number;
-  roomName: string;
-  date: string;
   startTime: string;
   endTime: string;
-  price: number;
+  pricePerShowTime: number;
+  date: string;
   status: string;
+  movie: {
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string;
+    director: string;
+    actor: string;
+    duration: number;
+    releaseYear: number;
+    rating: number;
+    country: string;
+    language: string;
+    subtitle: string;
+    ageLimit: number;
+    content: string;
+    releaseDate: string;
+    status: number;
+    backdrop: string;
+    delete: boolean;
+  };
+  room: {
+    id: number;
+    name: string;
+    type: string;
+    capacity: number;
+    status: string;
+    cinema: {
+      id: number;
+      name: string;
+      address: string;
+      phone: string;
+      email: string;
+      imageUrl: string;
+      delete: boolean;
+    };
+  };
 }
 
 // Định nghĩa kiểu cho Chair (ghế)
@@ -65,6 +129,8 @@ export interface ShowtimeParams {
   date?: string;
   cinemaId?: number;
   movieId?: number;
+  movieName?: string;
+  roomName?: string;
 }
 
 // Định nghĩa kiểu trạng thái
@@ -173,6 +239,23 @@ const showtimeSlice = createSlice({
       state.showtimeWithChairs.loading = false;
       state.showtimeWithChairs.error = action.payload;
     },
+
+    // Search showtimes
+    searchShowtimesRequest: {
+      reducer: (state) => {
+        state.showtimeList.loading = true;
+        state.showtimeList.error = null;
+      },
+      prepare: (params?: ShowtimeParams) => ({ payload: params }),
+    },
+    searchShowtimesSuccess: (state, action: PayloadAction<Showtime[]>) => {
+      state.showtimeList.loading = false;
+      state.showtimeList.data = action.payload;
+    },
+    searchShowtimesFailure: (state, action: PayloadAction<string>) => {
+      state.showtimeList.loading = false;
+      state.showtimeList.error = action.payload;
+    },
   },
 });
 
@@ -188,6 +271,9 @@ export const {
   getShowtimeWithChairsRequest,
   getShowtimeWithChairsSuccess,
   getShowtimeWithChairsFailure,
+  searchShowtimesRequest,
+  searchShowtimesSuccess,
+  searchShowtimesFailure,
 } = showtimeSlice.actions;
 
 // Export reducer

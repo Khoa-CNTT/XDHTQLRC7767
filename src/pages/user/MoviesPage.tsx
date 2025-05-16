@@ -31,6 +31,7 @@ import {
 } from "../../redux/slices/movieSlice";
 import { RootState } from "../../redux/store";
 import { DefaultOptionType } from "antd/es/select";
+import axiosInstance from "../../utils/axiosConfig";
 
 const { TabPane } = Tabs;
 const { Meta } = Card;
@@ -430,6 +431,10 @@ const MoviesPage: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<string | null>(null);
 
+  // Add new state for genres
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [genresLoading, setGenresLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -442,6 +447,35 @@ const MoviesPage: React.FC = () => {
   const currentMovies =
     activeTab === "now-showing" ? nowShowingMovies : upcomingMovies;
   const isLoading = currentMovies.loading;
+
+  // Add a useEffect to fetch genres
+  useEffect(() => {
+    const fetchGenres = async () => {
+      setGenresLoading(true);
+      try {
+        const response = await axiosInstance.get("/api/genres");
+        setGenres(response.data);
+      } catch (error) {
+        console.error("Failed to fetch genres:", error);
+        // Use some default genres if the API fails
+        setGenres([
+          { id: 1, name: "Hành động" },
+          { id: 2, name: "Khoa học viễn tưởng" },
+          { id: 3, name: "Phiêu lưu" },
+          { id: 4, name: "Kinh dị" },
+          { id: 5, name: "Hài hước" },
+          { id: 6, name: "Chính kịch" },
+          { id: 7, name: "Tâm lý" },
+          { id: 8, name: "Siêu anh hùng" },
+          { id: 9, name: "Lịch sử" },
+        ]);
+      } finally {
+        setGenresLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   useEffect(() => {
     // Fetch both movie lists when component mounts
@@ -707,22 +741,13 @@ const MoviesPage: React.FC = () => {
                         handleGenreChange(value)
                       }
                       allowClear
+                      loading={genresLoading}
                     >
-                      <Select.Option value="Hành động">Hành động</Select.Option>
-                      <Select.Option value="Khoa học viễn tưởng">
-                        Khoa học viễn tưởng
-                      </Select.Option>
-                      <Select.Option value="Phiêu lưu">Phiêu lưu</Select.Option>
-                      <Select.Option value="Kinh dị">Kinh dị</Select.Option>
-                      <Select.Option value="Hài hước">Hài hước</Select.Option>
-                      <Select.Option value="Chính kịch">
-                        Chính kịch
-                      </Select.Option>
-                      <Select.Option value="Tâm lý">Tâm lý</Select.Option>
-                      <Select.Option value="Siêu anh hùng">
-                        Siêu anh hùng
-                      </Select.Option>
-                      <Select.Option value="Lịch sử">Lịch sử</Select.Option>
+                      {genres.map((genre) => (
+                        <Select.Option key={genre.id} value={genre.name}>
+                          {genre.name}
+                        </Select.Option>
+                      ))}
                     </StyledSelect>
                   </FilterItem>
                   <FilterItem>
@@ -781,22 +806,13 @@ const MoviesPage: React.FC = () => {
                         handleGenreChange(value)
                       }
                       allowClear
+                      loading={genresLoading}
                     >
-                      <Select.Option value="Hành động">Hành động</Select.Option>
-                      <Select.Option value="Khoa học viễn tưởng">
-                        Khoa học viễn tưởng
-                      </Select.Option>
-                      <Select.Option value="Phiêu lưu">Phiêu lưu</Select.Option>
-                      <Select.Option value="Kinh dị">Kinh dị</Select.Option>
-                      <Select.Option value="Hài hước">Hài hước</Select.Option>
-                      <Select.Option value="Chính kịch">
-                        Chính kịch
-                      </Select.Option>
-                      <Select.Option value="Tâm lý">Tâm lý</Select.Option>
-                      <Select.Option value="Siêu anh hùng">
-                        Siêu anh hùng
-                      </Select.Option>
-                      <Select.Option value="Lịch sử">Lịch sử</Select.Option>
+                      {genres.map((genre) => (
+                        <Select.Option key={genre.id} value={genre.name}>
+                          {genre.name}
+                        </Select.Option>
+                      ))}
                     </StyledSelect>
                   </FilterItem>
                   <FilterItem>

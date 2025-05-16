@@ -9,6 +9,13 @@ import {
   disableCustomerRequest,
   disableCustomerSuccess,
   disableCustomerFailure,
+  enableCustomerRequest,
+  enableCustomerSuccess,
+  enableCustomerFailure,
+  updateCustomerRequest,
+  updateCustomerSuccess,
+  updateCustomerFailure,
+  Customer,
 } from "../slices/customerSlice";
 import axiosInstance from "../../utils/axiosConfig";
 import { notificationUtils } from "../../utils/notificationConfig";
@@ -23,6 +30,16 @@ interface DeleteCustomerAction {
 interface DisableCustomerAction {
   type: string;
   payload: number;
+}
+
+interface EnableCustomerAction {
+  type: string;
+  payload: number;
+}
+
+interface UpdateCustomerAction {
+  type: string;
+  payload: Customer;
 }
 
 interface ApiError {
@@ -105,9 +122,68 @@ function* disableCustomerSaga(
   }
 }
 
+// Enable customer account saga
+function* enableCustomerSaga(
+  action: EnableCustomerAction
+): Generator<unknown, void, AxiosResponse> {
+  try {
+    const id = action.payload;
+    yield call(axiosInstance.put, `/api/customers/${id}/enable`);
+    yield put(enableCustomerSuccess(id));
+    notificationUtils.success({
+      message: "Thành công",
+      description: "Kích hoạt tài khoản khách hàng thành công",
+    });
+  } catch (error: unknown) {
+    const err = error as ApiError;
+    yield put(
+      enableCustomerFailure(
+        err.response?.data?.message ||
+          "Không thể kích hoạt tài khoản khách hàng"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể kích hoạt tài khoản khách hàng",
+    });
+  }
+}
+
+// Update customer saga
+function* updateCustomerSaga(
+  action: UpdateCustomerAction
+): Generator<unknown, void, AxiosResponse> {
+  try {
+    const customer = action.payload;
+    const response = yield call(
+      axiosInstance.put,
+      "/api/customers/update-customer",
+      customer
+    );
+    yield put(updateCustomerSuccess(response.data));
+    notificationUtils.success({
+      message: "Thành công",
+      description: "Cập nhật thông tin khách hàng thành công",
+    });
+  } catch (error: unknown) {
+    const err = error as ApiError;
+    yield put(
+      updateCustomerFailure(
+        err.response?.data?.message || "Không thể cập nhật thông tin khách hàng"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể cập nhật thông tin khách hàng",
+    });
+  }
+}
+
 // Root customer saga
 export default function* customerSaga() {
   yield takeEvery(getCustomerListRequest.type, getCustomerListSaga);
   yield takeEvery(deleteCustomerRequest.type, deleteCustomerSaga);
   yield takeEvery(disableCustomerRequest.type, disableCustomerSaga);
+  yield takeEvery(enableCustomerRequest.type, enableCustomerSaga);
+  yield takeEvery(updateCustomerRequest.type, updateCustomerSaga);
 }
