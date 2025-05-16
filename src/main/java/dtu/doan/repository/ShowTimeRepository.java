@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -39,7 +38,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "AND (:date IS NULL OR s.date = :date)")
     List<ShowTime> searchShowTimes(@Param("movieName") String movieName,
                                    @Param("roomName") String roomName,
-                                   @Param("date") Date date);
+                                   @Param("date") LocalDate date);
 
     List<ShowTime> findByStatus(String status);
 

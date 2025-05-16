@@ -35,11 +35,14 @@ public class ShowTimeController {
     }
 
     @GetMapping("/search-showtime")
-    public ResponseEntity<List<ShowTime>> searchShowtime(@RequestParam(defaultValue = "") String movieName,
-                                                         @RequestParam(defaultValue = "") String roomName,
-                                                         @RequestParam(defaultValue = "") Date date) {
-        List<ShowTime> showTimes = showTimeService.searchShowTimes(movieName,roomName,date);
-        return new ResponseEntity<>(showTimes, HttpStatus.OK);
+    public ResponseEntity<List<ShowTime>> searchShowtime(
+            @RequestParam(defaultValue = "", value = "movieName") String movieName,
+            @RequestParam(defaultValue = "", value = "roomName") String roomName,
+            @RequestParam(value = "date", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        List<ShowTime> showTimes = showTimeService.searchShowTimes(movieName, roomName, date);
+        return ResponseEntity.ok(showTimes);
     }
     @GetMapping("/{id}")
     public ResponseEntity<ShowTime> getByID(@PathVariable Long id) {

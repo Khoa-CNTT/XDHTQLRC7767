@@ -8,7 +8,6 @@ import dtu.doan.model.ShowTime;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -19,7 +18,7 @@ public interface ShowTimeService {
 
     List<ShowTime> searchShowTimes(String movieName,
                                    String roomName,
-                                   Date date);
+                                   LocalDate date);
      ShowTimeWithChairsDTO getShowTimeWithChairs(Long showTimeId);
      ShowListCreatedResponeDTO create(ShowListDTO showListDTO);
 //    ShowListCreatedResponeDTO update(Long id, ShowListDTO showListDTO);
