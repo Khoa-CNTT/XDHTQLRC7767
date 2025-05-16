@@ -82,10 +82,10 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void disableCustomerAccount(Long id) {
+    public void disableCustomerAccount(Long id,boolean status) {
         Customer customer = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
-        customer.getAccount().setIsEnable(true);
+        customer.getAccount().setIsEnable(status);
         repository.save(customer);
     }
 

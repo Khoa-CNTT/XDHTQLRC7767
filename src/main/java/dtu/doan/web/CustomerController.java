@@ -34,7 +34,7 @@ public class CustomerController {
     @PutMapping("/{id}/disable")
     public ResponseEntity<?> disableCustomerAccount(@PathVariable Long id) {
         try{
-            service.disableCustomerAccount(id);
+            service.disableCustomerAccount(id,false);
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (Exception exception){
             return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
@@ -44,7 +44,7 @@ public class CustomerController {
     @PutMapping("/{id}/enable")
     public ResponseEntity<?> enableCustomerAccount(@PathVariable Long id) {
         try{
-            service.disableCustomerAccount(id);
+            service.disableCustomerAccount(id,false);
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (Exception exception){
             return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
