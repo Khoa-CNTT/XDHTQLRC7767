@@ -2,6 +2,7 @@ package dtu.doan.web;
 
 import dtu.doan.dto.ShowListCreatedResponeDTO;
 import dtu.doan.dto.ShowListDTO;
+import dtu.doan.dto.ShowTimeListByLocation;
 import dtu.doan.dto.ShowTimeWithChairsDTO;
 import dtu.doan.model.Chair;
 import dtu.doan.model.ShowTime;
@@ -72,11 +73,11 @@ public class ShowTimeController {
 
     // ✅ 7. Lấy các suất chiếu theo movieId + ngày cụ thể (phục vụ UI theo giờ)
     @GetMapping("/{movieId}/times")
-    public ResponseEntity<List<ShowTime>> getShowTimesByMovieAndDate(
+    public ResponseEntity<List<ShowTimeListByLocation>> getShowTimesByMovieAndDate(
             @PathVariable Long movieId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        List<ShowTime> showTimes = showTimeService.findShowTimesByMovieIdAndDate(movieId, date);
+       List<ShowTimeListByLocation> showTimes = showTimeService.findShowTimesByMovieIdAndDate(movieId, date);
         return ResponseEntity.ok(showTimes);
     }
 

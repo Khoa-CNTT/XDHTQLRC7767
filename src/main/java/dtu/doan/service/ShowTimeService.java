@@ -2,11 +2,9 @@ package dtu.doan.service;
 
 import dtu.doan.dto.ShowListCreatedResponeDTO;
 import dtu.doan.dto.ShowListDTO;
+import dtu.doan.dto.ShowTimeListByLocation;
 import dtu.doan.dto.ShowTimeWithChairsDTO;
-import dtu.doan.model.Chair;
 import dtu.doan.model.ShowTime;
-import dtu.doan.model.ShowTime;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,5 +24,5 @@ public interface ShowTimeService {
      ShowListCreatedResponeDTO create(ShowListDTO showListDTO);
 //    ShowListCreatedResponeDTO update(Long id, ShowListDTO showListDTO);
     List<LocalDate> findDistinctDatesByMovieId(Long movieId);
-    List<ShowTime> findShowTimesByMovieIdAndDate(Long movieId,LocalDate date);
+    List<ShowTimeListByLocation> findShowTimesByMovieIdAndDate(Long movieId, LocalDate date);
 }
