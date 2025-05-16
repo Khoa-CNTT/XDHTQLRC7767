@@ -2,6 +2,7 @@ package dtu.doan.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 @Data
 public class MovieRequestDTO {
@@ -21,4 +22,5 @@ public class MovieRequestDTO {
     private String content;
     private List<Long> genreIds;
     private String backdrop;
+    private LocalDate releaseDate;
 }

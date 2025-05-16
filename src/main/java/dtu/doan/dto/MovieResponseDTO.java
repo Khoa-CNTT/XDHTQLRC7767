@@ -3,6 +3,7 @@ package dtu.doan.dto;
 import dtu.doan.model.Genre;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 @Data
 public class MovieResponseDTO {
@@ -23,5 +24,6 @@ public class MovieResponseDTO {
 
     private List<Genre> movieGenres;
     private String backdrop;
+    private LocalDate releaseDate;
 
 }
