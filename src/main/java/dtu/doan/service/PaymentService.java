@@ -13,4 +13,5 @@ public interface PaymentService {
     Page<Payment>getPageOfPayment(Pageable pageable);
     List<Object[]> getMonthlyRevenueByYear(int year);
     DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date);
+    List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate);
 }

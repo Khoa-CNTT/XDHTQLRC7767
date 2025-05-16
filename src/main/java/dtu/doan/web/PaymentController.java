@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +37,12 @@ public class PaymentController {
     @GetMapping("/daily-revenue/{date}")
     public ResponseEntity<DailyRevenueDTO> getTotalRevenueIndate(@PathVariable(value = "date") LocalDate date) {
         return ResponseEntity.ok(paymentService.getRevenueAndTicketCountByDate(date));
+    }
+    @GetMapping("/statistics")
+    public ResponseEntity<List<Object[]>> getPaymentStatistics(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<Object[]> statistics = paymentService.getPaymentStatistics(startDate, endDate);
+        return ResponseEntity.ok(statistics);
     }
 }

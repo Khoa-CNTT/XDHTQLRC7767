@@ -30,4 +30,8 @@ public class PaymentServiceImpl implements PaymentService {
     public DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date) {
         return paymentRepository.getRevenueAndTicketCountByDate(date);
     }
+    @Override
+    public List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate) {
+        return paymentRepository.findPaymentStatistics(startDate, endDate);
+    }
 }
