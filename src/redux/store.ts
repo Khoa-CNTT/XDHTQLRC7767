@@ -9,6 +9,8 @@ import showtimeReducer from "./slices/showtimeSlice";
 import promotionReducer from "./slices/promotionSlice";
 import paymentReducer from "./slices/paymentSlice";
 import ticketReducer from "./slices/ticketSlice";
+import customerReducer from "./slices/customerSlice";
+import staffReducer from "./slices/staffSlice";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -24,6 +26,8 @@ export const store = configureStore({
     promotion: promotionReducer,
     payment: paymentReducer,
     ticket: ticketReducer,
+    customer: customerReducer,
+    staff: staffReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),

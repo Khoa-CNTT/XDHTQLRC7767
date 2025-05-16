@@ -327,7 +327,10 @@ const ShowtimeManagement: React.FC = () => {
             label="Rạp"
             rules={[{ required: true, message: "Vui lòng chọn rạp!" }]}
           >
-            <Select placeholder="Chọn rạp">
+            <Select
+              placeholder="Chọn rạp"
+              onChange={(value) => dispatch(getRoomListRequest({ id: value }))}
+            >
               {cinemaList?.data?.map((cinema: any) => (
                 <Option key={cinema.id} value={cinema.id}>
                   {cinema.name} - {cinema.address}
@@ -341,10 +344,7 @@ const ShowtimeManagement: React.FC = () => {
             label="Phim"
             rules={[{ required: true, message: "Vui lòng chọn phim!" }]}
           >
-            <Select
-              placeholder="Chọn phim"
-              onChange={(value) => dispatch(getRoomListRequest({ id: value }))}
-            >
+            <Select placeholder="Chọn phim">
               {movieList?.data?.map((movie: any) => (
                 <Option key={movie.id} value={movie.id}>
                   {movie.name} ({movie.duration} phút)

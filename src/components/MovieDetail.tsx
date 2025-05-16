@@ -654,6 +654,12 @@ const MovieDetail: React.FC = () => {
   }, [dispatch, id, currentUser?.id]);
 
   useEffect(() => {
+    // Auto-select today's date
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+  }, []);
+
+  useEffect(() => {
     // Reset comment form when comment is successfully added
     if (addCommentSuccess) {
       setCommentValue("");
@@ -721,12 +727,41 @@ const MovieDetail: React.FC = () => {
   };
 
   // Mock data for showtimes
-  const dates = [
-    "2023-11-01",
-    "2023-11-02",
-    "2023-11-03",
-    "2023-11-04",
-    "2023-11-05",
+  const generateDates = () => {
+    const dates = [];
+    const today = new Date();
+
+    for (let i = 0; i < 5; i++) {
+      const date = new Date();
+      date.setDate(today.getDate() + i);
+      dates.push(date.toISOString().split("T")[0]);
+    }
+
+    return dates;
+  };
+
+  const dates = generateDates();
+
+  // Mock cinema data
+  const cinemas = [
+    {
+      id: "cinema1",
+      name: "CGV Vincom Center",
+      address: "Số 72 Lê Thánh Tôn, Phường Bến Nghé, Quận 1, TP.HCM",
+      showtimes: ["10:30", "13:00", "15:30", "18:00", "20:30", "22:45"],
+    },
+    {
+      id: "cinema2",
+      name: "Galaxy Cinema Nguyễn Du",
+      address: "116 Nguyễn Du, Phường Bến Thành, Quận 1, TP.HCM",
+      showtimes: ["09:45", "12:15", "14:45", "17:15", "19:45", "22:15"],
+    },
+    {
+      id: "cinema3",
+      name: "Lotte Cinema Nowzone",
+      address: "235 Nguyễn Văn Cừ, Phường Nguyễn Cư Trinh, Quận 1, TP.HCM",
+      showtimes: ["10:00", "12:30", "15:00", "17:30", "20:00", "22:30"],
+    },
   ];
 
   if (movieLoading) {

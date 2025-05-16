@@ -7,25 +7,35 @@ import {
   Modal,
   Form,
   Select,
-  message,
   Tag,
   Tooltip,
   Popconfirm,
-  Upload,
   Avatar,
+  DatePicker,
+  Radio,
 } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import {
   SearchOutlined,
   UserAddOutlined,
   EditOutlined,
   DeleteOutlined,
-  LockOutlined,
-  UnlockOutlined,
-  UploadOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
-import type { UploadProps } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import moment from "moment";
+import {
+  getEmployeeListRequest,
+  addEmployeeRequest,
+  updateEmployeeRequest,
+  deleteEmployeeRequest,
+  resetEmployeeState,
+  RegisterEmployeeRequest,
+  Employee,
+} from "../../redux/slices/staffSlice";
+import { RootState } from "../../redux/store";
+import CloudinaryUpload from "../../components/common/CloudinaryUpload";
 
 const { Option } = Select;
 
@@ -45,66 +55,56 @@ const TableContainer = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
+const AvatarContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const AvatarPreview = styled(Avatar)`
+  margin-right: 16px;
+`;
+
+// Định nghĩa interface Position để phù hợp với backend model
+interface Position {
+  id?: string;
+  name?: string;
+}
+
 const StaffManagement: React.FC = () => {
-  const [staff, setStaff] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { data: employees, loading } = useSelector(
+    (state: RootState) => state.staff.employeeList
+  );
+  const { success: addSuccess, loading: addLoading } = useSelector(
+    (state: RootState) => state.staff.addEmployee
+  );
+  const { success: updateSuccess, loading: updateLoading } = useSelector(
+    (state: RootState) => state.staff.updateEmployee
+  );
+  const { success: deleteSuccess } = useSelector(
+    (state: RootState) => state.staff.deleteEmployee
+  );
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [searchText, setSearchText] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    fetchStaff();
-  }, []);
+    // Fetch employees on component mount
+    dispatch(getEmployeeListRequest({}));
+  }, [dispatch]);
 
-  const fetchStaff = async () => {
-    setLoading(true);
-    try {
-      // Giả lập dữ liệu
-      const mockStaff = [
-        {
-          id: "1",
-          name: "Nguyễn Văn X",
-          email: "nguyenvanx@ubanflix.com",
-          phone: "0901234567",
-          position: "manager",
-          department: "operations",
-          status: "active",
-          hireDate: "2022-05-15",
-          avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-        },
-        {
-          id: "2",
-          name: "Trần Thị Y",
-          email: "tranthiy@ubanflix.com",
-          phone: "0912345678",
-          position: "supervisor",
-          department: "customer_service",
-          status: "active",
-          hireDate: "2022-06-20",
-          avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-        },
-        {
-          id: "3",
-          name: "Lê Văn Z",
-          email: "levanz@ubanflix.com",
-          phone: "0923456789",
-          position: "staff",
-          department: "technical",
-          status: "inactive",
-          hireDate: "2022-07-10",
-          avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-        },
-      ];
-
-      setStaff(mockStaff);
-    } catch (error) {
-      message.error("Không thể tải dữ liệu nhân viên");
-    } finally {
-      setLoading(false);
+  // Handle success states
+  useEffect(() => {
+    if (addSuccess || updateSuccess || deleteSuccess) {
+      setIsModalVisible(false);
+      form.resetFields();
+      // Reset all success states
+      dispatch(resetEmployeeState());
     }
-  };
+  }, [addSuccess, updateSuccess, deleteSuccess, dispatch, form]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -113,93 +113,84 @@ const StaffManagement: React.FC = () => {
     setIsModalVisible(true);
   };
 
-  const handleEdit = (record: any) => {
+  const handleEdit = (record: Employee) => {
     form.setFieldsValue({
-      name: record.name,
+      fullName: record.fullName,
       email: record.email,
-      phone: record.phone,
+      phoneNumber: record.phoneNumber,
+      gender: record.gender,
+      birthday: record.birthday ? moment(record.birthday) : null,
+      address: record.address,
+      cardId: record.cardId,
       position: record.position,
       department: record.department,
-      status: record.status,
+      username: record.username,
+      image: record.image,
     });
-    setEditingId(record.id);
-    setAvatarUrl(record.avatar);
+    setEditingId(record.id || null);
+    setAvatarUrl(record.image || "");
     setIsModalVisible(true);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      // Giả lập API call
-      setStaff(staff.filter((item) => item.id !== id));
-      message.success("Xóa nhân viên thành công");
-    } catch (error) {
-      message.error("Không thể xóa nhân viên");
-    }
+  const handleDelete = (id: number) => {
+    dispatch(deleteEmployeeRequest(id));
   };
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    try {
-      // Giả lập API call
-      const newStatus = currentStatus === "active" ? "inactive" : "active";
-      setStaff(
-        staff.map((item) =>
-          item.id === id ? { ...item, status: newStatus } : item
-        )
-      );
-      message.success(
-        `Đã ${newStatus === "active" ? "kích hoạt" : "vô hiệu hóa"} tài khoản`
-      );
-    } catch (error) {
-      message.error("Không thể thay đổi trạng thái tài khoản");
-    }
-  };
-
-  const handleAvatarChange: UploadProps["onChange"] = (info) => {
-    if (info.file.status === "uploading") {
-      return;
-    }
-    if (info.file.status === "done") {
-      // Giả lập upload thành công
-      // Trong thực tế, bạn sẽ lấy URL từ response của server
-      const randomId = Math.floor(Math.random() * 100);
-      const gender = Math.random() > 0.5 ? "men" : "women";
-      setAvatarUrl(
-        `https://randomuser.me/api/portraits/${gender}/${randomId}.jpg`
-      );
-      message.success("Tải ảnh lên thành công");
-    } else if (info.file.status === "error") {
-      message.error("Tải ảnh lên thất bại");
-    }
+  const handleImageChange = (imageUrl: string) => {
+    setAvatarUrl(imageUrl);
+    form.setFieldsValue({ image: imageUrl });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
+      // Format position theo DTO và đảm bảo birthday đúng định dạng
+      const positionObj: Position = {
+        id: values.positionId || values.position,
+        name: values.position,
+      };
+
+      // Xử lý birthday, đảm bảo trả về Date object
+      let birthdayValue = undefined;
+      if (values.birthday) {
+        if (typeof values.birthday.toDate === "function") {
+          // Nếu là object moment
+          birthdayValue = values.birthday.toDate();
+        } else if (values.birthday instanceof Date) {
+          // Nếu đã là Date
+          birthdayValue = values.birthday;
+        } else {
+          // Trường hợp khác, chuyển string thành Date
+          birthdayValue = new Date(values.birthday);
+        }
+      }
+
+      const formattedValues = {
+        ...values,
+        birthday: birthdayValue,
+        image: avatarUrl,
+        position: positionObj,
+        positionId: values.positionId || values.position,
+      };
+
       if (editingId) {
-        // Update existing staff
-        setStaff(
-          staff.map((item) =>
-            item.id === editingId
-              ? {
-                  ...item,
-                  ...values,
-                  avatar: avatarUrl || item.avatar,
-                }
-              : item
+        // Update existing employee with correct parameter structure based on the updated slice
+        dispatch(
+          updateEmployeeRequest(
+            editingId,
+            formattedValues as RegisterEmployeeRequest
           )
         );
-        message.success("Cập nhật thông tin nhân viên thành công");
       } else {
-        // Add new staff
-        const newStaff = {
-          id: `${staff.length + 1}`,
-          ...values,
-          hireDate: new Date().toISOString().split("T")[0],
-          avatar: avatarUrl || "https://randomuser.me/api/portraits/lego/1.jpg",
+        // Add new employee - set required fields for registration
+        const newEmployeeData: RegisterEmployeeRequest = {
+          ...formattedValues,
+          role: formattedValues.role || "EMPLOYEE", // Default role
+          password: formattedValues.password || "password123", // Default password (should be changed by user)
+          username: formattedValues.username || formattedValues.email, // Use email as username if not provided
         };
-        setStaff([...staff, newStaff]);
-        message.success("Thêm nhân viên mới thành công");
+
+        dispatch(addEmployeeRequest(newEmployeeData));
       }
-      setIsModalVisible(false);
     });
   };
 
@@ -208,29 +199,37 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleSearch = (value: string) => {
-    setSearchText(value);
+    if (value.trim()) {
+      // Search in fullName, email, or phone
+      if (value.includes("@")) {
+        dispatch(getEmployeeListRequest({ email: value }));
+      } else if (/^\d+$/.test(value)) {
+        dispatch(getEmployeeListRequest({ phoneNumber: value }));
+      } else {
+        dispatch(getEmployeeListRequest({ fullName: value }));
+      }
+    } else {
+      // Reset search
+      dispatch(getEmployeeListRequest({}));
+    }
   };
 
-  const filteredStaff = staff.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.phone.includes(searchText)
-  );
-
-  const columns = [
+  const columns: ColumnsType<Employee> = [
     {
       title: "Avatar",
-      dataIndex: "avatar",
-      key: "avatar",
+      dataIndex: "image",
+      key: "image",
       width: 80,
-      render: (avatar: string) => <Avatar src={avatar} size={40} />,
+      render: (image: string) => (
+        <Avatar src={image} size={40} icon={!image && <UserOutlined />} />
+      ),
     },
     {
       title: "Họ tên",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+      dataIndex: "fullName",
+      key: "fullName",
+      sorter: (a: Employee, b: Employee) =>
+        a.fullName.localeCompare(b.fullName),
     },
     {
       title: "Email",
@@ -239,21 +238,21 @@ const StaffManagement: React.FC = () => {
     },
     {
       title: "Số điện thoại",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
     },
     {
       title: "Chức vụ",
       dataIndex: "position",
       key: "position",
       render: (position: string) => {
-        let text = "Nhân viên";
+        let text = position || "Nhân viên";
         let color = "blue";
 
-        if (position === "manager") {
+        if (position === "manager" || position === "MANAGER") {
           text = "Quản lý";
           color = "gold";
-        } else if (position === "supervisor") {
+        } else if (position === "supervisor" || position === "SUPERVISOR") {
           text = "Giám sát";
           color = "green";
         }
@@ -261,73 +260,65 @@ const StaffManagement: React.FC = () => {
         return <Tag color={color}>{text}</Tag>;
       },
       filters: [
-        { text: "Quản lý", value: "manager" },
-        { text: "Giám sát", value: "supervisor" },
-        { text: "Nhân viên", value: "staff" },
+        { text: "Quản lý", value: "MANAGER" },
+        { text: "Giám sát", value: "SUPERVISOR" },
+        { text: "Nhân viên", value: "EMPLOYEE" },
       ],
-      onFilter: (value: any, record: any) => record.position === value,
+      onFilter: (value, record) => record.position === value,
     },
     {
       title: "Phòng ban",
       dataIndex: "department",
       key: "department",
       render: (department: string) => {
-        let text = "";
-        let color = "";
+        let text = department || "";
+        let color = "default";
 
         switch (department) {
-          case "operations":
+          case "OPERATIONS":
             text = "Vận hành";
             color = "purple";
             break;
-          case "customer_service":
+          case "CUSTOMER_SERVICE":
             text = "CSKH";
             color = "cyan";
             break;
-          case "technical":
+          case "TECHNICAL":
             text = "Kỹ thuật";
             color = "orange";
             break;
           default:
             text = department;
-            color = "default";
         }
 
         return <Tag color={color}>{text}</Tag>;
       },
       filters: [
-        { text: "Vận hành", value: "operations" },
-        { text: "CSKH", value: "customer_service" },
-        { text: "Kỹ thuật", value: "technical" },
+        { text: "Vận hành", value: "OPERATIONS" },
+        { text: "CSKH", value: "CUSTOMER_SERVICE" },
+        { text: "Kỹ thuật", value: "TECHNICAL" },
       ],
-      onFilter: (value: any, record: any) => record.department === value,
+      onFilter: (value, record) => record.department === value,
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={status === "active" ? "green" : "red"}>
-          {status === "active" ? "Hoạt động" : "Không hoạt động"}
+      dataIndex: "isActivated",
+      key: "isActivated",
+      render: (isActivated: boolean) => (
+        <Tag color={isActivated ? "green" : "red"}>
+          {isActivated ? "Hoạt động" : "Không hoạt động"}
         </Tag>
       ),
       filters: [
-        { text: "Hoạt động", value: "active" },
-        { text: "Không hoạt động", value: "inactive" },
+        { text: "Hoạt động", value: true },
+        { text: "Không hoạt động", value: false },
       ],
-      onFilter: (value: any, record: any) => record.status === value,
-    },
-    {
-      title: "Ngày vào làm",
-      dataIndex: "hireDate",
-      key: "hireDate",
-      sorter: (a: any, b: any) =>
-        new Date(a.hireDate).getTime() - new Date(b.hireDate).getTime(),
+      onFilter: (value, record) => record.isActivated === value,
     },
     {
       title: "Thao tác",
       key: "action",
-      render: (text: string, record: any) => (
+      render: (_, record) => (
         <Space size="small">
           <Tooltip title="Chỉnh sửa">
             <ActionButton
@@ -337,26 +328,10 @@ const StaffManagement: React.FC = () => {
               size="small"
             />
           </Tooltip>
-          <Tooltip
-            title={record.status === "active" ? "Vô hiệu hóa" : "Kích hoạt"}
-          >
-            <ActionButton
-              icon={
-                record.status === "active" ? (
-                  <LockOutlined />
-                ) : (
-                  <UnlockOutlined />
-                )
-              }
-              onClick={() => handleToggleStatus(record.id, record.status)}
-              type={record.status === "active" ? "default" : "primary"}
-              size="small"
-            />
-          </Tooltip>
           <Tooltip title="Xóa">
             <Popconfirm
               title="Bạn có chắc chắn muốn xóa nhân viên này?"
-              onConfirm={() => handleDelete(record.id)}
+              onConfirm={() => record.id && handleDelete(record.id)}
               okText="Có"
               cancelText="Không"
             >
@@ -387,7 +362,7 @@ const StaffManagement: React.FC = () => {
       <TableContainer>
         <Table
           columns={columns}
-          dataSource={filteredStaff}
+          dataSource={employees}
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 10 }}
@@ -403,27 +378,31 @@ const StaffManagement: React.FC = () => {
         onCancel={handleModalCancel}
         okText={editingId ? "Cập nhật" : "Thêm"}
         cancelText="Hủy"
+        confirmLoading={addLoading || updateLoading}
+        width={600}
       >
         <Form form={form} layout="vertical">
+          <Form.Item name="image" hidden>
+            <Input />
+          </Form.Item>
+
           <Form.Item label="Ảnh đại diện">
-            <Space align="start">
-              <Avatar
-                size={64}
+            <AvatarContainer>
+              <AvatarPreview
                 src={avatarUrl}
+                size={80}
                 icon={!avatarUrl && <UserOutlined />}
               />
-              <Upload
-                name="avatar"
-                showUploadList={false}
-                beforeUpload={() => false}
-                onChange={handleAvatarChange}
-              >
-                <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
-              </Upload>
-            </Space>
+              <CloudinaryUpload
+                value={avatarUrl}
+                onChange={handleImageChange}
+                label="Tải ảnh lên"
+              />
+            </AvatarContainer>
           </Form.Item>
+
           <Form.Item
-            name="name"
+            name="fullName"
             label="Họ tên"
             rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}
           >
@@ -440,36 +419,74 @@ const StaffManagement: React.FC = () => {
             <Input />
           </Form.Item>
           <Form.Item
-            name="phone"
+            name="phoneNumber"
             label="Số điện thoại"
             rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item name="position" label="Chức vụ" initialValue="staff">
+          <Form.Item name="gender" label="Giới tính" initialValue={true}>
+            <Radio.Group>
+              <Radio value={true}>Nam</Radio>
+              <Radio value={false}>Nữ</Radio>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item name="birthday" label="Ngày sinh">
+            <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item name="address" label="Địa chỉ">
+            <Input />
+          </Form.Item>
+          <Form.Item name="cardId" label="CMND/CCCD">
+            <Input />
+          </Form.Item>
+          <Form.Item name="position" label="Chức vụ" initialValue="EMPLOYEE">
             <Select>
-              <Option value="manager">Quản lý</Option>
-              <Option value="supervisor">Giám sát</Option>
-              <Option value="staff">Nhân viên</Option>
+              <Option value="MANAGER">Quản lý</Option>
+              <Option value="SUPERVISOR">Giám sát</Option>
+              <Option value="EMPLOYEE">Nhân viên</Option>
             </Select>
+          </Form.Item>
+          <Form.Item name="positionId" hidden>
+            <Input />
           </Form.Item>
           <Form.Item
             name="department"
             label="Phòng ban"
-            initialValue="operations"
+            initialValue="OPERATIONS"
           >
             <Select>
-              <Option value="operations">Vận hành</Option>
-              <Option value="customer_service">CSKH</Option>
-              <Option value="technical">Kỹ thuật</Option>
+              <Option value="OPERATIONS">Vận hành</Option>
+              <Option value="CUSTOMER_SERVICE">CSKH</Option>
+              <Option value="TECHNICAL">Kỹ thuật</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="status" label="Trạng thái" initialValue="active">
-            <Select>
-              <Option value="active">Hoạt động</Option>
-              <Option value="inactive">Không hoạt động</Option>
-            </Select>
-          </Form.Item>
+          {!editingId && (
+            <>
+              <Form.Item
+                name="username"
+                label="Tên đăng nhập"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="password"
+                label="Mật khẩu"
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+              >
+                <Input.Password />
+              </Form.Item>
+              <Form.Item name="role" label="Vai trò" initialValue="EMPLOYEE">
+                <Select>
+                  <Option value="ADMIN">Admin</Option>
+                  <Option value="EMPLOYEE">Nhân viên</Option>
+                </Select>
+              </Form.Item>
+            </>
+          )}
         </Form>
       </Modal>
     </div>
