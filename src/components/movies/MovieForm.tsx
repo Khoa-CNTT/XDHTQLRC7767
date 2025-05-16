@@ -172,6 +172,17 @@ const MovieForm: React.FC<MovieFormProps> = ({
 
         <Row gutter={16}>
           <Col span={12}>
+            <Form.Item name="releaseYear" label="Năm phát hành">
+              <InputNumber
+                min={1900}
+                max={2100}
+                style={{ width: "100%" }}
+                placeholder="Nhập năm phát hành"
+                disabled={form.getFieldValue("releaseDate") !== null}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
             <Form.Item
               name="status"
               label="Trạng thái"
@@ -184,6 +195,9 @@ const MovieForm: React.FC<MovieFormProps> = ({
               </Select>
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="rating" label="Đánh giá (0-10)">
               <InputNumber
@@ -194,27 +208,27 @@ const MovieForm: React.FC<MovieFormProps> = ({
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="country" label="Quốc gia">
               <Input placeholder="Nhập quốc gia sản xuất" />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="language" label="Ngôn ngữ">
               <Input placeholder="Nhập ngôn ngữ phim" />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="subtitle" label="Phụ đề">
               <Input placeholder="Nhập phụ đề phim" />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="ageLimit" label="Giới hạn tuổi">
               <InputNumber
@@ -224,10 +238,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={24}>
+          <Col span={12}>
             <Form.Item name="actor" label="Diễn viên">
               <Input placeholder="Nhập danh sách diễn viên" />
             </Form.Item>

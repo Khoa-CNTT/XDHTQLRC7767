@@ -1,11 +1,13 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+import axiosInstance from "../utils/axiosConfig";
 
 export const chatService = {
   async sendMessage(message: string) {
     try {
-      const response = await axios.post(`${API_URL}api/chat`, message);
+      const response = await axiosInstance.post("/api/chat", message, {
+        headers: {
+          "Content-Type": "text/plain",
+        },
+      });
       return {
         response: response.data,
       };
