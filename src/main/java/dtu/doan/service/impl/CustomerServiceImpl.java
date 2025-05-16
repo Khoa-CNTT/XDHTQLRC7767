@@ -61,6 +61,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setPhoneNumber(customerDTO.getPhoneNumber());
         customer.setAddress(customerDTO.getAddress());
         customer.setCardId(customerDTO.getCardId());
+        customer.setBirthday(customerDTO.getBirthday());
         repository.save(customer);
         return convertToDTO(customer);
     }
@@ -84,7 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
     public void disableCustomerAccount(Long id) {
         Customer customer = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
-        customer.getAccount().setIsEnable(false);
+        customer.getAccount().setIsEnable(true);
         repository.save(customer);
     }
 

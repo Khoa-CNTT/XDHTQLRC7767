@@ -74,7 +74,8 @@ public class SecurityConfig {
                                 "/auth/social-login",
                                 "/auth/google",
                                 "/api/tickets/mobile/**",
-                                "/api/promotion"
+                                "/api/promotion",
+                                "/api/positions"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
