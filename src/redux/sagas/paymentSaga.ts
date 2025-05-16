@@ -15,7 +15,7 @@ import { notificationUtils } from "../../utils/notificationConfig";
 import { RootState } from "../store";
 
 // Helper function to create ticket
-function* createTicket(bookingData: any) {
+function* createTicket(bookingData: any): Generator<any, void, any> {
   try {
     console.log(
       "[PAYMENT_SAGA] Creating ticket with bookingData:",
@@ -23,59 +23,85 @@ function* createTicket(bookingData: any) {
     );
 
     // Lấy ID ghế từ bookingData
-    const chairIds: string[] = [];
     const showtimeId = bookingData.showtime?.id;
 
     if (!showtimeId) {
       throw new Error("Không tìm thấy thông tin suất chiếu");
     }
 
+    // Danh sách ghế để tạo vé
+    let seatsToProcess: Array<{ id: number; name: string; type?: string }> = [];
+
     // Ưu tiên sử dụng seatsInfo từ BookingPage
     if (bookingData.seatsInfo && bookingData.seatsInfo.length > 0) {
-      for (const seatInfo of bookingData.seatsInfo) {
-        if (seatInfo && seatInfo.id) {
-          chairIds.push(seatInfo.id.toString());
-        }
-      }
+      seatsToProcess = bookingData.seatsInfo.map(
+        (seatInfo: { id: number; name: string; type?: string }) => ({
+          id: seatInfo.id,
+          name: seatInfo.name,
+          type: seatInfo.type,
+        })
+      );
     } else {
       // Fallback: Lấy dữ liệu ghế từ showtime state
       const showtimeState = yield select((state: RootState) => state.showtime);
       const chairs = showtimeState.showtimeWithChairs?.data?.chairs || [];
 
-      for (const seatName of bookingData.seats) {
-        const chair = chairs.find(
-          (c: { name: string; id: number }) => c.name === seatName
-        );
-        if (chair) {
-          chairIds.push(chair.id.toString());
-        }
-      }
+      seatsToProcess = bookingData.seats
+        .map((seatName: string) => {
+          const chair = chairs.find(
+            (c: { name: string; id: number; type?: string }) =>
+              c.name === seatName
+          );
+          return chair
+            ? { id: chair.id, name: chair.name, type: chair.type }
+            : null;
+        })
+        .filter(Boolean);
     }
 
-    if (chairIds.length === 0) {
-      throw new Error("Không tìm thấy ID của ghế đã chọn!");
+    if (seatsToProcess.length === 0) {
+      throw new Error("Không tìm thấy thông tin ghế đã chọn!");
     }
 
-    // Xác định loại vé (VIP hoặc Standard)
-    const vipSeats = bookingData.seatsInfo
-      ? bookingData.seatsInfo.filter((seat: any) => seat.type === "vip")
-      : [];
+    // Lấy giá vé từ bookingData (từ BookingPage)
+    const bookingPrice = bookingData.pricing?.ticketPrice;
+    const seatCount = seatsToProcess.length;
 
-    const ticketType = vipSeats.length > 0 ? "VIP" : "Standard";
+    // Tính tổng giá = giá vé đơn vị * số ghế
+    const totalPrice = bookingPrice * seatCount;
 
-    // Tạo payload cho request tạo vé
+    console.log(
+      `[PAYMENT_SAGA] Giá vé đơn vị: ${bookingPrice}, Số lượng ghế: ${seatCount}, Tổng giá: ${totalPrice}`
+    );
+
+    if (!bookingPrice || bookingPrice <= 0) {
+      console.error("[PAYMENT_SAGA] Giá vé đơn vị không hợp lệ:", bookingPrice);
+      throw new Error("Giá vé đơn vị không hợp lệ");
+    }
+
+    // Thu thập tất cả ID ghế
+    const allChairIds = seatsToProcess.map((seat) => seat.id.toString());
+
+    // Tạo một vé duy nhất cho tất cả các ghế
     const ticketRequestData = {
-      type: ticketType,
-      price: bookingData.pricing.ticketPrice,
+      type: "Standard", // Không phân biệt loại ghế
+      price: totalPrice, // Sử dụng tổng giá thay vì giá đơn vị
       id_showTime: parseInt(showtimeId),
       id_customer: bookingData.customerId || "",
-      chairIds: chairIds,
+      chairIds: allChairIds, // Tất cả ghế trong một vé
     };
 
-    console.log("[PAYMENT_SAGA] Creating ticket with data:", ticketRequestData);
+    console.log(
+      `[PAYMENT_SAGA] Creating single ticket for ${allChairIds.length} seats with price ${totalPrice}`,
+      ticketRequestData
+    );
 
-    // Dispatch action để tạo vé
+    // Dispatch action để tạo vé - chỉ gọi một lần duy nhất
     yield put(createTicketRequest(ticketRequestData));
+
+    console.log(
+      `[PAYMENT_SAGA] Created a single ticket with ${allChairIds.length} seats`
+    );
   } catch (error) {
     console.error(
       "[PAYMENT_SAGA] Error while processing ticket creation:",

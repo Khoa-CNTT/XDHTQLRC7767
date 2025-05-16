@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TicketRequestDTO, TicketResponseDTO } from "../../utils/ticketService";
+import { TicketResponseDTO, TicketHistoryDTO } from "../../utils/ticketService";
 
 // Define the ticket state structure
 interface TicketState {
@@ -10,7 +10,12 @@ interface TicketState {
     success: boolean;
   };
   ticketDetails: {
-    data: any | null;
+    data: TicketResponseDTO | null;
+    loading: boolean;
+    error: string | null;
+  };
+  ticketHistory: {
+    data: TicketHistoryDTO[] | null;
     loading: boolean;
     error: string | null;
   };
@@ -29,6 +34,11 @@ const initialState: TicketState = {
     loading: false,
     error: null,
   },
+  ticketHistory: {
+    data: null,
+    loading: false,
+    error: null,
+  },
 };
 
 // Create the ticket slice
@@ -37,7 +47,7 @@ const ticketSlice = createSlice({
   initialState,
   reducers: {
     // Create ticket actions
-    createTicketRequest: (state, action: PayloadAction<TicketRequestDTO>) => {
+    createTicketRequest: (state) => {
       state.createTicket.loading = true;
       state.createTicket.error = null;
       state.createTicket.success = false;
@@ -54,17 +64,34 @@ const ticketSlice = createSlice({
     },
 
     // Get ticket by ID actions
-    getTicketByIdRequest: (state, action: PayloadAction<number>) => {
+    getTicketByIdRequest: (state) => {
       state.ticketDetails.loading = true;
       state.ticketDetails.error = null;
     },
-    getTicketByIdSuccess: (state, action: PayloadAction<any>) => {
+    getTicketByIdSuccess: (state, action: PayloadAction<TicketResponseDTO>) => {
       state.ticketDetails.loading = false;
       state.ticketDetails.data = action.payload;
     },
     getTicketByIdFailure: (state, action: PayloadAction<string>) => {
       state.ticketDetails.loading = false;
       state.ticketDetails.error = action.payload;
+    },
+
+    // Get tickets by customer ID actions
+    getTicketHistoryRequest: (state) => {
+      state.ticketHistory.loading = true;
+      state.ticketHistory.error = null;
+    },
+    getTicketHistorySuccess: (
+      state,
+      action: PayloadAction<TicketHistoryDTO[]>
+    ) => {
+      state.ticketHistory.loading = false;
+      state.ticketHistory.data = action.payload;
+    },
+    getTicketHistoryFailure: (state, action: PayloadAction<string>) => {
+      state.ticketHistory.loading = false;
+      state.ticketHistory.error = action.payload;
     },
 
     // Reset create ticket state
@@ -85,6 +112,9 @@ export const {
   getTicketByIdRequest,
   getTicketByIdSuccess,
   getTicketByIdFailure,
+  getTicketHistoryRequest,
+  getTicketHistorySuccess,
+  getTicketHistoryFailure,
   resetCreateTicketState,
 } = ticketSlice.actions;
 

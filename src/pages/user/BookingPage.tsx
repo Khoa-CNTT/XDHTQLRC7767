@@ -388,12 +388,14 @@ const BookingPage: React.FC = () => {
       seats: selectedSeats,
       seatsInfo: selectedSeatsInfo,
       pricing: {
-        ticketPrice: showtimeWithChairs?.data?.price || 0,
+        ticketPrice: showtimeWithChairs?.data?.pricePerShowTime || 0,
         quantity: selectedSeats.length,
-        subtotal: (showtimeWithChairs?.data?.price || 0) * selectedSeats.length,
+        subtotal:
+          (showtimeWithChairs?.data?.pricePerShowTime || 0) *
+          selectedSeats.length,
         serviceFee: 10000 * selectedSeats.length,
         total:
-          ((showtimeWithChairs?.data?.price || 0) + 10000) *
+          ((showtimeWithChairs?.data?.pricePerShowTime || 0) + 10000) *
           selectedSeats.length,
       },
       // Add customer information for ticket creation

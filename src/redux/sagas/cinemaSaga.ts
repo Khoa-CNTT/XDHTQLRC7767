@@ -9,10 +9,11 @@ import {
   getInfoBookingRequest,
   getInfoBookingSuccess,
   getInfoBookingFailure,
+  getCinemasByLocationRequest,
+  getCinemasByLocationSuccess,
+  getCinemasByLocationFailure,
 } from "../slices/cinemaSlice";
-import { PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axiosConfig";
-import { notificationUtils } from "../../utils/notificationConfig";
 
 interface GetMovieDetailAction {
   type: string;
@@ -26,6 +27,14 @@ interface GetShowTime {
     date: string;
     cinemaId: string;
     movieId: string;
+  };
+}
+
+interface GetCinemasByLocationAction {
+  type: string;
+  payload: {
+    location: string;
+    page: number;
   };
 }
 
@@ -86,9 +95,38 @@ export function* getBookingInfoSaga(
   }
 }
 
+export function* getCinemasByLocationSaga(
+  action: GetCinemasByLocationAction
+): Generator<any, void, any> {
+  try {
+    const { location } = action.payload;
+
+    const response = yield call(axiosInstance.get, `/api/cinema`, {
+      params: {
+        location,
+      },
+    });
+
+    // Extract data based on API response structure
+    const responseData = response?.data;
+
+    yield put(
+      getCinemasByLocationSuccess({
+        // Handle different possible response structures
+        data: responseData?.content || [],
+        currentPage: responseData?.currentPage || responseData?.page || 1,
+        totalPages: responseData?.totalPages || responseData?.total_pages || 1,
+      })
+    );
+  } catch (e) {
+    yield put(getCinemasByLocationFailure("Lỗi khi lấy danh sách rạp chiếu"));
+  }
+}
+
 // Root auth saga
 export default function* movieSaga() {
   yield takeEvery(getCinemaListRequest.type, getCinemaListSaga),
     yield takeEvery(getMockShowtimeRequest.type, getMockShowtimeSaga),
-    yield takeEvery(getInfoBookingRequest.type, getBookingInfoSaga);
+    yield takeEvery(getInfoBookingRequest.type, getBookingInfoSaga),
+    yield takeEvery(getCinemasByLocationRequest.type, getCinemasByLocationSaga);
 }

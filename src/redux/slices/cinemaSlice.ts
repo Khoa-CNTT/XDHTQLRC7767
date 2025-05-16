@@ -8,6 +8,17 @@ interface Cinema {
   // Thêm các thuộc tính khác nếu cần
 }
 
+// Cinema by location interface
+export interface CinemaByLocation {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  image: string;
+  facilities: string[];
+  screens: number;
+}
+
 // Định nghĩa state
 export interface MovieState {
   cinemaList: {
@@ -24,6 +35,13 @@ export interface MovieState {
     data: {};
     loading: boolean;
     error: string | null;
+  };
+  cinemaByLocation: {
+    data: CinemaByLocation[];
+    loading: boolean;
+    error: string | null;
+    currentPage: number;
+    totalPages: number;
   };
 }
 
@@ -43,6 +61,13 @@ const initialState: MovieState = {
     data: {},
     loading: false,
     error: null,
+  },
+  cinemaByLocation: {
+    data: [],
+    loading: false,
+    error: null,
+    currentPage: 1,
+    totalPages: 1,
   },
 };
 
@@ -92,6 +117,33 @@ const cinemaSlice = createSlice({
       state.bookingInfo.loading = false;
       state.bookingInfo.error = action.payload;
     },
+
+    // Get cinemas by location
+    getCinemasByLocationRequest: (
+      state,
+      action: PayloadAction<{ location: string; page: number }>
+    ) => {
+      state.cinemaByLocation.loading = true;
+      state.cinemaByLocation.error = null;
+    },
+    getCinemasByLocationSuccess: (
+      state,
+      action: PayloadAction<{
+        data: CinemaByLocation[];
+        currentPage: number;
+        totalPages: number;
+      }>
+    ) => {
+      console.log("action.payload", action.payload);
+      state.cinemaByLocation.loading = false;
+      state.cinemaByLocation.data = action.payload.data;
+      state.cinemaByLocation.currentPage = action.payload.currentPage;
+      state.cinemaByLocation.totalPages = action.payload.totalPages;
+    },
+    getCinemasByLocationFailure: (state, action: PayloadAction<string>) => {
+      state.cinemaByLocation.loading = false;
+      state.cinemaByLocation.error = action.payload;
+    },
   },
 });
 
@@ -106,6 +158,9 @@ export const {
   getInfoBookingRequest,
   getInfoBookingSuccess,
   getInfoBookingFailure,
+  getCinemasByLocationRequest,
+  getCinemasByLocationSuccess,
+  getCinemasByLocationFailure,
 } = cinemaSlice.actions;
 
 // Export reducer

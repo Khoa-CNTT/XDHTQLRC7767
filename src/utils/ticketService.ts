@@ -24,6 +24,17 @@ export interface TicketResponseDTO {
 }
 
 /**
+ * Interface for ticket history data
+ */
+export interface TicketHistoryDTO {
+  id: number;
+  movieName: string;
+  date: string;
+  cinemaName: string;
+  startTime: string;
+}
+
+/**
  * Service to handle ticket-related API requests
  */
 class TicketService {
@@ -86,13 +97,19 @@ class TicketService {
       console.log("Response:", response.data);
       console.log("==============================");
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("===== TICKET API ERROR =====");
-      console.error("Error message:", error.message);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+      }
 
-      if (error.response) {
-        console.error("Status:", error.response.status);
-        console.error("Data:", JSON.stringify(error.response.data, null, 2));
+      const axiosError = error as { response?: { status: number; data: any } };
+      if (axiosError.response) {
+        console.error("Status:", axiosError.response.status);
+        console.error(
+          "Data:",
+          JSON.stringify(axiosError.response.data, null, 2)
+        );
       }
 
       console.error("==========================");
@@ -105,7 +122,7 @@ class TicketService {
    * @param id Ticket ID
    * @returns Ticket data
    */
-  async getTicketById(id: number): Promise<any> {
+  async getTicketById(id: number): Promise<TicketResponseDTO> {
     try {
       const response = await axiosInstance.get(`/api/tickets/mobile/${id}`);
       return response.data;
@@ -120,12 +137,34 @@ class TicketService {
    * @param id Ticket ID
    * @returns Response from the API
    */
-  async updateTicketStatus(id: number): Promise<any> {
+  async updateTicketStatus(id: number): Promise<TicketResponseDTO> {
     try {
       const response = await axiosInstance.put(`/api/tickets/mobile/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error updating ticket status for ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get tickets by customer ID
+   * @param customerId Customer ID
+   * @returns List of ticket history items
+   */
+  async getTicketsByCustomerId(
+    customerId: number
+  ): Promise<TicketHistoryDTO[]> {
+    try {
+      const response = await axiosInstance.get(
+        `/api/tickets/customer/${customerId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error fetching tickets for customer ID ${customerId}:`,
+        error
+      );
       throw error;
     }
   }

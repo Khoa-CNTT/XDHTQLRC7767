@@ -38,7 +38,7 @@ const PaymentCallback: React.FC = () => {
   const { loading, paymentResult, error, bookingData } = useSelector(
     (state: RootState) => state.payment
   );
-  const { createTicket } = useSelector((state: RootState) => state.ticket); 
+  const { createTicket } = useSelector((state: RootState) => state.ticket);
   const [localBookingData, setLocalBookingData] = useState<any>(null);
 
   // Theo dõi xem đã xử lý callback chưa để tránh xử lý nhiều lần
@@ -50,6 +50,8 @@ const PaymentCallback: React.FC = () => {
   // Theo dõi số lần retry
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Theo dõi đã gọi API xử lý thanh toán chưa
+  const apiCalledRef = useRef(false);
 
   useEffect(() => {
     // Không reset state vì sẽ làm mất dữ liệu booking
@@ -125,8 +127,14 @@ const PaymentCallback: React.FC = () => {
         }
       }, 15000); // 15 seconds timeout
 
-      // Gửi các tham số đến server để xác thực
-      dispatch(handlePaymentReturnRequest(params));
+      // Gửi các tham số đến server để xác thực - ĐẢM BẢO CHỈ GỌI 1 LẦN
+      if (!apiCalledRef.current) {
+        console.log(
+          "[PAYMENT_CALLBACK] Sending payment return request to server"
+        );
+        apiCalledRef.current = true;
+        dispatch(handlePaymentReturnRequest(params));
+      }
 
       return () => {
         clearTimeout(requestTimeout);

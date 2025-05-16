@@ -589,7 +589,7 @@ const MoviesPage: React.FC = () => {
                   >
                     <Card
                       hoverable
-                      cover={<img alt={movie.title} src={movie.poster} />}
+                      cover={<img alt={movie.title} src={movie.image} />}
                       bordered={false}
                     >
                       <Meta

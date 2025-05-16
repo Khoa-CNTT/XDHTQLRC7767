@@ -4,10 +4,19 @@ import {
   createTicketRequest,
   createTicketSuccess,
   createTicketFailure,
+  getTicketByIdRequest,
   getTicketByIdSuccess,
   getTicketByIdFailure,
+  getTicketHistoryRequest,
+  getTicketHistorySuccess,
+  getTicketHistoryFailure,
 } from "../slices/ticketSlice";
-import { ticketService, TicketRequestDTO } from "../../utils/ticketService";
+import {
+  ticketService,
+  TicketRequestDTO,
+  TicketResponseDTO,
+  TicketHistoryDTO,
+} from "../../utils/ticketService";
 import { notificationUtils } from "../../utils/notificationConfig";
 
 // Ghi log action type để debug
@@ -31,7 +40,7 @@ function* createTicketSaga(
     console.log("===========================");
 
     // Call the API to create tickets - ensure correct binding of the method
-    const response = yield call(
+    const response: TicketResponseDTO = yield call(
       [ticketService, ticketService.createTickets],
       action.payload
     );
@@ -73,7 +82,7 @@ function* getTicketByIdSaga(
     const ticketId = action.payload;
 
     // Call the API to get ticket by ID
-    const response = yield call(ticketService.getTicketById, ticketId);
+    const response: any = yield call(ticketService.getTicketById, ticketId);
 
     // Dispatch success action with the response
     yield put(getTicketByIdSuccess(response));
@@ -97,14 +106,55 @@ function* getTicketByIdSaga(
   }
 }
 
+// Saga for getting tickets by customer ID
+function* getTicketHistorySaga(
+  action: PayloadAction<number>
+): Generator<any, void, any> {
+  try {
+    const customerId = action.payload;
+
+    // Call the API to get tickets by customer ID
+    const response: TicketHistoryDTO[] = yield call(
+      [ticketService, ticketService.getTicketsByCustomerId],
+      customerId
+    );
+
+    // Dispatch success action with the response
+    yield put(getTicketHistorySuccess(response));
+  } catch (error: any) {
+    console.error("Error fetching ticket history:", error);
+
+    // Dispatch failure action with error message
+    yield put(
+      getTicketHistoryFailure(
+        error.message || "Đã xảy ra lỗi khi lấy lịch sử đặt vé."
+      )
+    );
+
+    // Show error notification
+    notificationUtils.error({
+      message: "Lỗi",
+      description:
+        error.message ||
+        "Đã xảy ra lỗi khi lấy lịch sử đặt vé. Vui lòng thử lại.",
+    });
+  }
+}
+
 // Root ticket saga
 export default function* ticketSaga() {
   // Manual listener for createTicketRequest action
   try {
     const createTicketType = createTicketRequest.type;
+    const getTicketByIdType = getTicketByIdRequest.type;
+    const getTicketHistoryType = getTicketHistoryRequest.type;
 
-    // Focus chỉ vào việc lắng nghe createTicketRequest
-    yield takeEvery(createTicketType, createTicketSaga);
+    yield all([
+      takeEvery(createTicketType, createTicketSaga),
+      takeEvery(getTicketByIdType, getTicketByIdSaga),
+      takeEvery(getTicketHistoryType, getTicketHistorySaga),
+    ]);
+
     console.log("[TICKET_SAGA] Watcher setup complete");
   } catch (error) {
     console.error("[TICKET_SAGA] Error in watcher setup:", error);

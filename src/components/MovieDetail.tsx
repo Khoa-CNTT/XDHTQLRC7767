@@ -776,7 +776,7 @@ const MovieDetail: React.FC = () => {
     title: movie?.name || movie?.title || "Chưa có tiêu đề",
     poster: movie?.imageUrl,
     backdrop:
-      movie?.imageUrl ||
+      movie?.backdrop ||
       movie?.image ||
       "https://via.placeholder.com/1920x1080/16213e/00bfff?text=No+Backdrop",
     rating: movie?.rating || 0,

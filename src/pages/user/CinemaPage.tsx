@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Tabs, Row, Col, Button, Modal } from "antd";
+import { Tabs, Row, Col, Button, Modal, Spin, Pagination } from "antd";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { getCinemasByLocationRequest } from "../../redux/slices/cinemaSlice";
+import { RootState } from "../../redux/store";
 
 const { TabPane } = Tabs;
 
@@ -170,102 +173,63 @@ const StyledModal = styled(Modal)`
   }
 `;
 
-const CinemaPage: React.FC = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCinema, setSelectedCinema] = useState<any>(null);
+interface Cinema {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  image: string;
+  facilities: string[];
+  screens: number;
+}
 
-  const cinemas = {
-    hanoi: [
-      {
-        id: 1,
-        name: "UBANFLIX Vincom Royal City",
-        address: "72A Nguyễn Trãi, Thanh Xuân, Hà Nội",
-        phone: "024 7300 8855",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["IMAX", "4DX", "Dolby Atmos", "VIP Lounge"],
-        screens: 8,
-      },
-      {
-        id: 2,
-        name: "UBANFLIX Times City",
-        address: "458 Minh Khai, Hai Bà Trưng, Hà Nội",
-        phone: "024 7300 8866",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["IMAX", "Dolby Atmos", "Premium Cinema"],
-        screens: 7,
-      },
-      {
-        id: 3,
-        name: "UBANFLIX Aeon Mall Long Biên",
-        address: "27 Cổ Linh, Long Biên, Hà Nội",
-        phone: "024 7300 8877",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["4DX", "Dolby Atmos", "Gold Class"],
-        screens: 6,
-      },
-    ],
-    danang: [
-      {
-        id: 4,
-        name: "UBANFLIX Vincom Plaza Ngô Quyền",
-        address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
-        phone: "0236 3630 555",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["IMAX", "Dolby Atmos", "Premium Cinema"],
-        screens: 6,
-      },
-      {
-        id: 5,
-        name: "UBANFLIX Vincom Đà Nẵng",
-        address: "910 Ngô Quyền, Sơn Trà, Đà Nẵng",
-        phone: "0236 3630 666",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["4DX", "Dolby Atmos", "VIP Lounge"],
-        screens: 5,
-      },
-    ],
-    hcmc: [
-      {
-        id: 6,
-        name: "UBANFLIX Landmark 81",
-        address: "208 Nguyễn Hữu Cảnh, Bình Thạnh, TP.HCM",
-        phone: "028 7300 8855",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["IMAX", "4DX", "Dolby Atmos", "Gold Class"],
-        screens: 10,
-      },
-      {
-        id: 7,
-        name: "UBANFLIX Estella Place",
-        address: "88 Song Hành, Quận 2, TP.HCM",
-        phone: "028 7300 8866",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["IMAX", "Dolby Atmos", "Premium Cinema"],
-        screens: 8,
-      },
-      {
-        id: 8,
-        name: "UBANFLIX Aeon Mall Tân Phú",
-        address: "30 Bờ Bao Tân Thắng, Tân Phú, TP.HCM",
-        phone: "028 7300 8877",
-        image:
-          "https://png.pngtree.com/thumb_back/fh260/background/20190827/pngtree-coming-soon-movie-in-cinema-theater-billboard-sign-on-red-image_302582.jpg",
-        facilities: ["4DX", "Dolby Atmos", "Gold Class"],
-        screens: 7,
-      },
-    ],
+const CinemaPage: React.FC = () => {
+  const dispatch = useDispatch();
+  const {
+    data: cinemas,
+    loading,
+    currentPage,
+    totalPages,
+  } = useSelector((state: RootState) => state.cinema.cinemaByLocation);
+
+  // Debug state to show raw data
+  const [showRawData, setShowRawData] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("danang");
+
+  useEffect(() => {
+    fetchCinemas(activeTab, 1);
+  }, [activeTab, dispatch]);
+
+  const fetchCinemas = (location: string, page: number) => {
+    const locationParam = getLocationFromTabKey(location);
+    dispatch(getCinemasByLocationRequest({ location: locationParam, page }));
+    console.log("Fetching cinemas for location:", locationParam, "page:", page);
   };
 
-  const handleCinemaClick = (cinema: any) => {
+  const handleCinemaClick = (cinema: Cinema) => {
     setSelectedCinema(cinema);
     setModalVisible(true);
+  };
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+  };
+
+  const handlePageChange = (page: number) => {
+    fetchCinemas(activeTab, page);
+  };
+
+  // Mapping of tab keys to location values for API
+  const getLocationFromTabKey = (tabKey: string): string => {
+    const locationMap: { [key: string]: string } = {
+      hanoi: "Hà Nội",
+      danang: "Đà Nẵng",
+      hcmc: "TP.HCM",
+    };
+    return locationMap[tabKey] || tabKey;
   };
 
   return (
@@ -283,63 +247,120 @@ const CinemaPage: React.FC = () => {
           >
             <h1>HỆ THỐNG RẠP CHIẾU PHIM</h1>
           </PageTitle>
-          
-          <StyledTabs defaultActiveKey="hanoi" centered>
+          <StyledTabs
+            defaultActiveKey="danang"
+            centered
+            onChange={handleTabChange}
+          >
             <TabPane tab="HÀ NỘI" key="hanoi">
-              <Row gutter={[24, 24]}>
-                {cinemas.hanoi.map((cinema) => (
-                  <Col xs={24} sm={12} md={8} key={cinema.id}>
-                    <CinemaCard
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => handleCinemaClick(cinema)}
-                    >
-                      <CinemaImage src={cinema.image} alt={cinema.name} />
-                      <CinemaName>{cinema.name}</CinemaName>
-                      <CinemaInfo>{cinema.address}</CinemaInfo>
-                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                      <ViewButton>XEM CHI TIẾT</ViewButton>
-                    </CinemaCard>
-                  </Col>
-                ))}
-              </Row>
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "50px" }}>
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <>
+                  <Row gutter={[24, 24]}>
+                    {cinemas.map((cinema) => (
+                      <Col xs={24} sm={12} md={8} key={cinema.id}>
+                        <CinemaCard
+                          whileHover={{ scale: 1.02 }}
+                          onClick={() => handleCinemaClick(cinema)}
+                        >
+                          <CinemaImage src={cinema.image} alt={cinema.name} />
+                          <CinemaName>{cinema.name}</CinemaName>
+                          <CinemaInfo>{cinema.address}</CinemaInfo>
+                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                          <ViewButton>XEM CHI TIẾT</ViewButton>
+                        </CinemaCard>
+                      </Col>
+                    ))}
+                  </Row>
+
+                  {totalPages > 1 && (
+                    <div style={{ textAlign: "center", marginTop: "30px" }}>
+                      <Pagination
+                        current={currentPage}
+                        total={totalPages * 10}
+                        onChange={handlePageChange}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </TabPane>
 
             <TabPane tab="ĐÀ NẴNG" key="danang">
-              <Row gutter={[24, 24]}>
-                {cinemas.danang.map((cinema) => (
-                  <Col xs={24} sm={12} md={8} key={cinema.id}>
-                    <CinemaCard
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => handleCinemaClick(cinema)}
-                    >
-                      <CinemaImage src={cinema.image} alt={cinema.name} />
-                      <CinemaName>{cinema.name}</CinemaName>
-                      <CinemaInfo>{cinema.address}</CinemaInfo>
-                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                      <ViewButton>XEM CHI TIẾT</ViewButton>
-                    </CinemaCard>
-                  </Col>
-                ))}
-              </Row>
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "50px" }}>
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <>
+                  <Row gutter={[24, 24]}>
+                    {cinemas.map((cinema) => (
+                      <Col xs={24} sm={12} md={8} key={cinema.id}>
+                        <CinemaCard
+                          whileHover={{ scale: 1.02 }}
+                          onClick={() => handleCinemaClick(cinema)}
+                        >
+                          <CinemaImage src={cinema.image} alt={cinema.name} />
+                          <CinemaName>{cinema.name}</CinemaName>
+                          <CinemaInfo>{cinema.address}</CinemaInfo>
+                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                          <ViewButton>XEM CHI TIẾT</ViewButton>
+                        </CinemaCard>
+                      </Col>
+                    ))}
+                  </Row>
+
+                  {totalPages > 1 && (
+                    <div style={{ textAlign: "center", marginTop: "30px" }}>
+                      <Pagination
+                        current={currentPage}
+                        total={totalPages * 10}
+                        onChange={handlePageChange}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </TabPane>
 
             <TabPane tab="TP. HỒ CHÍ MINH" key="hcmc">
-              <Row gutter={[24, 24]}>
-                {cinemas.hcmc.map((cinema) => (
-                  <Col xs={24} sm={12} md={8} key={cinema.id}>
-                    <CinemaCard
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => handleCinemaClick(cinema)}
-                    >
-                      <CinemaImage src={cinema.image} alt={cinema.name} />
-                      <CinemaName>{cinema.name}</CinemaName>
-                      <CinemaInfo>{cinema.address}</CinemaInfo>
-                      <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                      <ViewButton>XEM CHI TIẾT</ViewButton>
-                    </CinemaCard>
-                  </Col>
-                ))}
-              </Row>
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "50px" }}>
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <>
+                  <Row gutter={[24, 24]}>
+                    {cinemas.map((cinema) => (
+                      <Col xs={24} sm={12} md={8} key={cinema.id}>
+                        <CinemaCard
+                          whileHover={{ scale: 1.02 }}
+                          onClick={() => handleCinemaClick(cinema)}
+                        >
+                          <CinemaImage src={cinema.image} alt={cinema.name} />
+                          <CinemaName>{cinema.name}</CinemaName>
+                          <CinemaInfo>{cinema.address}</CinemaInfo>
+                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
+                          <ViewButton>XEM CHI TIẾT</ViewButton>
+                        </CinemaCard>
+                      </Col>
+                    ))}
+                  </Row>
+
+                  {totalPages > 1 && (
+                    <div style={{ textAlign: "center", marginTop: "30px" }}>
+                      <Pagination
+                        current={currentPage}
+                        total={totalPages * 10}
+                        onChange={handlePageChange}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </TabPane>
           </StyledTabs>
 
@@ -357,7 +378,9 @@ const CinemaPage: React.FC = () => {
                 />
                 <CinemaInfo>Địa chỉ: {selectedCinema.address}</CinemaInfo>
                 <CinemaInfo>Hotline: {selectedCinema.phone}</CinemaInfo>
-                <CinemaInfo>Số phòng chiếu: {selectedCinema.screens}</CinemaInfo>
+                <CinemaInfo>
+                  Số phòng chiếu: {selectedCinema.screens}
+                </CinemaInfo>
                 <CinemaInfo>
                   Tiện ích: {selectedCinema.facilities.join(", ")}
                 </CinemaInfo>

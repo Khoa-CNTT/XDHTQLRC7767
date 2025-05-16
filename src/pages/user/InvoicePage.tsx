@@ -403,14 +403,6 @@ const InvoicePage: React.FC = () => {
         const receivedData = location.state.bookingData;
         console.log("[INVOICE_PAGE] Received booking data:", receivedData);
 
-        // Log thông tin giá vé gốc để debug
-        console.log("[INVOICE_PAGE] Original pricing info:", {
-          ticketPrice: receivedData.pricing?.ticketPrice,
-          quantity: receivedData.pricing?.quantity,
-          subtotal: receivedData.pricing?.subtotal,
-          total: receivedData.pricing?.total,
-        });
-
         // Tạo mã hóa đơn ngẫu nhiên
         const randomId = Math.floor(100000 + Math.random() * 900000);
         setInvoiceId(`INV-${randomId}`);
@@ -421,27 +413,35 @@ const InvoicePage: React.FC = () => {
 
         // Sử dụng giá từ BookingPage
         if (!receivedData.pricing) {
-          // Nếu không có thông tin pricing, tạo dữ liệu mặc định
-          console.warn("[INVOICE_PAGE] No pricing data found!");
-          const seatCount = receivedData.seats?.length || 1;
-          receivedData.pricing = {
-            ticketPrice: 90000, // Giá mặc định
-            quantity: seatCount,
-            subtotal: 90000 * seatCount,
-            total: 90000 * seatCount,
-          };
+          // Không có thông tin pricing, báo lỗi
+          console.error(
+            "[INVOICE_PAGE] No pricing data found from BookingPage!"
+          );
+          message.error("Không tìm thấy thông tin giá vé từ dữ liệu đặt vé!");
+          navigate("/");
+          return;
         } else {
-          // Đảm bảo dữ liệu hợp lệ (không bắt buộc phải ghi đè giá trị từ BookingPage)
+          // Log thông tin giá từ BookingPage để kiểm tra
+          console.log(
+            "[INVOICE_PAGE] Using pricing data from BookingPage:",
+            receivedData.pricing
+          );
+
+          // Kiểm tra tính hợp lệ của dữ liệu giá từ BookingPage
           if (
             isNaN(receivedData.pricing.ticketPrice) ||
             receivedData.pricing.ticketPrice <= 0
           ) {
-            console.warn(
-              "[INVOICE_PAGE] Invalid ticket price! Using default price."
+            console.error(
+              "[INVOICE_PAGE] Invalid ticket price from BookingPage:",
+              receivedData.pricing.ticketPrice
             );
-            receivedData.pricing.ticketPrice = 90000;
+            message.error("Dữ liệu giá vé không hợp lệ!");
+            navigate("/");
+            return;
           }
 
+          // Đảm bảo số lượng ghế đúng
           if (
             isNaN(receivedData.pricing.quantity) ||
             receivedData.pricing.quantity <= 0
@@ -449,7 +449,7 @@ const InvoicePage: React.FC = () => {
             receivedData.pricing.quantity = receivedData.seats?.length || 1;
           }
 
-          // Tính lại tổng tiền nếu cần
+          // Tính lại tổng tiền nếu cần, dựa trên giá từ BookingPage
           if (
             isNaN(receivedData.pricing.total) ||
             receivedData.pricing.total <= 0
