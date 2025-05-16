@@ -2,6 +2,8 @@ package dtu.doan.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class CustomerDTO {
     private Long id;
@@ -14,4 +16,5 @@ public class CustomerDTO {
     private String username;
     private Boolean isDelete;
     private Boolean isEnable;
+    private LocalDate birthday;
 }

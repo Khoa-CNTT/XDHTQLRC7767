@@ -13,4 +13,6 @@ public interface CommentService {
 
     List<Comment> getCommentsByMovie(Long userId,Long movieId);
 
+    List<Comment> getCommentsByMovie(Long movieId);
+
 }

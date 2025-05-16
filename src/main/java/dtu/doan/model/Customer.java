@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -26,7 +27,7 @@ public class Customer {
     private String fullName;
     private Boolean gender;
     @DateTimeFormat()
-    private Date birthday;
+    private LocalDate birthday;
     private String email;
     @Column(columnDefinition = ("varchar(15)"))
     private String phoneNumber;

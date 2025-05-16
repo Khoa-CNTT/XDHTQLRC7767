@@ -32,8 +32,32 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}/disable")
-    public ResponseEntity<Void> disableCustomerAccount(@PathVariable Long id) {
-        service.disableCustomerAccount(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> disableCustomerAccount(@PathVariable Long id) {
+        try{
+            service.disableCustomerAccount(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception exception){
+            return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/{id}/enable")
+    public ResponseEntity<?> enableCustomerAccount(@PathVariable Long id) {
+        try{
+            service.disableCustomerAccount(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (Exception exception){
+            return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/update-customer")
+    public ResponseEntity<?> updateCustomer(@RequestBody CustomerDTO customer) {
+        try{
+            CustomerDTO customerDTO = service.updateCustomer(customer);
+            return new ResponseEntity<>(customerDTO,HttpStatus.OK);
+        }catch (Exception exception){
+            return new ResponseEntity<>("Customer not found", HttpStatus.NOT_FOUND);
+        }
     }
 }

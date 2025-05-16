@@ -1,7 +1,6 @@
 package dtu.doan.config;
 
 import dtu.doan.filter.JwtRequestFilter;
-import dtu.doan.service.impl.CustomOAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -75,7 +74,8 @@ public class SecurityConfig {
                                 "/auth/social-login",
                                 "/auth/google",
                                 "/api/tickets/mobile/**",
-                                "/api/promotion"
+                                "/api/promotion",
+                                "/api/positions"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
