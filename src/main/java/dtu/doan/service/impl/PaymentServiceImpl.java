@@ -28,7 +28,19 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date) {
-        return paymentRepository.getRevenueAndTicketCountByDate(date);
+        DailyRevenueDTO dailyRevenueDTO = new DailyRevenueDTO();
+        Object result = paymentRepository.getRevenueAndTicketCountByDate(date);
+        if (result != null) {
+            Object[] data = (Object[]) result;
+            dailyRevenueDTO.setDate(date);
+            dailyRevenueDTO.setTotalRevenue((Long) data[1]);
+            dailyRevenueDTO.setTotalTickets((Long) data[2]);
+        } else {
+            dailyRevenueDTO.setDate(date);
+            dailyRevenueDTO.setTotalRevenue(0L);
+            dailyRevenueDTO.setTotalTickets(0L);
+        }
+        return dailyRevenueDTO;
     }
     @Override
     public List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate) {
