@@ -26,6 +26,10 @@ import { updateUserStart } from "../../redux/slices/authSlice";
 
 const ProfileContainer = styled(motion.div)`
   padding: 20px;
+
+  @media (max-width: 576px) {
+    padding: 15px 10px;
+  }
 `;
 
 const ProfileForm = styled(Form)`
@@ -38,6 +42,10 @@ const AvatarContainer = styled.div`
   flex-direction: column;
   align-items: center;
   margin-bottom: 30px;
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+  }
 `;
 
 const UserAvatar = styled(Avatar)`
@@ -57,6 +65,11 @@ const FormTitle = styled.h2`
   color: #333;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 10px;
+
+  @media (max-width: 576px) {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
 `;
 
 const SaveButton = styled(Button)`
@@ -203,8 +216,8 @@ const UserProfile: React.FC = () => {
           <FormTitle>Thông tin cá nhân</FormTitle>
         </motion.div>
 
-        <Row gutter={24}>
-          <Col span={12}>
+        <Row gutter={[24, 0]}>
+          <Col xs={24} sm={12}>
             <motion.div variants={itemVariants}>
               <Form.Item
                 label="Họ và tên"
@@ -217,7 +230,7 @@ const UserProfile: React.FC = () => {
               </Form.Item>
             </motion.div>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12}>
             <motion.div variants={itemVariants}>
               <Form.Item
                 label="Email"
@@ -233,8 +246,8 @@ const UserProfile: React.FC = () => {
           </Col>
         </Row>
 
-        <Row gutter={24}>
-          <Col span={12}>
+        <Row gutter={[24, 0]}>
+          <Col xs={24} sm={12}>
             <motion.div variants={itemVariants}>
               <Form.Item
                 label="Số điện thoại"
@@ -251,7 +264,7 @@ const UserProfile: React.FC = () => {
               </Form.Item>
             </motion.div>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={12}>
             <motion.div variants={itemVariants}>
               <Form.Item label="Ngày sinh" name="birthday">
                 <DatePicker

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Tabs } from "antd";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -29,6 +29,10 @@ const ProfileWrapper = styled(motion.div)`
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    width: 95%;
+  }
 `;
 
 const ProfileHeader = styled.div`
@@ -36,17 +40,29 @@ const ProfileHeader = styled.div`
   padding: 30px;
   color: white;
   text-align: center;
+
+  @media (max-width: 576px) {
+    padding: 20px 15px;
+  }
 `;
 
 const ProfileTitle = styled.h1`
   font-size: 28px;
   margin-bottom: 10px;
   font-weight: 600;
+
+  @media (max-width: 576px) {
+    font-size: 22px;
+  }
 `;
 
 const ProfileSubtitle = styled.p`
   font-size: 16px;
   opacity: 0.9;
+
+  @media (max-width: 576px) {
+    font-size: 14px;
+  }
 `;
 
 const StyledTabs = styled(Tabs)`
@@ -70,11 +86,54 @@ const StyledTabs = styled(Tabs)`
     background-color: #fd6b0a;
     height: 3px;
   }
+
+  @media (max-width: 576px) {
+    padding: 15px 10px;
+
+    .ant-tabs-nav {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .ant-tabs-nav-list {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .ant-tabs-tab {
+      margin: 0 !important;
+      padding: 12px 16px;
+      font-size: 15px;
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .ant-tabs-ink-bar {
+      height: 0;
+    }
+
+    .ant-tabs-tab-active {
+      background-color: rgba(253, 107, 10, 0.1);
+    }
+  }
 `;
 
 const ProfilePage: React.FC = () => {
   const dispatch = useDispatch();
   const { activeTab, user } = useSelector((state: RootState) => state.auth);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 576);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 576);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const handleTabChange = (key: string) => {
     // Chỉ thay đổi tab khi người dùng click
@@ -111,7 +170,12 @@ const ProfilePage: React.FC = () => {
             </ProfileSubtitle>
           </ProfileHeader>
 
-          <StyledTabs activeKey={activeTab} onChange={handleTabChange}>
+          <StyledTabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            tabPosition={isMobile ? "top" : "top"}
+            centered={!isMobile}
+          >
             <TabPane tab="Thông tin tài khoản" key="1">
               <UserProfile />
             </TabPane>

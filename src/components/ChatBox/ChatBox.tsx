@@ -19,6 +19,11 @@ const ChatBoxContainer = styled.div<{ isOpen: boolean }>`
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+
+  @media (max-width: 768px) {
+    bottom: 20px;
+    right: 20px;
+  }
 `;
 
 const ChatToggleButton = styled(Button)`
@@ -38,6 +43,12 @@ const ChatToggleButton = styled(Button)`
   &:hover {
     transform: scale(1.1) !important;
     background-color: #40a9ff !important;
+  }
+
+  @media (max-width: 768px) {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 18px !important;
   }
 `;
 
@@ -64,6 +75,20 @@ const ChatWindow = styled.div`
       transform: translateY(0);
       opacity: 1;
     }
+  }
+
+  @media (max-width: 768px) {
+    width: 300px;
+    height: 450px;
+    bottom: 55px;
+  }
+
+  @media (max-width: 480px) {
+    width: 90vw;
+    height: 400px;
+    right: 5vw;
+    left: 5vw;
+    bottom: 70px;
   }
 `;
 
@@ -112,6 +137,12 @@ const MessageBubble = styled.div<{ isUser: boolean }>`
   border-bottom-right-radius: ${(props) => (props.isUser ? "5px" : "15px")};
   border-bottom-left-radius: ${(props) => (props.isUser ? "15px" : "5px")};
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    max-width: 85%;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
 `;
 
 const InputContainer = styled.div`
@@ -120,6 +151,10 @@ const InputContainer = styled.div`
   display: flex;
   gap: 10px;
   background-color: white;
+
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
 `;
 
 const StyledInput = styled(Input)`
@@ -129,6 +164,10 @@ const StyledInput = styled(Input)`
   &:focus {
     border-color: #40a9ff !important;
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px !important;
   }
 `;
 
@@ -193,10 +232,30 @@ const ChatBox: React.FC = () => {
     setInputMessage("");
   };
 
+  // Close chat box when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        event.target instanceof Node &&
+        !document.querySelector(".ant-btn-icon-only")?.contains(event.target) &&
+        !document.querySelector(".ant-input")?.contains(event.target) &&
+        !document.querySelector(".chatWindow")?.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <ChatBoxContainer isOpen={isOpen}>
       {isOpen && (
-        <ChatWindow>
+        <ChatWindow className="chatWindow">
           <ChatHeader>
             <Space>
               <MessageOutlined />

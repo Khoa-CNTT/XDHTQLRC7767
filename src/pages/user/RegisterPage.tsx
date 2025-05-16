@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Form, Input, Button, Divider, message, Card, Typography } from "antd";
 import {
   UserOutlined,
@@ -81,8 +81,17 @@ const StyledCard = styled(Card)`
   }
 
   @media (max-width: 576px) {
+    max-width: 100%;
+    margin: 0 10px;
+    animation: none;
+
     .ant-card-body {
-      padding: 30px 20px;
+      padding: 25px 15px;
+    }
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
   }
 `;
@@ -107,6 +116,11 @@ const GlowingButton = styled(Button)`
 
   &:active {
     transform: translateY(1px);
+  }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
   }
 `;
 
@@ -135,6 +149,16 @@ const SocialButton = styled(Button)`
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   }
+
+  @media (max-width: 576px) {
+    height: 42px;
+    font-size: 14px;
+
+    .anticon {
+      font-size: 18px;
+      margin-right: 6px;
+    }
+  }
 `;
 
 const StyledInput = styled(Input)`
@@ -148,6 +172,11 @@ const StyledInput = styled(Input)`
   &:focus {
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
+  }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
   }
 `;
 
@@ -163,6 +192,11 @@ const StyledPasswordInput = styled(Input.Password)`
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
   }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
+  }
 `;
 
 const StyledDivider = styled(Divider)`
@@ -173,11 +207,22 @@ const StyledDivider = styled(Divider)`
 `;
 
 const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, error } = useSelector(
     (state: RootState) => state.auth.register
   );
+
+  // Display error message if any
+  useEffect(() => {
+    if (error) {
+      message.error({
+        content: error,
+        style: {
+          marginTop: "20vh",
+        },
+      });
+    }
+  }, [error]);
 
   const onFinish = async (values: {
     name: string;

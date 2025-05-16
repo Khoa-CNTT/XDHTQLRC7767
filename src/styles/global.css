@@ -1,8 +1,8 @@
 /* Màu hover cho menu items */
 .ant-menu-horizontal > .ant-menu-item:hover,
 .ant-menu-horizontal > .ant-menu-submenu:hover {
-  color: #00BFFF !important; /* Màu xanh da trời sáng */
-  border-bottom: 2px solid #00BFFF !important;
+  color: #00bfff !important; /* Màu xanh da trời sáng */
+  border-bottom: 2px solid #00bfff !important;
   background-color: rgba(0, 191, 255, 0.1) !important; /* Thêm background nhẹ */
   transition: all 0.3s ease !important;
   transform: translateY(-2px) !important; /* Hiệu ứng nâng lên nhẹ */
@@ -29,19 +29,19 @@
 
 /* Hiệu ứng cho menu mobile */
 .ant-drawer .ant-menu-item:hover {
-  color: #00BFFF !important;
+  color: #00bfff !important;
   background-color: rgba(0, 191, 255, 0.1) !important;
 }
 
 /* Hiệu ứng cho nút tìm kiếm */
 .search-button:hover {
-  background-color: #00BFFF !important;
+  background-color: #00bfff !important;
   color: #16213e !important;
 }
 
 /* Hiệu ứng cho thumbnail */
 .small-thumbnail:hover {
-  border-color: #00BFFF !important;
+  border-color: #00bfff !important;
   transform: translateY(-5px) !important;
   box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3) !important;
 }
@@ -54,13 +54,13 @@
 
 /* Hiệu ứng cho menu item khi hover */
 .ant-menu-item::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   width: 0;
   height: 2px;
-  background-color: #00BFFF;
+  background-color: #00bfff;
   transition: width 0.3s ease;
 }
 
@@ -68,7 +68,7 @@
   width: 100%;
 }
 
-/* Responsive font sizes */
+/* MOBILE-FIRST APPROACH - Responsive font sizes and elements */
 :root {
   font-size: 16px; /* Base font size */
 }
@@ -95,6 +95,65 @@
   }
   .ant-btn {
     font-size: 0.9rem !important;
+    height: 38px !important;
+    padding: 0 15px !important;
+  }
+
+  /* Card styling improvements for mobile */
+  .ant-card {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .ant-card-cover img {
+    height: 180px !important;
+    object-fit: cover !important;
+  }
+
+  /* Improved form fields for touch */
+  .ant-input,
+  .ant-select-selector,
+  .ant-picker {
+    height: 42px !important;
+    border-radius: 8px !important;
+  }
+
+  .ant-input-affix-wrapper {
+    border-radius: 8px !important;
+    padding: 0 11px !important;
+  }
+
+  .ant-input-affix-wrapper .ant-input {
+    height: 40px !important;
+  }
+
+  /* Better tab styling */
+  .ant-tabs-tab {
+    padding: 8px 12px !important;
+  }
+
+  /* Fixed navigation on mobile */
+  .fixed-mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    background: #1a1a2e;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    z-index: 100;
+  }
+
+  /* Space for bottom nav */
+  .has-bottom-nav {
+    padding-bottom: 70px !important;
+  }
+
+  /* Mobile drawer improvements */
+  .ant-drawer-content-wrapper {
+    width: 80% !important;
   }
 }
 
@@ -120,6 +179,20 @@
   }
   .ant-btn {
     font-size: 0.95rem !important;
+    height: 40px !important;
+  }
+
+  /* Card styling for tablets */
+  .ant-card {
+    border-radius: 10px !important;
+  }
+
+  /* Form fields for tablets */
+  .ant-input,
+  .ant-select-selector,
+  .ant-picker {
+    height: 40px !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -159,4 +232,59 @@
   h3.ant-typography {
     font-size: 1.5rem !important;
   }
-} 
+}
+
+/* Modern shadows for cards and buttons */
+.modern-shadow {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2) !important;
+}
+
+.modern-card {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.15) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Modern button styling */
+.ant-btn {
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #00bfff, #0070ff) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3) !important;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #0080ff, #0050ff) !important;
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4) !important;
+}
+
+/* Modern form inputs */
+.ant-input:focus,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused {
+  box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2) !important;
+  border-color: #00bfff !important;
+}
+
+/* Loading spinner enhancement */
+.ant-spin-dot-item {
+  background-color: #00bfff !important;
+}
+
+/* Tag styling */
+.ant-tag {
+  border-radius: 16px !important;
+  padding: 4px 12px !important;
+  font-size: 0.85rem !important;
+  border: none !important;
+}

@@ -28,6 +28,10 @@ interface TicketHistoryDTO {
 
 const HistoryContainer = styled(motion.div)`
   padding: 20px;
+
+  @media (max-width: 576px) {
+    padding: 15px 10px;
+  }
 `;
 
 const HistoryTitle = styled.h2`
@@ -36,6 +40,11 @@ const HistoryTitle = styled.h2`
   color: #333;
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 10px;
+
+  @media (max-width: 576px) {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
 `;
 
 const StyledTable = styled(Table)`
@@ -47,6 +56,29 @@ const StyledTable = styled(Table)`
   .ant-table-row:hover {
     cursor: pointer;
     background-color: #f8f8f8;
+  }
+
+  @media (max-width: 768px) {
+    .ant-table-cell {
+      padding: 12px 8px;
+      font-size: 14px;
+    }
+
+    th.ant-table-cell {
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .ant-table-cell {
+      padding: 8px 4px;
+      font-size: 12px;
+    }
+
+    .ant-btn {
+      font-size: 12px;
+      padding: 0 8px;
+    }
   }
 `;
 
@@ -196,31 +228,34 @@ const TicketHistory: React.FC = () => {
       dataIndex: "id",
       key: "id",
       render: (id: number) => <span>#{id}</span>,
+      responsive: ["md"],
     },
     {
       title: "Phim",
       dataIndex: "movieName",
       key: "movieName",
       render: (name: string) => <span style={{ fontWeight: 500 }}>{name}</span>,
+      ellipsis: true,
     },
     {
       title: "Rạp chiếu",
       dataIndex: "cinemaName",
       key: "cinemaName",
+      responsive: ["sm"],
     },
     {
-      title: "Ngày chiếu",
+      title: "Ngày",
       dataIndex: "date",
       key: "date",
       render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
-      title: "Giờ chiếu",
+      title: "Giờ",
       dataIndex: "startTime",
       key: "startTime",
     },
     {
-      title: "Hành động",
+      title: "",
       key: "action",
       render: (_, record) => (
         <Tooltip title="Xem chi tiết">

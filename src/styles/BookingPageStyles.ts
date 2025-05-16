@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Layout, Steps, Button, Card, Radio, DatePicker } from "antd";
-  
+
 const { Content } = Layout;
 
 export const PageContainer = styled(Layout)`
@@ -10,6 +10,10 @@ export const PageContainer = styled(Layout)`
 export const BookingContent = styled(Content)`
   padding: 30px 0;
   background-color: #f5f5f5;
+
+  @media (max-width: 576px) {
+    padding: 20px 0;
+  }
 `;
 
 export const ContentWrapper = styled.div`
@@ -20,6 +24,10 @@ export const ContentWrapper = styled.div`
   @media (max-width: 768px) {
     width: 90%;
   }
+
+  @media (max-width: 576px) {
+    width: 95%;
+  }
 `;
 
 export const PageTitle = styled.h1`
@@ -27,6 +35,16 @@ export const PageTitle = styled.h1`
   margin-bottom: 24px;
   color: #333;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
 `;
 
 export const StyledSteps = styled(Steps)`
@@ -57,8 +75,26 @@ export const StyledSteps = styled(Steps)`
   }
 
   @media (max-width: 768px) {
+    margin-bottom: 30px;
+
     .ant-steps-item-title {
       font-size: 14px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 24px;
+
+    .ant-steps-item-icon {
+      margin-right: 8px;
+    }
+
+    .ant-steps-item-content {
+      margin-left: 0;
+    }
+
+    .ant-steps-item-title {
+      font-size: 12px;
     }
   }
 `;
@@ -66,17 +102,23 @@ export const StyledSteps = styled(Steps)`
 export const StepContent = styled.div`
   background-color: white;
   padding: 30px;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
     padding: 20px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 16px;
+    border-radius: 8px;
   }
 `;
 
 export const MovieInfoCard = styled(Card)`
   margin-bottom: 30px;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
@@ -97,8 +139,28 @@ export const MovieInfoCard = styled(Card)`
   }
 
   @media (max-width: 768px) {
+    margin-bottom: 24px;
+    border-radius: 10px;
+
+    .ant-card-cover {
+      height: 240px;
+    }
+
+    .ant-card-body {
+      padding: 16px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+    border-radius: 8px;
+
     .ant-card-cover {
       height: 200px;
+    }
+
+    .ant-card-body {
+      padding: 14px;
     }
   }
 `;
@@ -111,6 +173,12 @@ export const MovieTitle = styled.h2`
 
   @media (max-width: 768px) {
     font-size: 20px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 18px;
+    margin-bottom: 12px;
   }
 `;
 
@@ -121,7 +189,13 @@ export const MovieMeta = styled.div`
   margin-bottom: 16px;
 
   @media (max-width: 768px) {
-    gap: 12px;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 576px) {
+    gap: 10px;
+    margin-bottom: 12px;
   }
 `;
 
@@ -131,12 +205,23 @@ export const MetaItem = styled.div`
   gap: 6px;
   color: #666;
   font-size: 14px;
+
+  @media (max-width: 576px) {
+    font-size: 12px;
+    gap: 4px;
+  }
 `;
 
 export const MovieDescription = styled.p`
   color: #666;
   line-height: 1.6;
   margin-bottom: 20px;
+
+  @media (max-width: 576px) {
+    line-height: 1.5;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
 `;
 
 export const SectionTitle = styled.h3`
@@ -144,6 +229,11 @@ export const SectionTitle = styled.h3`
   margin-bottom: 16px;
   color: #333;
   font-weight: 600;
+
+  @media (max-width: 576px) {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
 `;
 
 export const StyledDatePicker = styled(DatePicker)`
@@ -153,6 +243,14 @@ export const StyledDatePicker = styled(DatePicker)`
   .ant-picker-input > input {
     font-size: 16px;
   }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+
+    .ant-picker-input > input {
+      font-size: 14px;
+    }
+  }
 `;
 
 export const CinemaList = styled(Radio.Group)`
@@ -161,6 +259,11 @@ export const CinemaList = styled(Radio.Group)`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+    gap: 10px;
+  }
 `;
 
 export const CinemaCard = styled(Radio)`
@@ -186,6 +289,14 @@ export const CinemaCard = styled(Radio)`
   .ant-radio-checked .ant-radio-inner {
     border-color: #fd6b0a;
   }
+
+  @media (max-width: 576px) {
+    padding: 10px 14px;
+
+    .ant-radio {
+      top: 14px;
+    }
+  }
 `;
 
 export const CinemaName = styled.div`
@@ -193,196 +304,308 @@ export const CinemaName = styled.div`
   font-weight: 500;
   color: #333;
   margin-bottom: 4px;
+
+  @media (max-width: 576px) {
+    font-size: 14px;
+  }
 `;
 
 export const CinemaAddress = styled.div`
   font-size: 14px;
   color: #666;
+
+  @media (max-width: 576px) {
+    font-size: 12px;
+  }
 `;
 
 export const ShowtimeList = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
+
+  @media (max-width: 576px) {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
 `;
 
 export const ShowtimeButton = styled(Button)<{ $selected?: boolean }>`
-  min-width: 100px;
-  background-color: ${(props) => (props.$selected ? "#fd6b0a" : "white")};
-  color: ${(props) => (props.$selected ? "white" : "#333")};
-  border-color: ${(props) => (props.$selected ? "#fd6b0a" : "#d9d9d9")};
+  height: auto;
+  padding: 10px 16px;
+  border: 1px solid ${(props) => (props.$selected ? "#fd6b0a" : "#d9d9d9")};
+  background-color: ${(props) =>
+    props.$selected ? "rgba(253, 107, 10, 0.1)" : "white"};
+  color: ${(props) => (props.$selected ? "#fd6b0a" : "#333")};
+  border-radius: 8px;
+  font-weight: ${(props) => (props.$selected ? "500" : "400")};
 
-  &:hover,
+  &:hover {
+    border-color: #fd6b0a;
+    color: #fd6b0a;
+  }
+
   &:focus {
-    background-color: ${(props) => (props.$selected ? "#e05c00" : "#f5f5f5")};
-    color: ${(props) => (props.$selected ? "white" : "#fd6b0a")};
-    border-color: ${(props) => (props.$selected ? "#e05c00" : "#fd6b0a")};
+    border-color: #fd6b0a;
+    color: #fd6b0a;
+  }
+
+  @media (max-width: 576px) {
+    padding: 8px 14px;
+    font-size: 13px;
   }
 `;
 
 export const SeatsContainer = styled.div`
   margin-bottom: 30px;
+
+  @media (max-width: 576px) {
+    margin-bottom: 24px;
+  }
 `;
 
 export const ScreenContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 30px;
-  text-align: center;
+
+  @media (max-width: 576px) {
+    margin-bottom: 24px;
+  }
 `;
 
 export const Screen = styled.div`
-  height: 10px;
-  background-color: #ddd;
-  border-radius: 50%;
-  margin: 0 auto 10px;
   width: 80%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transform: perspective(200px) rotateX(-30deg);
+  height: 10px;
+  background: linear-gradient(to bottom, #d9d9d9, transparent);
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  margin-bottom: 8px;
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
+
+  @media (max-width: 576px) {
+    width: 100%;
+    height: 8px;
+    margin-bottom: 6px;
+  }
 `;
 
 export const ScreenLabel = styled.div`
   font-size: 14px;
-  color: #666;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  @media (max-width: 576px) {
+    font-size: 12px;
+  }
 `;
 
 export const SeatLegend = styled.div`
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin: 20px 0;
   flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+
+  @media (max-width: 576px) {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
 `;
 
 export const LegendItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #666;
-`;
-
-export const LegendColor = styled.div<{ $color: string; $borderColor: string }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background-color: ${(props) => props.$color};
-  border: 1px solid ${(props) => props.$borderColor};
-`;
-
-export const SeatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
-
-  @media (max-width: 768px) {
-    gap: 6px;
-  }
+  gap: 6px;
 
   @media (max-width: 576px) {
     gap: 4px;
   }
 `;
 
-export const Seat = styled.div<{
-  $status: string;
-  $type: string;
-  $selected: boolean;
-}>`
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
+export const LegendColor = styled.div<{ $color: string }>`
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
-  cursor: ${(props) =>
-    props.$status === "available" ? "pointer" : "not-allowed"};
-  background-color: ${(props) => {
-    if (props.$status === "booked") return "#888";
-    if (props.$selected) return "#fd6b0a";
-    return props.$type === "vip" ? "#ffd700" : "white";
-  }};
-  color: ${(props) => {
-    if (props.$status === "booked") return "#fff";
-    if (props.$selected) return "white";
-    return "#333";
-  }};
-  border: 1px solid
-    ${(props) => {
-      if (props.$status === "booked") return "#777";
-      if (props.$selected) return "#fd6b0a";
-      return props.$type === "vip" ? "#ffd700" : "#d9d9d9";
-    }};
+  background-color: ${(props) => props.$color};
 
-  &:hover {
-    background-color: ${(props) => {
-      if (props.$status === "booked") return "#888";
-      if (props.$selected) return "#e05c00";
-      return props.$type === "vip" ? "#ffe066" : "#f5f5f5";
-    }};
+  @media (max-width: 576px) {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+export const SeatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
   }
 
   @media (max-width: 576px) {
-    font-size: 10px;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+  }
+`;
+
+export const Seat = styled.div<{
+  $type: string;
+  $status: string;
+  $selected: boolean;
+}>`
+  aspect-ratio: 1/1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ${(props) => (props.$status === "available" ? "pointer" : "default")};
+  background-color: ${(props) => {
+    if (props.$selected) return "#fd6b0a";
+    if (props.$status === "booked") return "#d9d9d9";
+    return props.$type === "vip" ? "#ffe082" : "#bbdefb";
+  }};
+  color: ${(props) => {
+    if (props.$selected) return "white";
+    if (props.$status === "booked") return "#999";
+    return props.$type === "vip" ? "#f57c00" : "#1976d2";
+  }};
+  border: 1px solid
+    ${(props) => {
+      if (props.$selected) return "#fd6b0a";
+      if (props.$status === "booked") return "#d9d9d9";
+      return props.$type === "vip" ? "#ffca28" : "#90caf9";
+    }};
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    ${(props) =>
+      props.$status === "available" &&
+      `
+      transform: translateY(-2px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    `}
+  }
+
+  @media (max-width: 576px) {
+    font-size: 12px;
+    border-radius: 4px;
   }
 `;
 
 export const SummaryCard = styled(Card)`
   border-radius: 8px;
-  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+
+  .ant-card-body {
+    padding: 20px;
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 24px;
+
+    .ant-card-body {
+      padding: 16px;
+    }
+  }
 `;
 
 export const SummaryItem = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
+
+  @media (max-width: 576px) {
+    margin-bottom: 10px;
+  }
 `;
 
-export const SummaryLabel = styled.span`
+export const SummaryLabel = styled.div`
+  font-size: 14px;
   color: #666;
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+  }
 `;
 
-export const SummaryValue = styled.span`
+export const SummaryValue = styled.div`
+  font-size: 14px;
   color: #333;
   font-weight: 500;
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+  }
 `;
 
 export const TotalPrice = styled.div`
-  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 16px;
   font-weight: 600;
-  color: #fd6b0a;
-  text-align: right;
-  margin-top: 16px;
+
+  @media (max-width: 576px) {
+    font-size: 14px;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
 `;
 
 export const ButtonsContainer = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 30px;
+
+  @media (max-width: 576px) {
+    margin-top: 24px;
+  }
 `;
 
 export const BackButton = styled(Button)`
-  &:hover,
-  &:focus {
-    color: #fd6b0a;
-    border-color: #fd6b0a;
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 20px;
+
+  @media (max-width: 576px) {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
   }
 `;
 
 export const NextButton = styled(Button)`
-  background-color: #fd6b0a;
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 24px;
+  background: #fd6b0a;
   border-color: #fd6b0a;
 
   &:hover,
   &:focus {
-    background-color: #e05c00;
-    border-color: #e05c00;
+    background: #e25f00;
+    border-color: #e25f00;
   }
 
-  &:disabled {
-    background-color: #f5f5f5;
-    border-color: #d9d9d9;
-    color: rgba(0, 0, 0, 0.25);
+  @media (max-width: 576px) {
+    height: 40px;
+    padding: 0 20px;
+    font-size: 14px;
   }
 `;

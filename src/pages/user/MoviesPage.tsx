@@ -137,6 +137,11 @@ const FilterContainer = styled(motion.div)`
   margin-bottom: 30px;
   border: 1px solid rgba(0, 191, 255, 0.3);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+  @media (max-width: 768px) {
+    padding: 15px;
+    border-radius: 10px;
+  }
 `;
 
 const FilterRow = styled.div`
@@ -147,6 +152,7 @@ const FilterRow = styled.div`
 
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 10px;
   }
 `;
 
@@ -156,12 +162,13 @@ const FilterItem = styled.div`
 
   @media (max-width: 768px) {
     width: 100%;
+    min-width: unset;
   }
 `;
 
 const MovieCard = styled(motion.div)`
   margin-bottom: 24px;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   height: 100%;
   background: rgba(22, 33, 62, 0.7);
@@ -178,6 +185,18 @@ const MovieCard = styled(motion.div)`
   .ant-card-cover {
     height: 380px;
     overflow: hidden;
+
+    @media (max-width: 1024px) {
+      height: 320px;
+    }
+
+    @media (max-width: 768px) {
+      height: 260px;
+    }
+
+    @media (max-width: 480px) {
+      height: 200px;
+    }
   }
 
   .ant-card-cover img {
@@ -194,203 +213,139 @@ const MovieCard = styled(motion.div)`
   .ant-card-body {
     background: linear-gradient(to top, #0f172a, #1a1a2e);
     padding: 16px;
+
+    @media (max-width: 480px) {
+      padding: 12px;
+    }
   }
 
   .ant-card-meta-title {
     color: white !important;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-size: 18px !important;
+    font-weight: 600 !important;
     white-space: normal !important;
-    line-height: 1.4;
-    height: 50px;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    line-height: 1.3 !important;
+    margin-bottom: 8px !important;
 
-  .ant-card-meta-description {
-    color: #ffffff !important;
+    @media (max-width: 480px) {
+      font-size: 16px !important;
+      -webkit-line-clamp: 1 !important;
+    }
   }
 `;
 
 const MovieMeta = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-`;
-
-const MovieInfo = styled.div`
-  color: #ccc;
-  font-size: 14px;
-  display: flex;
   align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
 
-  .anticon {
-    margin-right: 5px;
-    color: #00bfff;
+  @media (max-width: 480px) {
+    font-size: 12px;
   }
 `;
 
-const MovieTags = styled.div`
-  height: 70px;
-  margin-bottom: 15px;
-  min-height: 30px;
+const MovieInfo = styled.span`
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
 `;
 
-const GenreTag = styled(Tag)`
-  border-radius: 12px;
-  padding: 2px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  background: rgba(0, 191, 255, 0.15);
-  border: 1px solid rgba(0, 191, 255, 0.3);
-  color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+const MovieTags = styled.div`
+  height: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  min-height: 24px;
 
-  &:hover {
-    transform: translateY(-2px);
-    background: rgba(0, 191, 255, 0.25);
-    box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
+  @media (max-width: 480px) {
+    display: none;
+  }
+`;
+
+const GenreTag = styled(Tag)`
+  margin: 0;
+  font-size: 12px;
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+  border: none;
+  border-radius: 20px;
+  padding: 2px 8px;
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+    padding: 1px 6px;
   }
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
+  gap: 10px;
+
+  @media (max-width: 480px) {
+    gap: 6px;
+  }
 `;
 
 const DetailButton = styled(Button)`
-  background: transparent;
-  color: #00bfff;
-  border: 1px solid #00bfff;
-  border-radius: 20px;
   flex: 1;
-  margin-right: 8px;
-  transition: all 0.3s ease;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
 
   &:hover {
-    background: rgba(0, 191, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
     color: white;
-    border-color: #00bfff;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 191, 255, 0.2);
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    height: 32px;
+    padding: 0 8px;
   }
 `;
 
 const BookingButton = styled(Button)`
-  background: linear-gradient(90deg, #00bfff, #0077ff);
-  color: white;
-  border: none;
-  border-radius: 20px;
-  flex: 1;
-  transition: all 0.3s ease;
+  flex: 1.5;
+  height: 36px;
+  border-radius: 8px;
 
-  &:hover {
-    background: linear-gradient(90deg, #0099cc, #0066cc);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3);
-  }
-`;
-
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
-
-  .ant-pagination-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: transparent;
-
-    a {
-      color: white;
-    }
-  }
-
-  .ant-pagination-item-active {
-    background: #00bfff;
-    border-color: #00bfff;
-
-    a {
-      color: white;
-    }
-  }
-
-  .ant-pagination-prev button,
-  .ant-pagination-next button {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+  @media (max-width: 480px) {
+    font-size: 12px;
+    height: 32px;
+    padding: 0 8px;
   }
 `;
 
 const StyledInput = styled(Input)`
-  background: rgba(13, 20, 38, 0.8) !important;
-  border: 1px solid rgba(0, 191, 255, 0.3) !important;
-  border-radius: 8px !important;
-  color: white !important;
+  font-size: 16px;
+  border-radius: 8px;
 
-  .ant-input {
-    background: transparent !important;
-    color: white !important;
-  }
-
-  .ant-input-prefix {
-    color: #00bfff !important;
-  }
-
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
-
-  &:hover,
-  &:focus {
-    border-color: #00bfff !important;
-    box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2) !important;
+  @media (max-width: 480px) {
+    font-size: 14px;
   }
 `;
 
 const StyledSelect = styled(Select)`
+  font-size: 16px;
+
   .ant-select-selector {
-    background: rgba(13, 20, 38, 0.8) !important;
-    border: 1px solid rgba(0, 191, 255, 0.3) !important;
     border-radius: 8px !important;
   }
 
-  .ant-select-selection-placeholder,
-  .ant-select-selection-item {
-    color: white !important;
-  }
-
-  .ant-select-arrow {
-    color: #00bfff !important;
-  }
-
-  &:hover .ant-select-selector {
-    border-color: #00bfff !important;
-  }
-`;
-
-const FilterButton = styled(Button)`
-  background: rgba(0, 191, 255, 0.2) !important;
-  border: 1px solid rgba(0, 191, 255, 0.5) !important;
-  color: white !important;
-  border-radius: 8px !important;
-  height: 40px !important;
-
-  .anticon {
-    color: #00bfff !important;
-  }
-
-  &:hover {
-    background: rgba(0, 191, 255, 0.3) !important;
-    border-color: #00bfff !important;
-    color: white !important;
+  @media (max-width: 480px) {
+    font-size: 14px;
   }
 `;
 
@@ -398,7 +353,52 @@ const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 300px;
+  height: 400px;
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+
+  .ant-pagination-item {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 191, 255, 0.3);
+
+    &-active {
+      background-color: rgba(0, 191, 255, 0.2);
+      border-color: #00bfff;
+      a {
+        color: #00bfff;
+      }
+    }
+  }
+
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    border-radius: 8px;
+  }
+`;
+
+const FilterButton = styled(Button)`
+  height: 40px;
+  background: rgba(0, 191, 255, 0.1);
+  color: #00bfff;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  border-radius: 8px;
+  font-weight: 500;
+
+  &:hover {
+    background: rgba(0, 191, 255, 0.2);
+    border-color: rgba(0, 191, 255, 0.5);
+    color: #00bfff;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    height: 36px;
+  }
 `;
 
 // Cập nhật interface tại đầu file hoặc import từ movieSlice
@@ -616,11 +616,12 @@ const MoviesPage: React.FC = () => {
         >
           <Row gutter={[24, 24]}>
             {paginatedMovies.map((movie) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={movie.id}>
+              <Col xs={12} sm={12} md={8} lg={6} key={movie.id}>
                 <motion.div variants={itemVariants}>
                   <MovieCard
                     whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    className="modern-card"
                   >
                     <Card
                       hoverable
@@ -642,6 +643,7 @@ const MoviesPage: React.FC = () => {
                               {movie.genres &&
                                 movie.genres
                                   .filter((genre) => !genre.isDelete)
+                                  .slice(0, window.innerWidth <= 480 ? 2 : 3)
                                   .map((genre) => (
                                     <GenreTag key={genre.id}>
                                       {genre.name}
@@ -667,7 +669,7 @@ const MoviesPage: React.FC = () => {
                                   type="primary"
                                   onClick={() => handleBooking(movie.id)}
                                 >
-                                  Đặt vé trước
+                                  Đặt trước
                                 </BookingButton>
                               )}
                             </ButtonContainer>

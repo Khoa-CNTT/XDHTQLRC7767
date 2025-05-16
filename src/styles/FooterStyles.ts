@@ -13,12 +13,20 @@ export const FooterContent = styled.div`
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: 95%;
+  }
 `;
 
 export const SocialMediaContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 30px;
+
+  @media (max-width: 480px) {
+    margin-bottom: 20px;
+  }
 `;
 
 export const SocialIcon = styled.a`
@@ -36,6 +44,14 @@ export const SocialIcon = styled.a`
 
   &:hover {
     background-color: #00bfff;
+    color: white;
+  }
+
+  @media (max-width: 480px) {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    margin: 0 8px;
   }
 `;
 
@@ -43,11 +59,20 @@ export const FooterInfoContainer = styled.div`
   display: flex;
   justify-content: space-between;
   margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 30px;
+  }
 `;
 
 export const FooterColumn = styled.div`
   flex: 1;
   padding: 0 15px;
+
+  @media (max-width: 768px) {
+    padding: 0 5px;
+  }
 `;
 
 export const FooterLogo = styled.div`
@@ -73,9 +98,9 @@ export const FooterTitle = styled.h3`
   font-weight: bold;
   margin-bottom: 15px;
   color: white;
-  
+
   &:after {
-    content: '';
+    content: "";
     display: block;
     width: 40px;
     height: 3px;
@@ -113,4 +138,4 @@ export const ContactItem = styled.div`
 export const ContactIcon = styled.span`
   margin-right: 10px;
   color: white;
-`; 
+`;

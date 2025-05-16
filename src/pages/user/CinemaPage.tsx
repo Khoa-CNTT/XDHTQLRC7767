@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Tabs, Row, Col, Button, Modal, Spin, Pagination } from "antd";
+import { Tabs, Row, Col, Button, Modal, Spin, Pagination, Empty } from "antd";
 import { motion } from "framer-motion";
+import {
+  EnvironmentOutlined,
+  PhoneOutlined,
+  ProjectOutlined,
+} from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { getCinemasByLocationRequest } from "../../redux/slices/cinemaSlice";
 import { RootState } from "../../redux/store";
@@ -12,6 +17,10 @@ const PageContainer = styled.div`
   background: linear-gradient(to bottom, #1a1a2e, #16213e);
   padding: 40px 0;
   min-height: 100vh;
+
+  @media (max-width: 576px) {
+    padding: 30px 0;
+  }
 `;
 
 const ContentWrapper = styled.div`
@@ -20,6 +29,10 @@ const ContentWrapper = styled.div`
   margin: 0 auto;
 
   @media (max-width: 768px) {
+    width: 90%;
+  }
+
+  @media (max-width: 576px) {
     width: 95%;
   }
 `;
@@ -61,9 +74,33 @@ const PageTitle = styled(motion.div)`
   }
 
   @media (max-width: 768px) {
+    margin-bottom: 30px;
+    padding: 15px 0;
+
     h1 {
       font-size: 2.8rem;
       letter-spacing: 3px;
+    }
+
+    &:after {
+      width: 150px;
+      margin: 15px auto;
+    }
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 20px;
+    padding: 10px 0;
+
+    h1 {
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+    }
+
+    &:after {
+      width: 120px;
+      height: 3px;
+      margin: 10px auto;
     }
   }
 `;
@@ -99,77 +136,288 @@ const StyledTabs = styled(Tabs)`
     background: #00bfff !important;
     height: 3px !important;
   }
+
+  @media (max-width: 768px) {
+    .ant-tabs-tab {
+      font-size: 15px;
+      padding: 8px 16px !important;
+      margin: 0 6px !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .ant-tabs-nav {
+      margin-bottom: 20px;
+    }
+
+    .ant-tabs-tab {
+      font-size: 14px;
+      padding: 6px 12px !important;
+      margin: 0 4px !important;
+    }
+  }
 `;
 
 const CinemaCard = styled(motion.div)`
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
     transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 191, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 16px;
+    border-radius: 12px;
+  }
+`;
+
+const CinemaImageContainer = styled.div`
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    height: 180px;
+  }
+
+  @media (max-width: 576px) {
+    height: 160px;
   }
 `;
 
 const CinemaImage = styled.img`
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 15px;
+  transition: transform 0.5s ease;
+
+  ${CinemaCard}:hover & {
+    transform: scale(1.05);
+  }
+`;
+
+const CinemaContent = styled.div`
+  padding: 20px;
+
+  @media (max-width: 576px) {
+    padding: 15px;
+  }
 `;
 
 const CinemaName = styled.h3`
   color: white;
   font-size: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+
+  @media (max-width: 576px) {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
 `;
 
-const CinemaInfo = styled.p`
-  color: #ffffff80;
-  margin-bottom: 5px;
+const CinemaInfo = styled.div`
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 10px;
   font-size: 14px;
+
+  svg {
+    color: #00bfff;
+    margin-right: 8px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+    margin-bottom: 8px;
+
+    svg {
+      font-size: 14px;
+      margin-right: 6px;
+    }
+  }
 `;
 
 const ViewButton = styled(Button)`
-  background: #00bfff;
+  background: linear-gradient(135deg, #00bfff, #0070ff);
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 8px;
   margin-top: 15px;
   width: 100%;
+  height: 40px;
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+  transition: all 0.3s ease;
 
   &:hover {
-    background: #0099cc;
+    background: linear-gradient(135deg, #0080ff, #0050ff);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+  }
+
+  @media (max-width: 576px) {
+    margin-top: 12px;
+    height: 36px;
+    font-size: 14px;
   }
 `;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
     background: #1a1a2e;
-    border-radius: 12px;
+    border-radius: 16px;
+    overflow: hidden;
   }
 
   .ant-modal-header {
     background: transparent;
-    border-bottom: 1px solid #ffffff20;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 24px;
   }
 
   .ant-modal-title {
     color: white;
+    font-size: 20px;
+    font-weight: 600;
   }
 
   .ant-modal-body {
-    color: #ffffff80;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 20px 24px;
   }
 
   .ant-modal-footer {
-    border-top: 1px solid #ffffff20;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 24px;
+  }
+
+  .ant-btn-primary {
+    background: linear-gradient(135deg, #00bfff, #0070ff);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+  }
+
+  @media (max-width: 576px) {
+    .ant-modal-title {
+      font-size: 18px;
+    }
+
+    .ant-modal-body {
+      padding: 16px 20px;
+    }
+  }
+`;
+
+const ModalImage = styled.img`
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  @media (max-width: 576px) {
+    height: 200px;
+    margin-bottom: 16px;
+  }
+`;
+
+const ModalInfoItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  font-size: 15px;
+
+  svg {
+    color: #00bfff;
+    margin-right: 10px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+`;
+
+const FacilitiesList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+`;
+
+const FacilityTag = styled.div`
+  background: rgba(0, 191, 255, 0.1);
+  color: #00bfff;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+
+  @media (max-width: 576px) {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+
+  .ant-pagination-item {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 191, 255, 0.3);
+
+    &-active {
+      background-color: rgba(0, 191, 255, 0.2);
+      border-color: #00bfff;
+      a {
+        color: #00bfff;
+      }
+    }
+  }
+
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    border-radius: 8px;
+  }
+
+  @media (max-width: 576px) {
+    margin-top: 30px;
+  }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+
+  .ant-spin-dot-item {
+    background-color: #00bfff;
+  }
+`;
+
+const EmptyContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+
+  .ant-empty-description {
+    color: rgba(255, 255, 255, 0.7);
   }
 `;
 
@@ -200,13 +448,11 @@ const CinemaPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("danang");
 
   useEffect(() => {
-    fetchCinemas(activeTab, 1);
-  }, [activeTab, dispatch]);
+    fetchCinemas(getLocationFromTabKey(activeTab), 1);
+  }, [activeTab]);
 
   const fetchCinemas = (location: string, page: number) => {
-    const locationParam = getLocationFromTabKey(location);
-    dispatch(getCinemasByLocationRequest({ location: locationParam, page }));
-    console.log("Fetching cinemas for location:", locationParam, "page:", page);
+    dispatch(getCinemasByLocationRequest({ location, page }));
   };
 
   const handleCinemaClick = (cinema: Cinema) => {
@@ -219,17 +465,74 @@ const CinemaPage: React.FC = () => {
   };
 
   const handlePageChange = (page: number) => {
-    fetchCinemas(activeTab, page);
+    fetchCinemas(getLocationFromTabKey(activeTab), page);
   };
 
-  // Mapping of tab keys to location values for API
   const getLocationFromTabKey = (tabKey: string): string => {
-    const locationMap: { [key: string]: string } = {
-      hanoi: "Hà Nội",
-      danang: "Đà Nẵng",
-      hcmc: "TP.HCM",
-    };
-    return locationMap[tabKey] || tabKey;
+    switch (tabKey) {
+      case "danang":
+        return "Đà Nẵng";
+      case "hanoi":
+        return "Hà Nội";
+      case "hcm":
+        return "Hồ Chí Minh";
+      default:
+        return "Đà Nẵng";
+    }
+  };
+
+  const renderCinemas = () => {
+    if (loading) {
+      return (
+        <LoadingContainer>
+          <Spin size="large" />
+        </LoadingContainer>
+      );
+    }
+
+    if (!cinemas || cinemas.length === 0) {
+      return (
+        <EmptyContainer>
+          <Empty description="Không tìm thấy rạp chiếu phim ở khu vực này" />
+        </EmptyContainer>
+      );
+    }
+
+    return (
+      <Row gutter={[24, 24]}>
+        {cinemas.map((cinema) => (
+          <Col xs={24} sm={12} md={8} key={cinema.id}>
+            <CinemaCard
+              whileHover={{ y: -8 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="modern-card"
+            >
+              <CinemaImageContainer>
+                <CinemaImage src={cinema.image} alt={cinema.name} />
+              </CinemaImageContainer>
+              <CinemaContent>
+                <CinemaName>{cinema.name}</CinemaName>
+                <CinemaInfo>
+                  <EnvironmentOutlined />
+                  {cinema.address}
+                </CinemaInfo>
+                <CinemaInfo>
+                  <PhoneOutlined />
+                  {cinema.phone}
+                </CinemaInfo>
+                <CinemaInfo>
+                  <ProjectOutlined />
+                  {cinema.screens} phòng chiếu
+                </CinemaInfo>
+                <ViewButton onClick={() => handleCinemaClick(cinema)}>
+                  Xem chi tiết
+                </ViewButton>
+              </CinemaContent>
+            </CinemaCard>
+          </Col>
+        ))}
+      </Row>
+    );
   };
 
   return (
@@ -245,150 +548,74 @@ const CinemaPage: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
           >
-            <h1>HỆ THỐNG RẠP CHIẾU PHIM</h1>
+            <h1>HỆ THỐNG RẠP</h1>
           </PageTitle>
+
           <StyledTabs
             defaultActiveKey="danang"
-            centered
             onChange={handleTabChange}
+            centered
           >
-            <TabPane tab="HÀ NỘI" key="hanoi">
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "50px" }}>
-                  <Spin size="large" />
-                </div>
-              ) : (
-                <>
-                  <Row gutter={[24, 24]}>
-                    {cinemas.map((cinema) => (
-                      <Col xs={24} sm={12} md={8} key={cinema.id}>
-                        <CinemaCard
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => handleCinemaClick(cinema)}
-                        >
-                          <CinemaImage src={cinema.image} alt={cinema.name} />
-                          <CinemaName>{cinema.name}</CinemaName>
-                          <CinemaInfo>{cinema.address}</CinemaInfo>
-                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                          <ViewButton>XEM CHI TIẾT</ViewButton>
-                        </CinemaCard>
-                      </Col>
-                    ))}
-                  </Row>
-
-                  {totalPages > 1 && (
-                    <div style={{ textAlign: "center", marginTop: "30px" }}>
-                      <Pagination
-                        current={currentPage}
-                        total={totalPages * 10}
-                        onChange={handlePageChange}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-            </TabPane>
-
             <TabPane tab="ĐÀ NẴNG" key="danang">
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "50px" }}>
-                  <Spin size="large" />
-                </div>
-              ) : (
-                <>
-                  <Row gutter={[24, 24]}>
-                    {cinemas.map((cinema) => (
-                      <Col xs={24} sm={12} md={8} key={cinema.id}>
-                        <CinemaCard
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => handleCinemaClick(cinema)}
-                        >
-                          <CinemaImage src={cinema.image} alt={cinema.name} />
-                          <CinemaName>{cinema.name}</CinemaName>
-                          <CinemaInfo>{cinema.address}</CinemaInfo>
-                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                          <ViewButton>XEM CHI TIẾT</ViewButton>
-                        </CinemaCard>
-                      </Col>
-                    ))}
-                  </Row>
-
-                  {totalPages > 1 && (
-                    <div style={{ textAlign: "center", marginTop: "30px" }}>
-                      <Pagination
-                        current={currentPage}
-                        total={totalPages * 10}
-                        onChange={handlePageChange}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
+              {renderCinemas()}
             </TabPane>
-
-            <TabPane tab="TP. HỒ CHÍ MINH" key="hcmc">
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "50px" }}>
-                  <Spin size="large" />
-                </div>
-              ) : (
-                <>
-                  <Row gutter={[24, 24]}>
-                    {cinemas.map((cinema) => (
-                      <Col xs={24} sm={12} md={8} key={cinema.id}>
-                        <CinemaCard
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => handleCinemaClick(cinema)}
-                        >
-                          <CinemaImage src={cinema.image} alt={cinema.name} />
-                          <CinemaName>{cinema.name}</CinemaName>
-                          <CinemaInfo>{cinema.address}</CinemaInfo>
-                          <CinemaInfo>Hotline: {cinema.phone}</CinemaInfo>
-                          <ViewButton>XEM CHI TIẾT</ViewButton>
-                        </CinemaCard>
-                      </Col>
-                    ))}
-                  </Row>
-
-                  {totalPages > 1 && (
-                    <div style={{ textAlign: "center", marginTop: "30px" }}>
-                      <Pagination
-                        current={currentPage}
-                        total={totalPages * 10}
-                        onChange={handlePageChange}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
+            <TabPane tab="HÀ NỘI" key="hanoi">
+              {renderCinemas()}
+            </TabPane>
+            <TabPane tab="HỒ CHÍ MINH" key="hcm">
+              {renderCinemas()}
             </TabPane>
           </StyledTabs>
 
-          <StyledModal
-            title={selectedCinema?.name}
-            visible={modalVisible}
-            onCancel={() => setModalVisible(false)}
-            footer={null}
-          >
-            {selectedCinema && (
-              <>
-                <CinemaImage
-                  src={selectedCinema.image}
-                  alt={selectedCinema.name}
-                />
-                <CinemaInfo>Địa chỉ: {selectedCinema.address}</CinemaInfo>
-                <CinemaInfo>Hotline: {selectedCinema.phone}</CinemaInfo>
-                <CinemaInfo>
-                  Số phòng chiếu: {selectedCinema.screens}
-                </CinemaInfo>
-                <CinemaInfo>
-                  Tiện ích: {selectedCinema.facilities.join(", ")}
-                </CinemaInfo>
-              </>
-            )}
-          </StyledModal>
+          {cinemas && cinemas.length > 0 && (
+            <PaginationContainer>
+              <Pagination
+                current={currentPage}
+                total={totalPages * 10}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+              />
+            </PaginationContainer>
+          )}
         </motion.div>
       </ContentWrapper>
+
+      <StyledModal
+        title={selectedCinema?.name}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setModalVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {selectedCinema && (
+          <>
+            <ModalImage src={selectedCinema.image} alt={selectedCinema.name} />
+            <ModalInfoItem>
+              <EnvironmentOutlined />
+              <div>{selectedCinema.address}</div>
+            </ModalInfoItem>
+            <ModalInfoItem>
+              <PhoneOutlined />
+              <div>{selectedCinema.phone}</div>
+            </ModalInfoItem>
+            <ModalInfoItem>
+              <ProjectOutlined />
+              <div>{selectedCinema.screens} phòng chiếu</div>
+            </ModalInfoItem>
+            <h4 style={{ color: "white", marginTop: 20, marginBottom: 10 }}>
+              Tiện ích
+            </h4>
+            <FacilitiesList>
+              {selectedCinema.facilities.map((facility, index) => (
+                <FacilityTag key={index}>{facility}</FacilityTag>
+              ))}
+            </FacilitiesList>
+          </>
+        )}
+      </StyledModal>
     </PageContainer>
   );
 };

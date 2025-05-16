@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, Divider, message, Card, Typography } from "antd";
 import {
   UserOutlined,
@@ -11,7 +11,7 @@ import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserInfoRequest, loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { authService } from "../../services/authService";
 
 const { Title, Text } = Typography;
@@ -79,8 +79,17 @@ const StyledCard = styled(Card)`
   }
 
   @media (max-width: 576px) {
+    max-width: 100%;
+    margin: 0 10px;
+    animation: none;
+
     .ant-card-body {
-      padding: 30px 20px;
+      padding: 25px 15px;
+    }
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
   }
 `;
@@ -106,6 +115,11 @@ const GlowingButton = styled(Button)`
   &:active {
     transform: translateY(1px);
   }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
+  }
 `;
 
 const StyledInput = styled(Input)`
@@ -119,6 +133,11 @@ const StyledInput = styled(Input)`
   &:focus {
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
+  }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
   }
 `;
 
@@ -134,12 +153,27 @@ const StyledPasswordInput = styled(Input.Password)`
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
   }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
+  }
 `;
 
 const StyledDivider = styled(Divider)`
   .ant-divider-inner-text {
     font-weight: 500;
     color: rgba(0, 0, 0, 0.5);
+  }
+`;
+
+const GoogleLoginContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+
+  > div {
+    width: 100% !important;
   }
 `;
 
@@ -172,12 +206,12 @@ const LoginPage: React.FC = () => {
     }
   }, [error]);
 
-  const handleGoogleLogin = async (credentialResponse: any) => {
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
     try {
       await authService.loginWithGoogle(credentialResponse);
       dispatch(getUserInfoRequest());
       navigate("/");
-    } catch (error) {
+    } catch {
       message.error("Đăng nhập thất bại. Vui lòng thử lại!");
     }
   };
@@ -257,12 +291,12 @@ const LoginPage: React.FC = () => {
         <StyledDivider plain>
           <Text type="secondary">Hoặc đăng nhập với</Text>
         </StyledDivider>
-        <div className="">
+        <GoogleLoginContainer>
           <GoogleLogin
             onSuccess={handleGoogleLogin}
             onError={() => console.log("Login Failed")}
           />
-        </div>
+        </GoogleLoginContainer>
 
         <div style={{ textAlign: "center" }}>
           <Text type="secondary">

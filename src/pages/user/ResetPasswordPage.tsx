@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import {
   LockOutlined,
@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { resetPasswordStart } from "../../redux/slices/authSlice";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 // Hiệu ứng gradient background
 const gradientAnimation = keyframes`
@@ -90,8 +90,17 @@ const StyledCard = styled(Card)`
   }
 
   @media (max-width: 576px) {
+    max-width: 100%;
+    margin: 0 10px;
+    animation: none;
+
     .ant-card-body {
-      padding: 30px 20px;
+      padding: 25px 15px;
+    }
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
   }
 `;
@@ -107,6 +116,11 @@ const StyledPasswordInput = styled(Input.Password)`
   &:focus {
     border-color: #ff416c;
     box-shadow: 0 0 0 2px rgba(255, 65, 108, 0.2);
+  }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
   }
 `;
 
@@ -130,6 +144,11 @@ const GlowingButton = styled(Button)`
 
   &:active {
     transform: translateY(1px);
+  }
+
+  @media (max-width: 576px) {
+    height: 44px;
+    font-size: 14px;
   }
 `;
 

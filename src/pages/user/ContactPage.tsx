@@ -25,6 +25,11 @@ const ContentWrapper = styled.div`
     width: 90%;
     padding: 30px 0;
   }
+
+  @media (max-width: 576px) {
+    width: 95%;
+    padding: 20px 0;
+  }
 `;
 
 const PageTitle = styled.h1`
@@ -32,6 +37,12 @@ const PageTitle = styled.h1`
   margin-bottom: 24px;
   color: #333;
   font-weight: 600;
+
+  @media (max-width: 576px) {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
 `;
 
 const ContactCard = styled(Card)`
@@ -49,6 +60,18 @@ const ContactCard = styled(Card)`
     font-size: 18px;
     font-weight: 600;
   }
+
+  @media (max-width: 576px) {
+    margin-bottom: 16px;
+
+    .ant-card-head-title {
+      font-size: 16px;
+    }
+
+    .ant-card-body {
+      padding: 16px;
+    }
+  }
 `;
 
 const ContactForm = styled(Form)`
@@ -59,6 +82,16 @@ const ContactForm = styled(Form)`
   .ant-input,
   .ant-input-textarea {
     border-radius: 4px;
+  }
+
+  @media (max-width: 576px) {
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+
+    .ant-form-item-label {
+      padding-bottom: 4px;
+    }
   }
 `;
 
@@ -73,6 +106,11 @@ const SubmitButton = styled(Button)`
     background-color: #e05c00;
     border-color: #e05c00;
   }
+
+  @media (max-width: 576px) {
+    height: 38px;
+    font-size: 14px;
+  }
 `;
 
 const ContactInfoItem = styled.div`
@@ -83,6 +121,10 @@ const ContactInfoItem = styled.div`
   &:last-child {
     margin-bottom: 0;
   }
+
+  @media (max-width: 576px) {
+    margin-bottom: 12px;
+  }
 `;
 
 const ContactIcon = styled.div`
@@ -90,6 +132,11 @@ const ContactIcon = styled.div`
   color: #fd6b0a;
   margin-right: 12px;
   margin-top: 2px;
+
+  @media (max-width: 576px) {
+    font-size: 16px;
+    margin-right: 10px;
+  }
 `;
 
 const ContactText = styled.div`
@@ -106,6 +153,16 @@ const ContactText = styled.div`
     margin: 0;
     color: #666;
     line-height: 1.5;
+  }
+
+  @media (max-width: 576px) {
+    h4 {
+      font-size: 15px;
+    }
+
+    p {
+      font-size: 14px;
+    }
   }
 `;
 
@@ -125,13 +182,18 @@ const MapContainer = styled.div`
   @media (max-width: 768px) {
     height: 300px;
   }
+
+  @media (max-width: 576px) {
+    height: 250px;
+    margin-bottom: 16px;
+  }
 `;
 
 const ContactPage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { name: string; email: string; phone: string; subject: string; message: string }) => {
     setLoading(true);
 
     // Giả lập gửi form
@@ -309,7 +371,6 @@ const ContactPage: React.FC = () => {
           </Col>
         </Row>
       </ContentWrapper>
-
     </PageContainer>
   );
 };

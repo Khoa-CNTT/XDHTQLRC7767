@@ -26,7 +26,7 @@ const slideInFromRight = keyframes`
 // Styled Components
 export const StyledHeader = styled.div`
   width: 100%;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 `;
 
 export const TopBar = styled.div`
@@ -44,12 +44,12 @@ export const TopBarContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   @media (min-width: 768px) and (max-width: 1200px) {
     width: 90%;
     font-size: 14px;
   }
-  
+
   @media (max-width: 768px) {
     width: 95%;
     font-size: 14px;
@@ -63,10 +63,9 @@ export const TopBarLeft = styled.div`
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  
+
   @media (max-width: 576px) {
-    gap: 10px;
-    font-size: 13px;
+    display: none;
   }
 `;
 
@@ -77,14 +76,14 @@ export const TopBarRight = styled.div`
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  
+
   a {
     transition: color 0.3s ease;
     &:hover {
       color: #00bfff !important;
     }
   }
-  
+
   @media (max-width: 576px) {
     gap: 10px;
     font-size: 13px;
@@ -108,11 +107,11 @@ export const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   @media (min-width: 768px) and (max-width: 1200px) {
     width: 90%;
   }
-  
+
   @media (max-width: 768px) {
     width: 95%;
   }
@@ -131,7 +130,7 @@ export const Logo = styled.div`
   padding: 5px 10px;
   border-radius: 4px;
   transition: background-color 0.3s;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
@@ -142,15 +141,15 @@ export const LogoText = styled(Text)`
   font-size: 24px;
   font-weight: bold;
   letter-spacing: 1px;
-  
+
   span {
     color: #00bfff;
   }
-  
+
   @media (min-width: 768px) and (max-width: 1200px) {
     font-size: 20px;
   }
-  
+
   @media (max-width: 768px) {
     font-size: 20px;
   }
@@ -167,7 +166,7 @@ export const MainNav = styled.div`
   flex: 1;
   display: flex;
   justify-content: center;
-  
+
   @media (max-width: 768px) {
     display: none;
   }
@@ -185,7 +184,7 @@ export const NavMenu = styled(Menu)`
   display: flex;
   justify-content: center;
   width: 100%;
-  
+
   &&& {
     .ant-menu-item {
       color: white;
@@ -196,30 +195,30 @@ export const NavMenu = styled(Menu)`
       padding: 0 25px;
       margin: 0 5px;
       position: relative;
-      
+
       a {
         color: white !important;
         display: block;
       }
-      
+
       &:hover {
         color: #00bfff !important;
         background: transparent !important;
-        
+
         a {
           color: #00bfff !important;
         }
       }
-      
+
       &.ant-menu-item-selected {
         color: #00bfff !important;
         background: transparent !important;
         font-weight: 600;
-        
+
         a {
           color: #00bfff !important;
         }
-        
+
         &::after {
           border-bottom: 2px solid #00bfff !important;
         }
@@ -247,7 +246,7 @@ export const NavMenu = styled(Menu)`
 export const UserSection = styled.div`
   display: flex;
   align-items: center;
-  
+
   @media (max-width: 768px) {
     display: none;
   }
@@ -264,9 +263,13 @@ export const MobileMenuButton = styled(Button)`
   border: none;
   font-size: 24px;
   color: white;
-  
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   @media (max-width: 768px) {
-    display: block;
+    display: flex;
   }
 `;
 
@@ -278,7 +281,7 @@ export const MobileMenu = styled(Drawer)`
   .ant-drawer-header {
     background: #1a1a2e;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    
+
     .ant-drawer-title {
       color: #00bfff;
       font-size: 18px;
@@ -321,7 +324,7 @@ export const MobileMenu = styled(Drawer)`
         &:hover {
           color: #00bfff !important;
           background: rgba(0, 191, 255, 0.1);
-          
+
           a {
             color: #00bfff !important;
           }
@@ -331,7 +334,7 @@ export const MobileMenu = styled(Drawer)`
           color: #00bfff !important;
           background: rgba(0, 191, 255, 0.15);
           font-weight: 600;
-          
+
           a {
             color: #00bfff !important;
           }
@@ -356,7 +359,7 @@ export const SearchBarContent = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   @media (max-width: 768px) {
     width: 95%;
   }
@@ -423,12 +426,16 @@ export const BannerContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (max-width: 576px) {
+    display: none;
+  }
 `;
 
 export const BannerContent = styled.div`
   width: 80%;
   max-width: 1200px;
-  
+
   @media (max-width: 768px) {
     width: 95%;
   }
@@ -443,11 +450,11 @@ export const MainBanner = styled.div`
   overflow: hidden;
   border-radius: 8px;
   background-color: #000;
-  
+
   @media (max-width: 768px) {
     height: 350px;
   }
-  
+
   @media (max-width: 576px) {
     height: 250px;
   }
@@ -461,19 +468,19 @@ export const BannerImage = styled.img`
   height: 100%;
   object-fit: fill;
   object-position: center;
-  
+
   &.current {
     z-index: 1;
   }
-  
+
   &.next {
     z-index: 2;
   }
-  
+
   &.sliding-out {
     animation: ${slideOutToLeft} 2s cubic-bezier(0.33, 1, 0.68, 1) forwards;
   }
-  
+
   &.sliding-in {
     animation: ${slideInFromRight} 2s cubic-bezier(0.33, 1, 0.68, 1) forwards;
   }
@@ -515,7 +522,7 @@ export const SmallThumbnailsContainer = styled.div`
   justify-content: center;
   margin-top: 20px;
   width: 100%;
-  
+
   @media (max-width: 576px) {
     display: none;
   }
