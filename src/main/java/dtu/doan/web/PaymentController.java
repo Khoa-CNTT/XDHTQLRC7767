@@ -21,8 +21,8 @@ public class PaymentController {
     @Autowired
     PaymentService paymentService;
 
-    @GetMapping("")
-    public ResponseEntity<Page<Payment>> getPageOfPayment(@RequestParam(defaultValue = "") int page) {
+    @GetMapping()
+    public ResponseEntity<Page<Payment>> getPageOfPayment(@RequestParam(value = "page", defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, 5, Sort.by("id").descending());
         Page<Payment> paymentPage = paymentService.getPageOfPayment(pageable);
         return ResponseEntity.ok(paymentPage);
