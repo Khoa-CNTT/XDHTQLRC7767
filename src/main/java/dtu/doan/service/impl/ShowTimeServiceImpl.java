@@ -79,10 +79,11 @@ public class ShowTimeServiceImpl implements ShowTimeService {
 
         int duration = movie.getDuration();
         LocalTime endTime = showListDTO.getStartTime().plusMinutes(duration);
-        List<ShowTime> showTimesCheck = showTimeRepository.findShowTimesByDateAndStartTimeBetweenAndRoom(
+        List<ShowTime> showTimesCheck = showTimeRepository.findConflictingShowTimesAcrossCinemaAndRoom(
                 showListDTO.getShowDate(),
                 showListDTO.getStartTime(),
                 endTime,
+                room.getCinema().getId(),
                 room.getId()
         );
 
