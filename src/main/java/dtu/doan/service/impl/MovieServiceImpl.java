@@ -61,6 +61,7 @@ public class MovieServiceImpl implements MovieService {
         movieEntity.setContent(movie.getContent());
         movieEntity.setDelete(false);
         movieEntity.setBackdrop(movie.getBackdrop());
+        movieEntity.setReleaseDate(movie.getReleaseDate());
         Movie savedMovie = repository.save(movieEntity);
 
         if (movie.getGenreIds() != null && !movie.getGenreIds().isEmpty()) {
@@ -98,6 +99,7 @@ public class MovieServiceImpl implements MovieService {
         savedMovieResponse.setContent(savedMovie.getContent());
         savedMovieResponse.setMovieGenres(genreRepository.getGenreByMovieId(savedMovie.getId()));
         savedMovieResponse.setBackdrop(savedMovie.getBackdrop());
+        savedMovieResponse.setReleaseDate(savedMovie.getReleaseDate());
         return savedMovieResponse;
 
     }
@@ -134,7 +136,7 @@ public class MovieServiceImpl implements MovieService {
             movieResponseDTO.setBackdrop(movie.getBackdrop());
             List<Genre> genres =  genreRepository.getGenreByMovieId(movie.getId());
             movieResponseDTO.setMovieGenres(genres);
-
+            movieResponseDTO.setReleaseDate(movie.getReleaseDate());
             return movieResponseDTO;
         }
         return null;
