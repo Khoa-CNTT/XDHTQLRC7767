@@ -19,7 +19,6 @@ import java.util.*;
 
 import dtu.doan.model.ShowTime;
 
-import java.util.Date;
 import java.util.List;
 @Transactional
 @Service
@@ -44,7 +43,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     }
 
     @Override
-    public List<ShowTime> searchShowTimes(String movieName, String roomName, Date date) {
+    public List<ShowTime> searchShowTimes(String movieName, String roomName, LocalDate date) {
         return showTimeRepository.searchShowTimes(movieName,roomName,date);
     }
 
