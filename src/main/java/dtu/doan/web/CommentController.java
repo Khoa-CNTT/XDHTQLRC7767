@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -81,6 +82,13 @@ public class CommentController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+
+    @GetMapping("/sentimentStatistics")
+    public ResponseEntity<Map<String, Integer>> getSentimentStatisticsByMovie(@RequestParam Long movieId) {
+        Map<String, Integer> sentimentStats = service.getSentimentStatisticsByMovie(movieId);
+        return ResponseEntity.ok(sentimentStats);
     }
 
 
