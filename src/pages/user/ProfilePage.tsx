@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Tabs } from "antd";
+import { Layout, Tabs, Button } from "antd";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import UserProfile from "../../components/profile/UserProfile";
@@ -116,6 +116,25 @@ const StyledTabs = styled(Tabs)`
     .ant-tabs-tab-active {
       background-color: rgba(253, 107, 10, 0.1);
     }
+  }
+`;
+
+export const MainNav = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+export const MobileMenuButton = styled(Button)`
+  display: none;
+  /* ... các style khác ... */
+
+  @media (max-width: 768px) {
+    display: flex;
   }
 `;
 

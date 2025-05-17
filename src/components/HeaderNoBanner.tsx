@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Typography, Avatar, Dropdown } from "antd";
+import { Menu, Avatar, Dropdown } from "antd";
 import {
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined,
   SearchOutlined,
   MenuOutlined,
 } from "@ant-design/icons";
@@ -37,8 +36,6 @@ import {
   SearchButton,
 } from "../styles/HeaderStyles";
 
-const { Text } = Typography;
-
 const HeaderNoBanner: React.FC = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector(
@@ -47,6 +44,20 @@ const HeaderNoBanner: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Theo dõi thay đổi kích thước màn hình
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth > 768) {
+        setMobileMenuVisible(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Lấy thông tin user khi component mount và khi isAuthenticated thay đổi
 
@@ -159,6 +170,7 @@ const HeaderNoBanner: React.FC = () => {
           <MobileMenuButton
             icon={<MenuOutlined />}
             onClick={() => setMobileMenuVisible(true)}
+            style={{ display: windowWidth <= 768 ? "flex" : "none" }}
           />
 
           <MobileMenu
@@ -167,11 +179,15 @@ const HeaderNoBanner: React.FC = () => {
             onClose={() => setMobileMenuVisible(false)}
             visible={mobileMenuVisible}
             width={250}
+            zIndex={1001}
+            style={{
+              display: windowWidth <= 768 ? "block" : "none",
+            }}
           >
             <Menu mode="vertical" selectedKeys={[getActiveKey()]}>
               {menuItems.map((item) => (
                 <Menu.Item
-                  style={{ color: "#fff" }}
+                  style={{ color: "#e0e0e0" }}
                   key={item.key}
                   onClick={() => {
                     navigate(item.link);
@@ -185,7 +201,7 @@ const HeaderNoBanner: React.FC = () => {
                 <>
                   <Menu.Divider />
                   <Menu.Item
-                    style={{ color: "#fff" }}
+                    style={{ color: "#e0e0e0" }}
                     key="profile"
                     onClick={() => {
                       navigate("/profile");
@@ -195,7 +211,7 @@ const HeaderNoBanner: React.FC = () => {
                     Quản lý tài khoản
                   </Menu.Item>
                   <Menu.Item
-                    style={{ color: "#fff" }}
+                    style={{ color: "#e0e0e0" }}
                     key="logout"
                     onClick={() => {
                       handleLogout();
@@ -209,6 +225,7 @@ const HeaderNoBanner: React.FC = () => {
                 <>
                   <Menu.Divider />
                   <Menu.Item
+                    style={{ color: "#e0e0e0" }}
                     key="login"
                     onClick={() => {
                       navigate("/login");
@@ -218,6 +235,7 @@ const HeaderNoBanner: React.FC = () => {
                     Đăng nhập
                   </Menu.Item>
                   <Menu.Item
+                    style={{ color: "#e0e0e0" }}
                     key="register"
                     onClick={() => {
                       navigate("/register");

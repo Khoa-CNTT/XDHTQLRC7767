@@ -58,8 +58,20 @@ const Header: React.FC = () => {
   const [nextSlide, setNextSlide] = useState(1);
   const [sliding, setSliding] = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Add useEffect for automatic slideshow with smooth animation
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      if (window.innerWidth > 768) {
+        setMobileMenuVisible(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       handleNextSlide();
@@ -231,6 +243,7 @@ const Header: React.FC = () => {
             <MobileMenuButton
               type="text"
               onClick={() => setMobileMenuVisible(true)}
+              style={{ display: windowWidth <= 768 ? "flex" : "none" }}
             >
               <MenuOutlined />
             </MobileMenuButton>
@@ -241,6 +254,10 @@ const Header: React.FC = () => {
               closable={true}
               onClose={() => setMobileMenuVisible(false)}
               open={mobileMenuVisible}
+              zIndex={1001}
+              style={{
+                display: windowWidth <= 768 ? "block" : "none",
+              }}
             >
               <Menu
                 mode="vertical"
@@ -249,7 +266,7 @@ const Header: React.FC = () => {
               >
                 {menuItems.map((item) => (
                   <Menu.Item
-                    style={{ color: "#fff" }}
+                    style={{ color: "#e0e0e0" }}
                     key={item.key}
                     onClick={() => setMobileMenuVisible(false)}
                   >
@@ -257,7 +274,7 @@ const Header: React.FC = () => {
                   </Menu.Item>
                 ))}
                 <Menu.Item
-                  style={{ color: "#fff" }}
+                  style={{ color: "#e0e0e0" }}
                   key="profile"
                   onClick={() => {
                     navigate("/profile");
@@ -267,7 +284,7 @@ const Header: React.FC = () => {
                   Quản lý tài khoản
                 </Menu.Item>
                 <Menu.Item
-                  style={{ color: "#fff" }}
+                  style={{ color: "#e0e0e0" }}
                   key="logout"
                   onClick={() => {
                     handleLogout();

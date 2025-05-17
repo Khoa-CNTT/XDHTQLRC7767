@@ -264,7 +264,6 @@ export const MobileMenuButton = styled(Button)`
   font-size: 24px;
   color: white;
   height: 100%;
-  display: flex;
   align-items: center;
   justify-content: center;
 
@@ -274,13 +273,19 @@ export const MobileMenuButton = styled(Button)`
 `;
 
 export const MobileMenu = styled(Drawer)`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+
   .ant-drawer-content-wrapper {
     width: 250px !important;
   }
 
   .ant-drawer-header {
-    background: #1a1a2e;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #121826;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
     .ant-drawer-title {
       color: #00bfff;
@@ -298,7 +303,7 @@ export const MobileMenu = styled(Drawer)`
 
   .ant-drawer-body {
     padding: 0;
-    background: #1a1a2e;
+    background: #121826;
 
     .ant-menu {
       background: transparent;
@@ -314,16 +319,16 @@ export const MobileMenu = styled(Drawer)`
         font-weight: 500;
         letter-spacing: 0.5px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: white !important;
+        color: #e0e0e0 !important;
 
         a {
-          color: white !important;
+          color: #e0e0e0 !important;
           text-decoration: none;
         }
 
         &:hover {
           color: #00bfff !important;
-          background: rgba(0, 191, 255, 0.1);
+          background: rgba(0, 191, 255, 0.05);
 
           a {
             color: #00bfff !important;
@@ -332,7 +337,7 @@ export const MobileMenu = styled(Drawer)`
 
         &.ant-menu-item-selected {
           color: #00bfff !important;
-          background: rgba(0, 191, 255, 0.15);
+          background: rgba(0, 191, 255, 0.1);
           font-weight: 600;
 
           a {
