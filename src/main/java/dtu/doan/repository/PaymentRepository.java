@@ -14,11 +14,18 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<Promotion, Long> {
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Payment save(Payment payment);
 
     @Query(value = "select * from payment", nativeQuery = true)
     Page<Payment> getPageOfPayment(Pageable pageable);
+    @Query(value = """
+            SELECT p
+            FROM Payment p
+            WHERE p.status = 'SUCCESS'
+            ORDER BY p.date DESC
+            """)
+    List<Payment> findAll();
 
     @Query(value = """
             SELECT 
