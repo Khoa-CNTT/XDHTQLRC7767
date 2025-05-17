@@ -6,7 +6,6 @@ import dtu.doan.service.RoomService;
 import dtu.doan.service.impl.RoomServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +28,22 @@ public class RoomController {
         List<Room> rooms = roomService.findAllRoomsByCinema(id);
         return new ResponseEntity<>(rooms,HttpStatus.OK);
     }
+
     @PostMapping
     public ResponseEntity<?> createRoom(@RequestBody RoomDTO room) {
-            roomService.createRoomWithSeats(room);
+        roomService.createRoomWithSeats(room);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRoom(@PathVariable(value = "id") Long id, @RequestBody RoomDTO roomDTO) {
+        roomService.updateRoom(id, roomDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRoom(@PathVariable(value = "id") Long id) {
+        roomService.deleteRoom(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
