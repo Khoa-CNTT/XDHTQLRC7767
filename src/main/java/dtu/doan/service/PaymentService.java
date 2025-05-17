@@ -14,4 +14,5 @@ public interface PaymentService {
     List<Object[]> getMonthlyRevenueByYear(int year);
     DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date);
     List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate);
+    List<Payment> getAllPayments();
 }

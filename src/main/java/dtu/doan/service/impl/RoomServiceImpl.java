@@ -38,7 +38,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional
     @Override
-    public Void createRoomWithSeats(RoomDTO room) {
+    public RoomDTO createRoomWithSeats(RoomDTO room) {
         int capacity = room.getCapacity();  // Tổng số ghế
         int cols = 10;                      // Số cột mỗi hàng
         int rows = (int) Math.ceil((double) capacity / cols); // Tính số hàng
@@ -75,8 +75,14 @@ public class RoomServiceImpl implements RoomService {
         seatFormatRepository.saveAll(seatFormats);
 
         room1.setSeats(seatFormats);
-        roomRepository.save(room1);
-        return null;
+       RoomDTO roomDTO = new RoomDTO();
+       Room roomSaved = roomRepository.save(room1);
+        roomDTO.setStatus(roomSaved.getStatus());
+        roomDTO.setName(roomSaved.getName());
+        roomDTO.setType(roomSaved.getType());
+        roomDTO.setCapacity(roomSaved.getCapacity());
+        roomDTO.setCinemaID(roomSaved.getCinema().getName());
+        return roomDTO;
     }
 
     @Transactional

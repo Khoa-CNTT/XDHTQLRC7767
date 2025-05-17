@@ -46,4 +46,9 @@ public class PaymentServiceImpl implements PaymentService {
     public List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate) {
         return paymentRepository.findPaymentStatistics(startDate, endDate);
     }
+
+    @Override
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
 }

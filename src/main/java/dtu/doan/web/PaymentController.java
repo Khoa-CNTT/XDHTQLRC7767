@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,11 @@ public class PaymentController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Payment>> getAllPayments() {
+        List<Payment> payments = paymentService.getAllPayments();
+        return new ResponseEntity<>(payments, HttpStatus.OK);
+    }
     @GetMapping("/daily-revenue/{date}")
     public ResponseEntity<DailyRevenueDTO> getTotalRevenueIndate(@PathVariable(value = "date") LocalDate date) {
         return ResponseEntity.ok(paymentService.getRevenueAndTicketCountByDate(date));
