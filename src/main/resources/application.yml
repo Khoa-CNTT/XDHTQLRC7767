@@ -50,8 +50,9 @@ spring:
 #            token-uri: https://oauth2.googleapis.com/token
 #            user-name-attribute: sub
 #  cloud:
-#    gcp:
-#      credentials:
+  gcp:
+    credentials:
+      location: /Users/PhatVN/school/DOAN/key/serviceAccountKey.json
 #        api-key: AIzaSyBeKDAB-ExkmehT8tTsPyq1b9BKOQm3KZM
   openai:
     api:
