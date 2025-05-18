@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -75,6 +77,32 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> getCommentsByMovie(Long movieId) {
         return repository.findByMovieId(movieId);
+    }
+
+    @Override
+    public Map<String, Integer> getSentimentStatisticsByMovie(Long movieId) {
+        List<Comment> comments = repository.findByMovieId(movieId);
+
+        long positiveCount = comments.stream().filter(c -> c.getScore() > 0.5).count();
+        long neutralCount = comments.stream().filter(c -> c.getScore() >= 0.0 && c.getScore() <= 0.5).count();
+        long negativeCount = comments.stream().filter(c -> c.getScore() < 0.0).count();
+
+        long total = positiveCount + neutralCount + negativeCount;
+
+        if (total == 0) {
+            return Map.of("10011003", 0, "10011002", 0, "10011001", 0);
+        }
+
+        // Calculate percentages
+        int positivePercentage = Math.round((positiveCount * 100.0f) / total);
+        int neutralPercentage = Math.round((neutralCount * 100.0f) / total);
+        int negativePercentage = 100 - positivePercentage - neutralPercentage; // Ensure total is 100%
+
+        return Map.of(
+                "10011003", positivePercentage,
+                "10011002", neutralPercentage,
+                "10011001", negativePercentage
+        );
     }
 
     public String processSentimentScore(SentimentDTO sentimentDTO) {

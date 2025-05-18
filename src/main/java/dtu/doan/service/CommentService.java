@@ -4,6 +4,7 @@ import dtu.doan.model.Comment;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface CommentService {
     List<Comment> getUnapprovedComments();
@@ -14,5 +15,8 @@ public interface CommentService {
     List<Comment> getCommentsByMovie(Long userId,Long movieId);
 
     List<Comment> getCommentsByMovie(Long movieId);
+
+    Map<String, Integer> getSentimentStatisticsByMovie(Long movieId);
+
 
 }

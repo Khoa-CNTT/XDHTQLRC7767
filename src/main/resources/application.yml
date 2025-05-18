@@ -53,6 +53,7 @@ spring:
   gcp:
     credentials:
       location: E:\serviceAccountKey.json
+#        location: /Users/PhatVN/school/DOAN/key/serviceAccountKey.json
 #        api-key: AIzaSyBeKDAB-ExkmehT8tTsPyq1b9BKOQm3KZM
   openai:
     api:
