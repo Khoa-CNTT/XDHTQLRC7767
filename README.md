@@ -103,21 +103,6 @@ npm run build
 1. Cấu hình database trong `application.properties`
 2. Build và chạy ứng dụng Spring Boot
 
-## Kiến trúc dự án
-
-### Cấu trúc thư mục
-
-- `/src/api`: Các service gọi API
-- `/src/assets`: Chứa hình ảnh và tài nguyên tĩnh
-- `/src/components`: Các component React có thể tái sử dụng
-- `/src/hooks`: Custom hooks
-- `/src/layouts`: Layout cho các trang
-- `/src/pages`: Các trang của ứng dụng
-- `/src/redux`: State management với Redux
-- `/src/styles`: Styled-components và theme
-- `/src/types`: TypeScript type definitions
-- `/src/utils`: Các utility functions
-
 ## Hỗ trợ và liên hệ
 
 Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ, vui lòng liên hệ:
