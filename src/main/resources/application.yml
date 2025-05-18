@@ -52,7 +52,7 @@ spring:
 #  cloud:
   gcp:
     credentials:
-      location: /home/tri/Downloads/serviceAccountKey.json
+      location: E:\serviceAccountKey.json
 #        api-key: AIzaSyBeKDAB-ExkmehT8tTsPyq1b9BKOQm3KZM
   openai:
     api:
