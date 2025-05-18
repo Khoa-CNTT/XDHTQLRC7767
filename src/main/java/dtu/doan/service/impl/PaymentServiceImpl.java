@@ -2,6 +2,7 @@ package dtu.doan.service.impl;
 
 import dtu.doan.dto.DailyRevenueDTO;
 import dtu.doan.model.Payment;
+import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.PaymentRepository;
 import dtu.doan.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import java.util.List;
 public class PaymentServiceImpl implements PaymentService {
     @Autowired
     PaymentRepository paymentRepository;
+    @Autowired
+    CustomerRepository customerRepository;
     @Override
     public Page<Payment> getPageOfPayment(Pageable pageable) {
         return paymentRepository.getPageOfPayment(pageable);
@@ -35,10 +38,12 @@ public class PaymentServiceImpl implements PaymentService {
             dailyRevenueDTO.setDate(date);
             dailyRevenueDTO.setTotalRevenue((Long) data[1]);
             dailyRevenueDTO.setTotalTickets((Long) data[2]);
+            dailyRevenueDTO.setTotalCustomer(customerRepository.sumById());
         } else {
             dailyRevenueDTO.setDate(date);
             dailyRevenueDTO.setTotalRevenue(0L);
             dailyRevenueDTO.setTotalTickets(0L);
+            dailyRevenueDTO.setTotalCustomer(customerRepository.sumById());
         }
         return dailyRevenueDTO;
     }
