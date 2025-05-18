@@ -9,6 +9,7 @@ import paymentSaga from "./paymentSaga";
 import ticketSaga from "./ticketSaga";
 import customerSaga from "./customerSaga";
 import staffSaga from "./staffSaga";
+import commentSaga from "./commentSaga";
 
 export default function* rootSaga() {
   console.log("[ROOT_SAGA] Initializing all sagas");
@@ -25,6 +26,7 @@ export default function* rootSaga() {
       fork(ticketSaga),
       fork(customerSaga),
       fork(staffSaga),
+      fork(commentSaga),
     ]);
     console.log("[ROOT_SAGA] All sagas have been started successfully");
   } catch (error) {

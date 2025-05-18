@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Tabs,
@@ -7,13 +7,10 @@ import {
   Button,
   Switch,
   Select,
-  Upload,
   message,
   Typography,
-  Divider,
   Row,
   Col,
-  TimePicker,
   InputNumber,
   Space,
   Table,
@@ -22,28 +19,31 @@ import {
   Modal,
 } from "antd";
 import {
-  SettingOutlined,
-  UploadOutlined,
+  GlobalOutlined,
   PlusOutlined,
   DeleteOutlined,
   EditOutlined,
   SaveOutlined,
-  GlobalOutlined,
   MailOutlined,
   PhoneOutlined,
   HomeOutlined,
   CreditCardOutlined,
-  BankOutlined,
   LockOutlined,
-  UserOutlined,
   TeamOutlined,
-  KeyOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
-import dayjs from "dayjs";
-import type { UploadProps } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addRoomRequest,
+  updateRoomRequest,
+  getAdminRoomListRequest,
+  deleteRoomRequest,
+  Room,
+} from "../../redux/slices/room.slice";
+import { getCinemaListRequest } from "../../redux/slices/cinemaSlice";
+import { RootState } from "../../redux/store";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -74,14 +74,6 @@ interface PaymentMethod {
   name: string;
   type: string;
   fee: number;
-  isActive: boolean;
-}
-
-interface Room {
-  id: number;
-  name: string;
-  capacity: number;
-  type: string;
   isActive: boolean;
 }
 
@@ -130,6 +122,8 @@ const SettingsManagement: React.FC = () => {
       name: "Phòng 1",
       capacity: 120,
       type: "2D",
+      status: "ACTIVE",
+      cinemaId: 1,
       isActive: true,
     },
     {
@@ -137,6 +131,8 @@ const SettingsManagement: React.FC = () => {
       name: "Phòng 2",
       capacity: 100,
       type: "2D",
+      status: "ACTIVE",
+      cinemaId: 1,
       isActive: true,
     },
     {
@@ -144,6 +140,8 @@ const SettingsManagement: React.FC = () => {
       name: "Phòng 3",
       capacity: 80,
       type: "3D",
+      status: "ACTIVE",
+      cinemaId: 1,
       isActive: true,
     },
     {
@@ -151,6 +149,8 @@ const SettingsManagement: React.FC = () => {
       name: "Phòng VIP",
       capacity: 50,
       type: "4DX",
+      status: "ACTIVE",
+      cinemaId: 1,
       isActive: true,
     },
   ]);
@@ -161,6 +161,52 @@ const SettingsManagement: React.FC = () => {
     null
   );
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+  const [currentDeletingId, setCurrentDeletingId] = useState<number | null>(
+    null
+  );
+
+  const dispatch = useDispatch();
+  const { data: roomsFromRedux, loading: roomsLoading } = useSelector(
+    (state: RootState) => state.room.adminRoomList
+  );
+  const { data: cinemasFromRedux, loading: cinemasLoading } = useSelector(
+    (state: RootState) => state.cinema.cinemaList
+  );
+
+  // Get loading states for room operations
+  const { loading: addRoomLoading, success: addRoomSuccess } = useSelector(
+    (state: RootState) => state.room.adminRoomAdd
+  );
+  const { loading: updateRoomLoading, success: updateRoomSuccess } =
+    useSelector((state: RootState) => state.room.adminRoomUpdate);
+  const { loading: deleteRoomLoading } = useSelector(
+    (state: RootState) => state.room.adminRoomDelete
+  );
+
+  // Reset deleting ID when delete operation completes
+  const { success: deleteRoomSuccess } = useSelector(
+    (state: RootState) => state.room.adminRoomDelete
+  );
+
+  useEffect(() => {
+    if (deleteRoomSuccess) {
+      setCurrentDeletingId(null);
+    }
+  }, [deleteRoomSuccess]);
+
+  // Fetch rooms and cinemas on component mount
+  useEffect(() => {
+    dispatch(getAdminRoomListRequest(undefined));
+    dispatch(getCinemaListRequest());
+  }, [dispatch]);
+
+  // Close modal and reset form on success
+  useEffect(() => {
+    if (addRoomSuccess || updateRoomSuccess) {
+      setIsRoomModalVisible(false);
+      roomForm.resetFields();
+    }
+  }, [addRoomSuccess, updateRoomSuccess, roomForm]);
 
   // Handlers
   const handleGeneralSubmit = (values: any) => {
@@ -202,7 +248,13 @@ const SettingsManagement: React.FC = () => {
     setCurrentRoom(room);
     setIsRoomModalVisible(true);
     if (room) {
-      roomForm.setFieldsValue(room);
+      roomForm.setFieldsValue({
+        name: room.name,
+        capacity: room.capacity,
+        type: room.type,
+        cinemaId: room.cinema?.id || room.cinemaId,
+        isActive: room.status === "ACTIVE",
+      });
     } else {
       roomForm.resetFields();
     }
@@ -233,20 +285,29 @@ const SettingsManagement: React.FC = () => {
   const handleRoomSubmit = (values: any) => {
     if (currentRoom) {
       // Cập nhật phòng chiếu
-      const updatedRooms = rooms.map((room) =>
-        room.id === currentRoom.id ? { ...room, ...values } : room
+      dispatch(
+        updateRoomRequest({
+          id: currentRoom.id,
+          data: {
+            name: values.name,
+            capacity: values.capacity,
+            type: values.type,
+            status: values.isActive ? "ACTIVE" : "INACTIVE",
+            cinemaId: values.cinemaId, // Use selected cinema ID
+          },
+        })
       );
-      setRooms(updatedRooms);
-      message.success("Cập nhật phòng chiếu thành công!");
     } else {
       // Thêm phòng chiếu mới
-      const newRoom: Room = {
-        id: Math.max(...rooms.map((r) => r.id), 0) + 1,
-        ...values,
-        isActive: true,
-      };
-      setRooms([...rooms, newRoom]);
-      message.success("Thêm phòng chiếu thành công!");
+      dispatch(
+        addRoomRequest({
+          name: values.name,
+          capacity: values.capacity,
+          type: values.type,
+          status: "ACTIVE",
+          cinemaId: values.cinemaId, // Use selected cinema ID
+        })
+      );
     }
     setIsRoomModalVisible(false);
     roomForm.resetFields();
@@ -259,9 +320,8 @@ const SettingsManagement: React.FC = () => {
   };
 
   const handleDeleteRoom = (id: number) => {
-    const updatedRooms = rooms.filter((room) => room.id !== id);
-    setRooms(updatedRooms);
-    message.success("Xóa phòng chiếu thành công!");
+    setCurrentDeletingId(id);
+    dispatch(deleteRoomRequest(id));
   };
 
   const handleTogglePaymentStatus = (id: number, isActive: boolean) => {
@@ -276,13 +336,15 @@ const SettingsManagement: React.FC = () => {
     );
   };
 
-  const handleToggleRoomStatus = (id: number, isActive: boolean) => {
+  const handleToggleRoomStatus = (id: number, status: string) => {
     const updatedRooms = rooms.map((room) =>
-      room.id === id ? { ...room, isActive } : room
+      room.id === id ? { ...room, status } : room
     );
     setRooms(updatedRooms);
     message.success(
-      `${isActive ? "Kích hoạt" : "Vô hiệu hóa"} phòng chiếu thành công!`
+      `${
+        status === "ACTIVE" ? "Kích hoạt" : "Vô hiệu hóa"
+      } phòng chiếu thành công!`
     );
   };
 
@@ -369,6 +431,13 @@ const SettingsManagement: React.FC = () => {
       key: "name",
     },
     {
+      title: "Rạp",
+      key: "cinema",
+      render: (record: Room) => {
+        return record.cinema ? record.cinema.name : "Chưa có rạp";
+      },
+    },
+    {
       title: "Sức chứa",
       dataIndex: "capacity",
       key: "capacity",
@@ -388,37 +457,44 @@ const SettingsManagement: React.FC = () => {
     },
     {
       title: "Trạng thái",
-      dataIndex: "isActive",
-      key: "isActive",
-      render: (isActive: boolean, record: Room) => (
+      dataIndex: "status",
+      key: "status",
+      render: (status: string, record: Room) => (
         <Switch
-          checked={isActive}
-          onChange={(checked) => handleToggleRoomStatus(record.id, checked)}
+          checked={status === "ACTIVE"}
+          onChange={(checked) =>
+            handleToggleRoomStatus(record.id, checked ? "ACTIVE" : "INACTIVE")
+          }
+          disabled={updateRoomLoading}
         />
       ),
     },
     {
       title: "Hành động",
       key: "action",
-      render: (_: any, record: Room) => (
+      render: (_: unknown, record: Room) => (
         <Space size="small">
           <Button
             type="primary"
             icon={<EditOutlined />}
             size="small"
             onClick={() => showRoomModal(record)}
+            disabled={updateRoomLoading}
           />
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa phòng chiếu này?"
             onConfirm={() => handleDeleteRoom(record.id)}
             okText="Có"
             cancelText="Không"
+            disabled={deleteRoomLoading}
           >
             <Button
               type="primary"
               danger
               icon={<DeleteOutlined />}
               size="small"
+              loading={deleteRoomLoading && currentDeletingId === record.id}
+              disabled={deleteRoomLoading}
             />
           </Popconfirm>
         </Space>
@@ -809,6 +885,8 @@ const SettingsManagement: React.FC = () => {
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => showRoomModal()}
+                loading={addRoomLoading}
+                disabled={addRoomLoading || updateRoomLoading}
               >
                 Thêm phòng
               </Button>
@@ -816,9 +894,10 @@ const SettingsManagement: React.FC = () => {
           >
             <Table
               columns={roomColumns}
-              dataSource={rooms}
+              dataSource={roomsFromRedux}
               rowKey="id"
               pagination={false}
+              loading={roomsLoading}
             />
           </StyledCard>
         </TabPane>
@@ -1053,8 +1132,14 @@ const SettingsManagement: React.FC = () => {
         visible={isRoomModalVisible}
         onCancel={handleCancel}
         footer={null}
+        confirmLoading={addRoomLoading || updateRoomLoading}
       >
-        <Form form={roomForm} layout="vertical" onFinish={handleRoomSubmit}>
+        <Form
+          form={roomForm}
+          layout="vertical"
+          onFinish={handleRoomSubmit}
+          disabled={addRoomLoading || updateRoomLoading}
+        >
           <Form.Item
             name="name"
             label="Tên phòng"
@@ -1063,6 +1148,21 @@ const SettingsManagement: React.FC = () => {
             ]}
           >
             <Input placeholder="Tên phòng chiếu" />
+          </Form.Item>
+          <Form.Item
+            name="cinemaId"
+            label="Rạp chiếu phim"
+            rules={[
+              { required: true, message: "Vui lòng chọn rạp chiếu phim!" },
+            ]}
+          >
+            <Select placeholder="Chọn rạp chiếu phim" loading={cinemasLoading}>
+              {cinemasFromRedux?.map((cinema: any) => (
+                <Option key={cinema.id} value={cinema.id}>
+                  {cinema.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
             name="capacity"
@@ -1097,10 +1197,19 @@ const SettingsManagement: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={currentRoom ? updateRoomLoading : addRoomLoading}
+              >
                 {currentRoom ? "Cập nhật" : "Thêm mới"}
               </Button>
-              <Button onClick={handleCancel}>Hủy</Button>
+              <Button
+                onClick={handleCancel}
+                disabled={addRoomLoading || updateRoomLoading}
+              >
+                Hủy
+              </Button>
             </Space>
           </Form.Item>
         </Form>

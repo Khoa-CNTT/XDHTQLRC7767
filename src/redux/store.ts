@@ -11,6 +11,7 @@ import paymentReducer from "./slices/paymentSlice";
 import ticketReducer from "./slices/ticketSlice";
 import customerReducer from "./slices/customerSlice";
 import staffReducer from "./slices/staffSlice";
+import commentReducer from "./slices/commentSlice";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -28,6 +29,7 @@ export const store = configureStore({
     ticket: ticketReducer,
     customer: customerReducer,
     staff: staffReducer,
+    comment: commentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),

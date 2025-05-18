@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   Button,
   Input,
   Space,
   Modal,
-  Form,
   Select,
-  message,
   Tag,
   Tooltip,
   Popconfirm,
@@ -16,6 +14,8 @@ import {
   Card,
   Row,
   Col,
+  Pagination,
+  Empty,
 } from "antd";
 import {
   SearchOutlined,
@@ -23,17 +23,30 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   EyeOutlined,
-  StarFilled,
   FilterOutlined,
   SmileOutlined,
   MehOutlined,
   FrownOutlined,
+  PieChartOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
-import { Line } from "@ant-design/plots";
+import { Pie } from "@ant-design/plots";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import {
+  getSentimentStatsRequest,
+  getMovieCommentsRequest,
+  approveCommentRequest,
+  deleteCommentRequest,
+  Comment as CommentType,
+} from "../../redux/slices/commentSlice";
+import {
+  getAdminMovieListRequest,
+  Movie as MovieType,
+} from "../../redux/slices/movieSlice";
 
 const { Option } = Select;
-const { Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 
 const PageTitle = styled.h1`
   font-size: 24px;
@@ -49,164 +62,218 @@ const TableContainer = styled.div`
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
 `;
 
 const StyledRate = styled(Rate)`
   font-size: 16px;
 `;
 
-const EmotionTag = styled(Tag)`
+const PaginationContainer = styled.div`
   display: flex;
-  align-items: center;
-  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 16px;
 `;
 
-const EmotionChart = styled.div`
-  margin-top: 24px;
-  padding: 16px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
+// Define interfaces
+interface Movie {
+  id: string;
+  title: string;
+  image: string;
+  releaseDate: string;
+}
+
+interface Review {
+  id: string;
+  movieId: string;
+  movieTitle: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  content: string;
+  date: string;
+  status: string;
+}
+
+type SentimentIconType = "positive" | "negative" | "neutral";
+
+interface SentimentStat {
+  type: string;
+  value: number;
+  color: string;
+  description: string;
+  iconType: SentimentIconType;
+}
 
 const ReviewManagement: React.FC = () => {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  // State for reviews
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);
+  const [currentReview, setCurrentReview] = useState<Review | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentReview, setCurrentReview] = useState<any>(null);
+
+  // Local pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
+  // Local movie selection state
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
+  // Filter states
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
-  const [filterRating, setFilterRating] = useState<number | null>(null);
-  const [emotionStats, setEmotionStats] = useState<any[]>([]);
 
+  // Add Redux state
+  const dispatch = useDispatch();
+  const { movieComments, sentimentStats: reduxSentimentStats } = useSelector(
+    (state: RootState) => state.comment
+  );
+  const { adminMovieList } = useSelector((state: RootState) => state.movie);
+
+  // Fetch movies on component mount and page change
   useEffect(() => {
-    fetchReviews();
-  }, []);
+    dispatch(getAdminMovieListRequest());
+  }, [dispatch]);
 
+  // Select first movie by default when movies load
   useEffect(() => {
-    setEmotionStats(calculateEmotionStats());
-  }, [reviews]);
-
-  const fetchReviews = async () => {
-    setLoading(true);
-    try {
-      // Giả lập dữ liệu
-      const mockReviews = [
-        {
-          id: "1",
-          movieId: "101",
-          movieTitle: "Venom: Kẻ Thù Cuối Cùng",
-          userId: "201",
-          userName: "Nguyễn Văn A",
-          rating: 4.5,
-          content:
-            "Phim rất hay, hiệu ứng đẹp, diễn viên diễn xuất tốt. Tôi đặc biệt thích phần kết của phim.",
-          date: "2023-10-15",
-          status: "approved",
-        },
-        {
-          id: "2",
-          movieId: "102",
-          movieTitle: "Quỷ Nhập Tràng",
-          userId: "202",
-          userName: "Trần Thị B",
-          rating: 3.0,
-          content:
-            "Phim khá hay nhưng cốt truyện hơi lê thê. Diễn viên diễn xuất tốt.",
-          date: "2023-10-14",
-          status: "pending",
-        },
-        {
-          id: "3",
-          movieId: "101",
-          movieTitle: "Venom: Kẻ Thù Cuối Cùng",
-          userId: "203",
-          userName: "Lê Văn C",
-          rating: 2.0,
-          content:
-            "Phim không hay như kỳ vọng. Cốt truyện nhàm chán và hiệu ứng không đặc sắc.",
-          date: "2023-10-13",
-          status: "rejected",
-        },
-        {
-          id: "4",
-          movieId: "103",
-          movieTitle: "Joker: Folie à Deux",
-          userId: "204",
-          userName: "Phạm Thị D",
-          rating: 5.0,
-          content:
-            "Tuyệt vời! Một kiệt tác điện ảnh. Joaquin Phoenix diễn xuất quá đỉnh!",
-          date: "2023-10-12",
-          status: "approved",
-        },
-        {
-          id: "5",
-          movieId: "104",
-          movieTitle: "Dune: Part Two",
-          userId: "205",
-          userName: "Hoàng Văn E",
-          rating: 4.0,
-          content:
-            "Phim rất hay, hiệu ứng đẹp, âm thanh sống động. Tuy nhiên, cốt truyện hơi khó hiểu với người chưa đọc sách.",
-          date: "2023-10-11",
-          status: "pending",
-        },
-      ];
-
-      setReviews(mockReviews);
-    } catch (error) {
-      message.error("Không thể tải dữ liệu đánh giá");
-    } finally {
-      setLoading(false);
+    if (adminMovieList.data.length > 0 && !selectedMovie) {
+      // Convert Redux movie data to our local Movie interface
+      const firstMovie: Movie = {
+        id: String(adminMovieList.data[0].id),
+        title: adminMovieList.data[0].title,
+        image: adminMovieList.data[0].poster || "",
+        releaseDate: adminMovieList.data[0].releaseDate || "",
+      };
+      setSelectedMovie(firstMovie);
     }
+  }, [adminMovieList.data, selectedMovie]);
+
+  // Update filtered reviews when filters change
+  useEffect(() => {
+    filterReviews();
+  }, [reviews, searchText, filterStatus]);
+
+  // Fetch reviews and sentiment statistics when selected movie changes
+  useEffect(() => {
+    if (selectedMovie) {
+      fetchReviews(selectedMovie.id);
+      fetchSentimentStatistics(selectedMovie.id);
+    }
+  }, [selectedMovie]);
+
+  // Replace fetchSentimentStatistics with Redux dispatch
+  const fetchSentimentStatistics = async (movieId: string) => {
+    dispatch(getSentimentStatsRequest({ movieId: Number(movieId) }));
   };
 
-  const handleViewReview = (record: any) => {
+  // Replace fetchReviews with Redux dispatch for movie comments
+  const fetchReviews = async (movieId: string) => {
+    dispatch(getMovieCommentsRequest({ movieId: Number(movieId) }));
+  };
+
+  const filterReviews = () => {
+    if (!reviews.length) return;
+
+    let filtered = [...reviews];
+
+    // Apply text search filter
+    if (searchText) {
+      filtered = filtered.filter(
+        (review) =>
+          review.movieTitle.toLowerCase().includes(searchText.toLowerCase()) ||
+          review.userName.toLowerCase().includes(searchText.toLowerCase()) ||
+          review.content.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (filterStatus) {
+      filtered = filtered.filter((review) => review.status === filterStatus);
+    }
+
+    setFilteredReviews(filtered);
+  };
+
+  const handleViewReview = (record: Review) => {
     setCurrentReview(record);
     setIsModalVisible(true);
   };
 
+  // Transform sentiment stats data from API response to pie chart format
+  const sentimentStats = useMemo<SentimentStat[]>(() => {
+    if (!reduxSentimentStats.data) return [];
+
+    return [
+      {
+        type: "Tiêu cực",
+        value: reduxSentimentStats.data["10011001"] || 0,
+        color: "#ff4d4f",
+        description: "Bình luận mang tính tiêu cực về phim",
+        iconType: "negative" as SentimentIconType,
+      },
+      {
+        type: "Tích cực",
+        value: reduxSentimentStats.data["10011003"] || 0,
+        color: "#52c41a",
+        description: "Bình luận mang tính tích cực về phim",
+        iconType: "positive" as SentimentIconType,
+      },
+      {
+        type: "Trung lập",
+        value: reduxSentimentStats.data["10011002"] || 0,
+        color: "#1890ff",
+        description: "Bình luận mang tính trung lập về phim",
+        iconType: "neutral" as SentimentIconType,
+      },
+    ];
+  }, [reduxSentimentStats.data]);
+
+  // Update handleApprove to refresh data after approval
   const handleApprove = async (id: string) => {
-    try {
-      // Giả lập API call
-      setReviews(
-        reviews.map((review) =>
-          review.id === id ? { ...review, status: "approved" } : review
-        )
-      );
-      message.success("Đã phê duyệt đánh giá");
-    } catch (error) {
-      message.error("Không thể phê duyệt đánh giá");
-    }
+    dispatch(approveCommentRequest({ id: Number(id) }));
+
+    // Immediately update the reviews in the UI
+    const updatedReviews = reviews.map((review) =>
+      review.id === id ? { ...review, status: "approved" } : review
+    );
+    setReviews(updatedReviews);
+
+    // Also update the filtered reviews
+    const updatedFilteredReviews = filteredReviews.map((review) =>
+      review.id === id ? { ...review, status: "approved" } : review
+    );
+    setFilteredReviews(updatedFilteredReviews);
+
+    // Refresh comments data after a short delay to ensure the API has processed the change
+    setTimeout(() => {
+      if (selectedMovie) {
+        fetchReviews(selectedMovie.id);
+        fetchSentimentStatistics(selectedMovie.id);
+      }
+    }, 500);
   };
 
-  const handleReject = async (id: string) => {
-    try {
-      // Giả lập API call
-      setReviews(
-        reviews.map((review) =>
-          review.id === id ? { ...review, status: "rejected" } : review
-        )
-      );
-      message.success("Đã từ chối đánh giá");
-    } catch (error) {
-      message.error("Không thể từ chối đánh giá");
-    }
-  };
-
+  // Update handleDelete to refresh data after deletion
   const handleDelete = async (id: string) => {
-    try {
-      // Giả lập API call
-      setReviews(reviews.filter((review) => review.id !== id));
-      message.success("Xóa đánh giá thành công");
-    } catch (error) {
-      message.error("Không thể xóa đánh giá");
-    }
+    dispatch(deleteCommentRequest({ id: Number(id) }));
+
+    // Immediately update the reviews in the UI by removing the deleted review
+    setReviews(reviews.filter((review) => review.id !== id));
+    setFilteredReviews(filteredReviews.filter((review) => review.id !== id));
+
+    // Refresh comments data after a short delay to ensure the API has processed the change
+    setTimeout(() => {
+      if (selectedMovie) {
+        fetchReviews(selectedMovie.id);
+        fetchSentimentStatistics(selectedMovie.id);
+      }
+    }, 500);
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    setCurrentReview(null);
   };
 
   const handleSearch = (value: string) => {
@@ -217,93 +284,61 @@ const ReviewManagement: React.FC = () => {
     setFilterStatus(value);
   };
 
-  const handleFilterRating = (value: number | null) => {
-    setFilterRating(value);
+  const handleMovieSelect = (movie: Movie) => {
+    setSelectedMovie(movie);
   };
 
-  const filteredReviews = reviews.filter((review) => {
-    const matchesSearch =
-      review.movieTitle.toLowerCase().includes(searchText.toLowerCase()) ||
-      review.userName.toLowerCase().includes(searchText.toLowerCase()) ||
-      review.content.toLowerCase().includes(searchText.toLowerCase());
-
-    const matchesStatus = filterStatus ? review.status === filterStatus : true;
-
-    const matchesRating = filterRating
-      ? Math.floor(review.rating) === filterRating
-      : true;
-
-    return matchesSearch && matchesStatus && matchesRating;
-  });
-
-  const analyzeEmotion = (content: string) => {
-    const positiveWords = [
-      "hay",
-      "tuyệt vời",
-      "đẹp",
-      "tốt",
-      "thích",
-      "đáng xem",
-      "xuất sắc",
-    ];
-    const negativeWords = [
-      "dở",
-      "tệ",
-      "không hay",
-      "nhàm chán",
-      "khó hiểu",
-      "lê thê",
-    ];
-
-    const contentLower = content.toLowerCase();
-    let positiveCount = 0;
-    let negativeCount = 0;
-
-    positiveWords.forEach((word) => {
-      if (contentLower.includes(word)) positiveCount++;
-    });
-
-    negativeWords.forEach((word) => {
-      if (contentLower.includes(word)) negativeCount++;
-    });
-
-    if (positiveCount > negativeCount) return "positive";
-    if (negativeCount > positiveCount) return "negative";
-    return "neutral";
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const calculateEmotionStats = () => {
-    const stats: any = {};
+  // Transform Redux movie data to our Movie interface for the table
+  const moviesForTable = adminMovieList.data
+    .map(
+      (movie: MovieType): Movie => ({
+        id: String(movie.id),
+        title: movie.title,
+        image: movie.poster || "",
+        releaseDate: movie.releaseDate || "",
+      })
+    )
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-    reviews.forEach((review) => {
-      if (!stats[review.movieId]) {
-        stats[review.movieId] = {
-          movieTitle: review.movieTitle,
-          positive: 0,
-          neutral: 0,
-          negative: 0,
-        };
-      }
-
-      const emotion = analyzeEmotion(review.content);
-      stats[review.movieId][emotion]++;
-    });
-
-    return Object.values(stats);
-  };
-
-  const columns = [
+  const movieColumns = [
     {
-      title: "Phim",
-      dataIndex: "movieTitle",
-      key: "movieTitle",
-      sorter: (a: any, b: any) => a.movieTitle.localeCompare(b.movieTitle),
+      title: "Tên phim",
+      dataIndex: "title",
+      key: "title",
+      sorter: (a: Movie, b: Movie) => a.title.localeCompare(b.title),
     },
+    {
+      title: "Ngày phát hành",
+      dataIndex: "releaseDate",
+      key: "releaseDate",
+      sorter: (a: Movie, b: Movie) =>
+        new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime(),
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_: unknown, record: Movie) => (
+        <Button
+          type={selectedMovie?.id === record.id ? "primary" : "default"}
+          onClick={() => handleMovieSelect(record)}
+        >
+          {selectedMovie?.id === record.id ? "Đang xem" : "Xem đánh giá"}
+        </Button>
+      ),
+    },
+  ];
+
+  const reviewColumns = [
     {
       title: "Người dùng",
       dataIndex: "userName",
       key: "userName",
-      sorter: (a: any, b: any) => a.userName.localeCompare(b.userName),
+      sorter: (a: Review, b: Review) => a.userName.localeCompare(b.userName),
     },
     {
       title: "Đánh giá",
@@ -312,7 +347,7 @@ const ReviewManagement: React.FC = () => {
       render: (rating: number) => (
         <StyledRate disabled defaultValue={rating} allowHalf />
       ),
-      sorter: (a: any, b: any) => a.rating - b.rating,
+      sorter: (a: Review, b: Review) => a.rating - b.rating,
     },
     {
       title: "Nội dung",
@@ -331,8 +366,9 @@ const ReviewManagement: React.FC = () => {
       title: "Ngày đánh giá",
       dataIndex: "date",
       key: "date",
-      sorter: (a: any, b: any) =>
+      sorter: (a: Review, b: Review) =>
         new Date(a.date).getTime() - new Date(b.date).getTime(),
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
       title: "Trạng thái",
@@ -354,36 +390,9 @@ const ReviewManagement: React.FC = () => {
       },
     },
     {
-      title: "Cảm xúc",
-      key: "emotion",
-      render: (_: any, record: any) => {
-        const emotion = analyzeEmotion(record.content);
-        let icon = <MehOutlined />;
-        let color = "blue";
-        let text = "Bình thường";
-
-        if (emotion === "positive") {
-          icon = <SmileOutlined />;
-          color = "green";
-          text = "Tích cực";
-        } else if (emotion === "negative") {
-          icon = <FrownOutlined />;
-          color = "red";
-          text = "Tiêu cực";
-        }
-
-        return (
-          <EmotionTag color={color}>
-            {icon}
-            {text}
-          </EmotionTag>
-        );
-      },
-    },
-    {
       title: "Thao tác",
       key: "action",
-      render: (text: string, record: any) => (
+      render: (_: unknown, record: Review) => (
         <Space size="small">
           <Tooltip title="Xem chi tiết">
             <ActionButton
@@ -403,117 +412,236 @@ const ReviewManagement: React.FC = () => {
                   style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
                 />
               </Tooltip>
-              <Tooltip title="Từ chối">
-                <ActionButton
-                  icon={<CloseCircleOutlined />}
-                  onClick={() => handleReject(record.id)}
-                  danger
-                  size="small"
-                />
+              <Tooltip title="Xóa">
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa đánh giá này?"
+                  onConfirm={() => handleDelete(record.id)}
+                  okText="Có"
+                  cancelText="Không"
+                >
+                  <ActionButton icon={<DeleteOutlined />} danger size="small" />
+                </Popconfirm>
               </Tooltip>
             </>
           )}
-          <Tooltip title="Xóa">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa đánh giá này?"
-              onConfirm={() => handleDelete(record.id)}
-              okText="Có"
-              cancelText="Không"
-            >
-              <ActionButton icon={<DeleteOutlined />} danger size="small" />
-            </Popconfirm>
-          </Tooltip>
         </Space>
       ),
     },
   ];
 
+  // Config for pie chart - memoize to prevent unnecessary re-creation
+  const pieConfig = useMemo(
+    () => ({
+      appendPadding: 10,
+      data: sentimentStats,
+      angleField: "value",
+      colorField: "type",
+      radius: 0.8,
+      legend: {
+        position: "bottom" as const,
+      },
+      animation: {
+        appear: {
+          duration: 500, // Slower animation might reduce flickering
+        },
+      },
+      label: {
+        type: "inner",
+        offset: "-50%",
+        content: "{value}",
+        style: {
+          textAlign: "center",
+          fontSize: 14,
+        },
+      },
+      interactions: [{ type: "element-selected" }, { type: "element-active" }],
+      color: ({ type }: { type: string }) => {
+        const item = sentimentStats.find((stat) => stat.type === type);
+        return item ? item.color : "#1890ff";
+      },
+      // Add statistic to show the total in the middle
+      statistic: {
+        title: {
+          style: {
+            whiteSpace: "pre-wrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontSize: "1.2em",
+          },
+          content: "Tổng",
+        },
+        content: {
+          style: {
+            whiteSpace: "pre-wrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontSize: "1.5em",
+          },
+          content: sentimentStats
+            .reduce((total, stat) => total + stat.value, 0)
+            .toString(),
+        },
+      },
+    }),
+    [sentimentStats]
+  );
+
+  // Set filtered reviews from API data
+  useEffect(() => {
+    if (movieComments.data.length > 0) {
+      // Transform API comment data to match our Review interface
+      const mappedReviews = movieComments.data.map((comment: CommentType) => ({
+        id: String(comment.id),
+        movieId: String(comment.movieId),
+        movieTitle: comment.movieTitle || selectedMovie?.title || "",
+        userId: String(comment.userId),
+        userName: comment.userName || "User",
+        rating: 5, // Assuming rating not in API data
+        content: comment.content,
+        date: comment.createdAt,
+        status: comment.approved ? "approved" : "pending",
+      }));
+
+      setReviews(mappedReviews);
+    }
+  }, [movieComments.data, selectedMovie]);
+
   return (
     <div>
       <PageTitle>Quản lý đánh giá</PageTitle>
 
+      {/* Movie list section */}
+      <TableContainer>
+        <Title level={4}>Danh sách phim</Title>
+        <Table
+          columns={movieColumns}
+          dataSource={moviesForTable}
+          rowKey="id"
+          loading={adminMovieList.loading}
+          pagination={false}
+        />
+        <PaginationContainer>
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={adminMovieList.data.length}
+            onChange={handlePageChange}
+            showSizeChanger
+            onShowSizeChange={(current, size) => {
+              setCurrentPage(1);
+              setPageSize(size);
+            }}
+          />
+        </PaginationContainer>
+      </TableContainer>
+
+      {/* Sentiment statistics section */}
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card title="Thống kê cảm xúc theo phim">
-            <Line
-              data={emotionStats}
-              xField="movieTitle"
-              yField="value"
-              seriesField="type"
-              xAxis={{
-                title: {
-                  text: "Phim",
-                },
-              }}
-              yAxis={{
-                title: {
-                  text: "Số lượng",
-                },
-              }}
-              legend={{
-                position: "top",
-              }}
-              smooth
-              point={{
-                size: 5,
-                shape: "diamond",
-              }}
-            />
+          <Card
+            title={
+              <Space>
+                <PieChartOutlined />
+                <span>
+                  Thống kê cảm xúc cho phim:{" "}
+                  {selectedMovie?.title || "Chưa chọn phim"}
+                </span>
+              </Space>
+            }
+            loading={reduxSentimentStats.loading}
+          >
+            {reduxSentimentStats.data &&
+            Object.keys(reduxSentimentStats.data).length > 0 ? (
+              <>
+                <div key={`pie-${selectedMovie?.id}`}>
+                  <Pie {...pieConfig} height={300} />
+                </div>
+                <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+                  {sentimentStats.map((stat) => (
+                    <Col span={8} key={stat.type}>
+                      <Card size="small">
+                        <Space align="center">
+                          <Tag
+                            color={stat.color}
+                            style={{ padding: "4px 8px" }}
+                          >
+                            {stat.iconType === "positive" && <SmileOutlined />}
+                            {stat.iconType === "negative" && <FrownOutlined />}
+                            {stat.iconType === "neutral" && <MehOutlined />}
+                          </Tag>
+                          <span>
+                            <strong>{stat.type}:</strong> {stat.value}
+                          </span>
+                        </Space>
+                        <p style={{ marginTop: 8, fontSize: 12 }}>
+                          {stat.description}
+                        </p>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </>
+            ) : (
+              <Empty description="Không có dữ liệu thống kê" />
+            )}
           </Card>
         </Col>
       </Row>
 
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Input
-          placeholder="Tìm kiếm đánh giá"
-          prefix={<SearchOutlined />}
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ width: 300 }}
-        />
-        <Select
-          placeholder="Lọc theo trạng thái"
-          style={{ width: 150 }}
-          allowClear
-          onChange={handleFilterStatus}
-        >
-          <Option value="approved">Đã duyệt</Option>
-          <Option value="pending">Chờ duyệt</Option>
-          <Option value="rejected">Từ chối</Option>
-        </Select>
-        <Select
-          placeholder="Lọc theo số sao"
-          style={{ width: 150 }}
-          allowClear
-          onChange={handleFilterRating}
-        >
-          <Option value={5}>5 sao</Option>
-          <Option value={4}>4 sao</Option>
-          <Option value={3}>3 sao</Option>
-          <Option value={2}>2 sao</Option>
-          <Option value={1}>1 sao</Option>
-        </Select>
-        <Button
-          icon={<FilterOutlined />}
-          onClick={() => {
-            setSearchText("");
-            setFilterStatus(null);
-            setFilterRating(null);
-          }}
-        >
-          Xóa bộ lọc
-        </Button>
-      </Space>
+      {/* Review list section */}
+      <div style={{ marginTop: 16 }}>
+        <Space style={{ marginBottom: 16 }} wrap>
+          <Input
+            placeholder="Tìm kiếm đánh giá"
+            prefix={<SearchOutlined />}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: 300 }}
+          />
+          <Select
+            placeholder="Lọc theo trạng thái"
+            style={{ width: 150 }}
+            allowClear
+            onChange={handleFilterStatus}
+          >
+            <Option value="approved">Đã duyệt</Option>
+            <Option value="pending">Chờ duyệt</Option>
+            <Option value="rejected">Từ chối</Option>
+          </Select>
+          <Button
+            icon={<FilterOutlined />}
+            onClick={() => {
+              setSearchText("");
+              setFilterStatus(null);
+            }}
+          >
+            Xóa bộ lọc
+          </Button>
+        </Space>
 
-      <TableContainer>
-        <Table
-          columns={columns}
-          dataSource={filteredReviews}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      </TableContainer>
+        <TableContainer>
+          <Title level={4}>
+            Danh sách đánh giá cho phim:{" "}
+            {selectedMovie?.title || "Chưa chọn phim"}
+          </Title>
 
+          {selectedMovie ? (
+            <Table
+              columns={reviewColumns}
+              dataSource={filteredReviews}
+              rowKey="id"
+              loading={movieComments.loading}
+              pagination={{ pageSize: 5 }}
+              locale={{
+                emptyText: <Empty description="Không có đánh giá nào" />,
+              }}
+            />
+          ) : (
+            <Empty description="Vui lòng chọn một phim để xem đánh giá" />
+          )}
+        </TableContainer>
+      </div>
+
+      {/* Review detail modal */}
       <Modal
         title="Chi tiết đánh giá"
         open={isModalVisible}
@@ -542,7 +670,7 @@ const ReviewManagement: React.FC = () => {
               danger
               icon={<CloseCircleOutlined />}
               onClick={() => {
-                handleReject(currentReview.id);
+                handleDelete(currentReview.id);
                 handleModalCancel();
               }}
             >
@@ -568,7 +696,8 @@ const ReviewManagement: React.FC = () => {
               />
             </p>
             <p>
-              <strong>Ngày đánh giá:</strong> {currentReview.date}
+              <strong>Ngày đánh giá:</strong>{" "}
+              {new Date(currentReview.date).toLocaleDateString("vi-VN")}
             </p>
             <p>
               <strong>Trạng thái:</strong>
