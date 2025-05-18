@@ -163,6 +163,22 @@ public class MovieServiceImpl implements MovieService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MovieAdminResponseDTO> getListMovieAdmin(MovieFilterDTO filter) {
+        List<Movie> movies = repository.findMoviesWithFilters(
+                filter.getTitle(),
+                filter.getStatus(),
+                filter.getGenre(),
+                filter.getDirector(),
+                filter.getActor(),
+                filter.getStartDate(),
+                filter.getEndDate()
+        );
+        return movies.stream()
+                .map(this::convertToAdminDTO)
+                .collect(Collectors.toList());
+    }
+
     private MovieHomeResponseDTO mapToDTO(Movie movie) {
         MovieHomeResponseDTO dto = new MovieHomeResponseDTO();
         dto.setId(movie.getId());
@@ -171,6 +187,35 @@ public class MovieServiceImpl implements MovieService {
         dto.setReleaseDate(String.valueOf(movie.getReleaseDate()));
         dto.setImage(movie.getImageUrl());
         List<Genre> genres = genreRepository.getGenreByMovieId(movie.getId());
+        dto.setGenres(genres);
+        return dto;
+    }
+
+    private MovieAdminResponseDTO convertToAdminDTO(Movie movie) {
+        MovieAdminResponseDTO dto = new MovieAdminResponseDTO();
+        dto.setId(movie.getId());
+        dto.setName(movie.getName());
+        dto.setDescription(movie.getDescription());
+        dto.setImageUrl(movie.getImageUrl());
+        dto.setDirector(movie.getDirector());
+        dto.setActor(movie.getActor());
+        dto.setDuration(movie.getDuration());
+        dto.setReleaseYear(movie.getReleaseYear());
+        dto.setRating(movie.getRating());
+        dto.setCountry(movie.getCountry());
+        dto.setLanguage(movie.getLanguage());
+        dto.setSubtitle(movie.getSubtitle());
+        dto.setAgeLimit(movie.getAgeLimit());
+        dto.setContent(movie.getContent());
+        dto.setDelete(movie.isDelete());
+        dto.setReleaseDate(movie.getReleaseDate());
+        dto.setStatus(movie.getStatus());
+        dto.setBackdrop(movie.getBackdrop());
+
+        List<GenreDTO> genres = genreRepository.getGenreByMovieId(movie.getId())
+                .stream()
+                .map(genre -> new GenreDTO(genre.getId(), genre.getName()))
+                .collect(Collectors.toList());
         dto.setGenres(genres);
         return dto;
     }
