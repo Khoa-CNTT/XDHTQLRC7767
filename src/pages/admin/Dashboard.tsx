@@ -29,6 +29,7 @@ import {
 } from "../../redux/slices/paymentSlice";
 import { RootState } from "../../redux/store";
 import type { Dayjs } from "dayjs";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -40,6 +41,8 @@ const StyledCard = styled(Card)`
 `;
 
 const Dashboard: React.FC = () => {
+  useDocumentTitle("Dashboard - Admin BSCMSAAPUE");
+
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());

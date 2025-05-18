@@ -13,6 +13,7 @@ import { getUserInfoRequest, loginRequest } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { authService } from "../../services/authService";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { Title, Text } = Typography;
 
@@ -178,6 +179,8 @@ const GoogleLoginContainer = styled.div`
 `;
 
 const LoginPage: React.FC = () => {
+  useDocumentTitle("Đăng nhập");
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector(

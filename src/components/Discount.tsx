@@ -291,7 +291,7 @@ const Discount: React.FC = () => {
               </DiscountName>
               <DiscountDescription>
                 Khám phá ngay hàng trăm lợi ích dành cho bạn trong chuyên mục
-                Khuyến mãi & Ưu đãi hấp dẫn của UBANFLIX CINEMA
+                Khuyến mãi & Ưu đãi hấp dẫn của BSCMSAAPUE CINEMA
               </DiscountDescription>
             </DiscountTextBox>
           </motion.div>

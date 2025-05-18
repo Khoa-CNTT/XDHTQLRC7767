@@ -374,7 +374,7 @@ const BookingPage: React.FC = () => {
       cinema: {
         name:
           findCinemaById(selectedCinema)?.name ||
-          "UBANFLIX Vincom Plaza Ngô Quyền",
+          "BSCMSAAPUE Vincom Plaza Ngô Quyền",
         address:
           findCinemaById(selectedCinema)?.address ||
           "910A Ngô Quyền, Sơn Trà, Đà Nẵng",

@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 // Styled Components
 const PageContainer = styled.div`
@@ -190,10 +191,18 @@ const MapContainer = styled.div`
 `;
 
 const ContactPage: React.FC = () => {
+  useDocumentTitle("Liên hệ");
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = (values: { name: string; email: string; phone: string; subject: string; message: string }) => {
+  const onFinish = (values: {
+    name: string;
+    email: string;
+    phone: string;
+    subject: string;
+    message: string;
+  }) => {
     setLoading(true);
 
     // Giả lập gửi form
@@ -249,8 +258,8 @@ const ContactPage: React.FC = () => {
                   </ContactIcon>
                   <ContactText>
                     <h4>Email</h4>
-                    <p>info@ubanflix.com</p>
-                    <p>support@ubanflix.com</p>
+                    <p>info@BSCMSAAPUE.com</p>
+                    <p>support@BSCMSAAPUE.com</p>
                   </ContactText>
                 </ContactInfoItem>
 
@@ -271,7 +280,7 @@ const ContactPage: React.FC = () => {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="UbanFlix Cinema Location"
+                  title="BSCMSAAPUE Cinema Location"
                 />
               </MapContainer>
             </motion.div>

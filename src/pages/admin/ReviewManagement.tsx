@@ -204,25 +204,32 @@ const ReviewManagement: React.FC = () => {
   const sentimentStats = useMemo<SentimentStat[]>(() => {
     if (!reduxSentimentStats.data) return [];
 
+    // Define the exact colors we'll use to match the screenshot exactly
+    const colors = {
+      negative: "#1890ff", // Blue for Tiêu cực
+      positive: "#06d6a0", // Teal for Tích cực
+      neutral: "#f4a261", // Orange for Trung lập
+    };
+
     return [
       {
         type: "Tiêu cực",
         value: reduxSentimentStats.data["10011001"] || 0,
-        color: "#ff4d4f",
+        color: colors.negative,
         description: "Bình luận mang tính tiêu cực về phim",
         iconType: "negative" as SentimentIconType,
       },
       {
         type: "Tích cực",
         value: reduxSentimentStats.data["10011003"] || 0,
-        color: "#52c41a",
+        color: colors.positive,
         description: "Bình luận mang tính tích cực về phim",
         iconType: "positive" as SentimentIconType,
       },
       {
         type: "Trung lập",
         value: reduxSentimentStats.data["10011002"] || 0,
-        color: "#1890ff",
+        color: colors.neutral,
         description: "Bình luận mang tính trung lập về phim",
         iconType: "neutral" as SentimentIconType,
       },
@@ -286,6 +293,8 @@ const ReviewManagement: React.FC = () => {
 
   const handleMovieSelect = (movie: Movie) => {
     setSelectedMovie(movie);
+    setReviews([]);
+    setFilteredReviews([]);
   };
 
   const handlePageChange = (page: number) => {
@@ -339,15 +348,6 @@ const ReviewManagement: React.FC = () => {
       dataIndex: "userName",
       key: "userName",
       sorter: (a: Review, b: Review) => a.userName.localeCompare(b.userName),
-    },
-    {
-      title: "Đánh giá",
-      dataIndex: "rating",
-      key: "rating",
-      render: (rating: number) => (
-        <StyledRate disabled defaultValue={rating} allowHalf />
-      ),
-      sorter: (a: Review, b: Review) => a.rating - b.rating,
     },
     {
       title: "Nội dung",
@@ -455,10 +455,12 @@ const ReviewManagement: React.FC = () => {
         },
       },
       interactions: [{ type: "element-selected" }, { type: "element-active" }],
-      color: ({ type }: { type: string }) => {
-        const item = sentimentStats.find((stat) => stat.type === type);
-        return item ? item.color : "#1890ff";
-      },
+      // Match colors exactly from the screenshot
+      color: [
+        "#1890ff", // Blue for Tiêu cực
+        "#06d6a0", // Teal for Tích cực
+        "#f4a261", // Orange for Trung lập
+      ],
       // Add statistic to show the total in the middle
       statistic: {
         title: {
@@ -503,6 +505,11 @@ const ReviewManagement: React.FC = () => {
       }));
 
       setReviews(mappedReviews);
+      setFilteredReviews(mappedReviews); // Also update filteredReviews
+    } else {
+      // Clear reviews when no data is available
+      setReviews([]);
+      setFilteredReviews([]);
     }
   }, [movieComments.data, selectedMovie]);
 
@@ -559,7 +566,13 @@ const ReviewManagement: React.FC = () => {
                 <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                   {sentimentStats.map((stat) => (
                     <Col span={8} key={stat.type}>
-                      <Card size="small">
+                      <Card
+                        size="small"
+                        style={{
+                          borderTop: `2px solid ${stat.color}`,
+                          backgroundColor: `${stat.color}10`, // Very light tint of the color
+                        }}
+                      >
                         <Space align="center">
                           <Tag
                             color={stat.color}

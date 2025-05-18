@@ -8,6 +8,7 @@ import PointHistory from "../../components/profile/PointHistory";
 import PasswordChange from "../../components/profile/PasswordChange";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -139,6 +140,8 @@ export const MobileMenuButton = styled(Button)`
 `;
 
 const ProfilePage: React.FC = () => {
+  useDocumentTitle("Thông tin cá nhân");
+
   const dispatch = useDispatch();
   const { activeTab, user } = useSelector((state: RootState) => state.auth);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 576);

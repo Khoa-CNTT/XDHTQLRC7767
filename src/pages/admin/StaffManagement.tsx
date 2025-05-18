@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   Button,
@@ -13,6 +13,8 @@ import {
   Avatar,
   DatePicker,
   Radio,
+  Text,
+  Paragraph,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -21,6 +23,9 @@ import {
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
+  EyeOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
@@ -245,14 +250,25 @@ const StaffManagement: React.FC = () => {
       title: "Chức vụ",
       dataIndex: "position",
       key: "position",
-      render: (position: string) => {
-        let text = position || "Nhân viên";
+      render: (position: any) => {
+        // Handle when position is an object
+        let positionValue = position;
+
+        // If position is an object with name property, use that
+        if (position && typeof position === "object" && "name" in position) {
+          positionValue = position.name;
+        }
+
+        let text = positionValue || "Nhân viên";
         let color = "blue";
 
-        if (position === "manager" || position === "MANAGER") {
+        if (positionValue === "manager" || positionValue === "MANAGER") {
           text = "Quản lý";
           color = "gold";
-        } else if (position === "supervisor" || position === "SUPERVISOR") {
+        } else if (
+          positionValue === "supervisor" ||
+          positionValue === "SUPERVISOR"
+        ) {
           text = "Giám sát";
           color = "green";
         }
@@ -264,7 +280,13 @@ const StaffManagement: React.FC = () => {
         { text: "Giám sát", value: "SUPERVISOR" },
         { text: "Nhân viên", value: "EMPLOYEE" },
       ],
-      onFilter: (value, record) => record.position === value,
+      onFilter: (value, record) => {
+        const positionValue =
+          typeof record.position === "object"
+            ? record.position.name
+            : record.position;
+        return positionValue === value;
+      },
     },
     {
       title: "Phòng ban",

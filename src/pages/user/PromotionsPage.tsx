@@ -29,6 +29,7 @@ import {
   Promotion,
 } from "../../redux/slices/promotionSlice";
 import { RootState } from "../../redux/store";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { Meta } = Card;
 const { Option } = Select;
@@ -479,6 +480,8 @@ const fadeInUp = {
 };
 
 const PromotionsPage: React.FC = () => {
+  useDocumentTitle("Khuyến mãi");
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
 
@@ -494,7 +497,7 @@ const PromotionsPage: React.FC = () => {
     title: "KHUYẾN MÃI ĐẶC BIỆT: GIẢM 50% CHO SUẤT CHIẾU ĐẦU TIÊN",
     image: "https://i.imgur.com/AvmwQ5D.jpg",
     description:
-      "Áp dụng cho tất cả các suất chiếu sớm nhất trong ngày, từ thứ Hai đến thứ Sáu. Giảm ngay 50% giá vé khi đặt online qua ứng dụng hoặc website UBANFLIX Cinema. Số lượng vé có hạn, nhanh tay đặt ngay!",
+      "Áp dụng cho tất cả các suất chiếu sớm nhất trong ngày, từ thứ Hai đến thứ Sáu. Giảm ngay 50% giá vé khi đặt online qua ứng dụng hoặc website BSCMSAAPUE Cinema. Số lượng vé có hạn, nhanh tay đặt ngay!",
     date: "01/11/2023 - 31/12/2023",
     category: "Giảm giá vé",
     tags: ["Suất sớm", "Giảm 50%"],
@@ -660,7 +663,7 @@ const PromotionsPage: React.FC = () => {
           </PageTitle>
           <PageSubtitle>
             Khám phá ngay hàng trăm ưu đãi hấp dẫn dành riêng cho bạn tại
-            UBANFLIX Cinema
+            BSCMSAAPUE Cinema
           </PageSubtitle>
         </motion.div>
 

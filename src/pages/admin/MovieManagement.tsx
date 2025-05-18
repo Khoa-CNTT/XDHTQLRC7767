@@ -24,6 +24,7 @@ import type { Dayjs } from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Movie as ReduxMovie } from "../../redux/slices/movieSlice";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 // Import các actions từ movieSlice
 import {
@@ -75,6 +76,8 @@ export interface FilterValues {
 }
 
 const MovieManagement: React.FC = () => {
+  useDocumentTitle("Quản lý phim - Admin BSCMSAAPUE");
+
   // Redux
   const dispatch = useDispatch();
   const { data: movies, loading } = useSelector(

@@ -10,6 +10,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { getCinemasByLocationRequest } from "../../redux/slices/cinemaSlice";
 import { RootState } from "../../redux/store";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { TabPane } = Tabs;
 
@@ -432,6 +433,8 @@ interface Cinema {
 }
 
 const CinemaPage: React.FC = () => {
+  useDocumentTitle("Hệ thống rạp chiếu");
+
   const dispatch = useDispatch();
   const {
     data: cinemas,

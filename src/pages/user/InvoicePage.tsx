@@ -541,7 +541,7 @@ const InvoicePage: React.FC = () => {
           <SuccessHeader>
             <SuccessIcon />
             <Title>Thanh toán thành công!</Title>
-            <Subtitle>Cảm ơn bạn đã đặt vé tại UBANFLIX Cinema</Subtitle>
+            <Subtitle>Cảm ơn bạn đã đặt vé tại BSCMSAAPUE Cinema</Subtitle>
           </SuccessHeader>
 
           <InvoiceContent>
@@ -614,7 +614,7 @@ const InvoicePage: React.FC = () => {
               <RightColumn>
                 <QRSection>
                   <QRCodeSVG
-                    value={`UBANFLIX-${invoiceId}-${
+                    value={`BSCMSAAPUE-${invoiceId}-${
                       bookingData.movie.id
                     }-${formattedDate}-${bookingData.seats.join(",")}`}
                     size={150}
@@ -649,7 +649,7 @@ const InvoicePage: React.FC = () => {
       </motion.div>
 
       <FooterText>
-        © 2023 UBANFLIX Cinema. Tất cả các quyền được bảo lưu.
+        © 2023 BSCMSAAPUE Cinema. Tất cả các quyền được bảo lưu.
       </FooterText>
     </PageContainer>
   );

@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { Input, Select, Button } from "antd";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -584,11 +585,11 @@ const news = [
   },
   {
     id: "5",
-    title: "UBANFLIX MỞ RỘNG HỆ THỐNG RẠP TẠI ĐÀ NẴNG",
+    title: "BSCMSAAPUE MỞ RỘNG HỆ THỐNG RẠP TẠI ĐÀ NẴNG",
     image:
       "https://cdn.daibieunhandan.vn/images/3329e10c3a9a490c8686815a15d29b220240ee686456a246ce60d222b8a1fabaffc9ea50be72707b8abf6803f243fcec7645009b40369b8c934306b771930ca4/ee0abab5acfb45a51cea-8606.jpg.webp",
     excerpt:
-      "UBANFLIX Cinema vừa công bố kế hoạch mở rộng hệ thống rạp chiếu phim tại Đà Nẵng với công nghệ hiện đại và trải nghiệm xem phim đẳng cấp.",
+      "BSCMSAAPUE Cinema vừa công bố kế hoạch mở rộng hệ thống rạp chiếu phim tại Đà Nẵng với công nghệ hiện đại và trải nghiệm xem phim đẳng cấp.",
     date: "2023-10-15",
     category: "cinema-news",
     views: 720,
@@ -618,11 +619,11 @@ const news = [
   },
   {
     id: "8",
-    title: "UBANFLIX CINEMA GIỚI THIỆU CÔNG NGHỆ ÂM THANH MỚI",
+    title: "BSCMSAAPUE CINEMA GIỚI THIỆU CÔNG NGHỆ ÂM THANH MỚI",
     image:
       "https://images2.thanhnien.vn/zoom/686_429/528068263637045248/2023/11/21/img20231121201539-17005729203491797367636-0-0-1047-1675-crop-17005738836711510441526.jpg",
     excerpt:
-      "UBANFLIX Cinema vừa giới thiệu công nghệ âm thanh Dolby Atmos mới nhất tại các rạp chiếu phim, mang đến trải nghiệm âm thanh vòm sống động chưa từng có.",
+      "BSCMSAAPUE Cinema vừa giới thiệu công nghệ âm thanh Dolby Atmos mới nhất tại các rạp chiếu phim, mang đến trải nghiệm âm thanh vòm sống động chưa từng có.",
     date: "2023-10-01",
     category: "cinema-news",
     views: 420,
@@ -652,6 +653,8 @@ const news = [
 ];
 
 const NewsPage: React.FC = () => {
+  useDocumentTitle("Tin tức & Sự kiện");
+
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);

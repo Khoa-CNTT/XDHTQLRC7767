@@ -1,80 +1,131 @@
-# React + TypeScript + Vite
+# BSCMSAAPUE Cinema - Hệ thống đặt vé xem phim
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![BSCMSAAPUE Cinema](https://i.imgur.com/AvmwQ5D.jpg)
 
-Currently, two official plugins are available:
+## Giới thiệu
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+BSCMSAAPUE Cinema là một hệ thống đặt vé xem phim trực tuyến, được xây dựng với công nghệ hiện đại, giúp người dùng dễ dàng xem thông tin phim, suất chiếu và đặt vé một cách nhanh chóng, thuận tiện.
 
-## Expanding the ESLint configuration
+## Tính năng chính
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Dành cho khách hàng
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+- Xem danh sách phim đang chiếu và sắp chiếu
+- Xem thông tin chi tiết phim, trailer, đánh giá
+- Xem lịch chiếu phim theo rạp, ngày, giờ
+- Đặt vé xem phim trực tuyến
+- Thanh toán trực tuyến qua VNPay
+- Nhận mã QR vé điện tử
+- Quản lý thông tin cá nhân và lịch sử đặt vé
+- Chức năng trò chuyện với trợ lý ảo AI
+
+### Dành cho quản trị viên
+
+- Quản lý phim (thêm, sửa, xóa)
+- Quản lý lịch chiếu
+- Quản lý rạp và phòng chiếu
+- Quản lý người dùng
+- Quản lý đơn hàng
+- Xem báo cáo thống kê
+- Quản lý tin tức và khuyến mãi
+
+## Công nghệ sử dụng
+
+### Frontend
+
+- React 18.2.0
+- TypeScript
+- Redux/Redux Toolkit
+- Ant Design
+- Styled Components
+- React Router DOM
+- Framer Motion (cho hiệu ứng)
+- Axios
+
+### Backend
+
+- Java Spring Boot
+- MySQL
+- Spring Security + JWT
+- REST API
+
+### Hệ thống thanh toán
+
+- Tích hợp cổng thanh toán VNPay
+
+### AI Chatbot
+
+- OpenAI API
+- Context-aware responses
+
+## Cài đặt và chạy dự án
+
+### Yêu cầu hệ thống
+
+- Node.js 16.x trở lên
+- Java 17 hoặc cao hơn
+- MySQL
+
+### Cài đặt Frontend
+
+1. Clone repository
+
+```
+git clone https://github.com/username/BSCMSAAPUE-cinema.git
+cd BSCMSAAPUE-cinema
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Cài đặt dependencies
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
+```
+npm install
 ```
 
-# Movie Ticket Booking Application
+3. Cấu hình môi trường
 
-## Chat Assistant Integration
+- Tạo file `.env` từ file `.env.example`
+- Cập nhật các thông số cần thiết, đặc biệt là `VITE_API_URL`
 
-The application includes an AI chat assistant that helps users with movie information, showtimes, and booking questions.
+4. Chạy ứng dụng trong môi trường phát triển
 
-### How it works:
+```
+npm run dev
+```
 
-1. The frontend sends user messages to the backend `/api/chat` endpoint
-2. The backend processes these messages using:
-   - Current movie showtimes data
-   - OpenAI API for natural language processing
-   - Contextual information about the cinema and booking process
-3. The assistant provides helpful responses to guide users through the booking process
+5. Build cho môi trường production
 
-### Environment Setup:
+```
+npm run build
+```
 
-- Set `VITE_API_URL` in your .env file to point to your backend server
-- Ensure the Java backend has `openai.api.key` configured in application properties
+### Cài đặt Backend
 
-### Technical Notes:
+1. Cấu hình database trong `application.properties`
+2. Build và chạy ứng dụng Spring Boot
 
-- Backend controller: `ChatController.java` processes requests and formats movie data
-- Frontend service: Uses custom React hook for state management
-- API integration: Plain text requests to match Java controller's input format
+## Kiến trúc dự án
+
+### Cấu trúc thư mục
+
+- `/src/api`: Các service gọi API
+- `/src/assets`: Chứa hình ảnh và tài nguyên tĩnh
+- `/src/components`: Các component React có thể tái sử dụng
+- `/src/hooks`: Custom hooks
+- `/src/layouts`: Layout cho các trang
+- `/src/pages`: Các trang của ứng dụng
+- `/src/redux`: State management với Redux
+- `/src/styles`: Styled-components và theme
+- `/src/types`: TypeScript type definitions
+- `/src/utils`: Các utility functions
+
+## Hỗ trợ và liên hệ
+
+Nếu bạn có bất kỳ câu hỏi hoặc cần hỗ trợ, vui lòng liên hệ:
+
+Email: support@BSCMSAAPUE.com
+Website: https://BSCMSAAPUE.com
+Hotline: 1900 xxxx
+
+## Giấy phép
+
+© 2024 BSCMSAAPUE Cinema. All rights reserved.

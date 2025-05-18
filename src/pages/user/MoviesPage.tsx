@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -14,6 +14,7 @@ import {
   Spin,
   Empty,
 } from "antd";
+import type { SelectProps } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -24,14 +25,13 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  getMovieListRequest,
   getNowShowingMoviesRequest,
   getUpcomingMoviesRequest,
-  MovieHomeResponseDTO,
 } from "../../redux/slices/movieSlice";
 import { RootState } from "../../redux/store";
 import { DefaultOptionType } from "antd/es/select";
 import axiosInstance from "../../utils/axiosConfig";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { TabPane } = Tabs;
 const { Meta } = Card;
@@ -259,7 +259,7 @@ const MovieInfo = styled.span`
 `;
 
 const MovieTags = styled.div`
-  height: 60px;
+  height: 70px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -268,6 +268,9 @@ const MovieTags = styled.div`
 
   @media (max-width: 480px) {
     display: none;
+  }
+  .ant-tag {
+    height: 26px;
   }
 `;
 
@@ -401,30 +404,29 @@ const FilterButton = styled(Button)`
   }
 `;
 
-// Cập nhật interface tại đầu file hoặc import từ movieSlice
+// Định nghĩa riêng interface Genre
 interface Genre {
   id: number;
   name: string;
   isDelete: boolean;
 }
 
-// Đảm bảo MovieHomeResponseDTO trong component bao gồm genres
-// Có thể cần thêm vào interface này nếu import từ redux
-interface MovieHomeResponseDTO {
+// Định nghĩa MovieData cho component này để tránh xung đột
+interface MovieData {
   id: number;
   title: string;
   description: string;
   duration: number;
   releaseDate: string;
-  poster: string;
-  genres: Genre[];
+  image: string;
+  genres?: Genre[] | Genre | unknown; // Để linh hoạt đối phó với dữ liệu trả về từ API
 }
 
 const MoviesPage: React.FC = () => {
+  useDocumentTitle("Danh sách phim");
+
   const [activeTab, setActiveTab] = useState("now-showing");
-  const [filteredMovies, setFilteredMovies] = useState<MovieHomeResponseDTO[]>(
-    []
-  );
+  const [filteredMovies, setFilteredMovies] = useState<MovieData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
@@ -501,7 +503,7 @@ const MoviesPage: React.FC = () => {
   const filterMovies = () => {
     if (!currentMovies.data) return;
 
-    let result = [...currentMovies.data];
+    let result = [...currentMovies.data] as MovieData[];
 
     // Lọc theo tên phim
     if (searchText) {
@@ -511,18 +513,23 @@ const MoviesPage: React.FC = () => {
     }
 
     // Lọc theo thể loại
-    if (selectedGenre && result[0]?.genres) {
+    if (selectedGenre && result.length > 0) {
       result = result.filter((movie) =>
-        movie.genres.some(
-          (genre) =>
-            genre.name.toLowerCase() === selectedGenre.toLowerCase() &&
-            !genre.isDelete
-        )
+        Array.isArray(movie.genres)
+          ? movie.genres.some(
+              (genre: Genre) =>
+                genre.name.toLowerCase() === selectedGenre.toLowerCase() &&
+                !genre.isDelete
+            )
+          : typeof movie.genres === "object" && movie.genres !== null
+          ? (movie.genres as Genre).name.toLowerCase() ===
+            selectedGenre.toLowerCase()
+          : false
       );
     }
 
     // Lọc theo năm phát hành
-    if (selectedYear && result[0]?.releaseDate) {
+    if (selectedYear && result.length > 0) {
       result = result.filter(
         (movie) =>
           new Date(movie.releaseDate).getFullYear().toString() === selectedYear
@@ -539,12 +546,12 @@ const MoviesPage: React.FC = () => {
     setSelectedYear(null);
   };
 
-  const handleGenreChange = (value: string | null) => {
-    setSelectedGenre(value);
+  const handleGenreChange = (value: unknown) => {
+    setSelectedGenre(value as string | null);
   };
 
-  const handleYearChange = (value: string | null) => {
-    setSelectedYear(value);
+  const handleYearChange = (value: unknown) => {
+    setSelectedYear(value as string | null);
   };
 
   const paginatedMovies = filteredMovies.slice(
@@ -631,7 +638,7 @@ const MoviesPage: React.FC = () => {
                       <Meta
                         title={movie.title}
                         description={
-                          <>
+                          <div>
                             <MovieMeta>
                               <MovieInfo>
                                 <CalendarOutlined />{" "}
@@ -640,15 +647,30 @@ const MoviesPage: React.FC = () => {
                               <MovieInfo>{movie.duration}</MovieInfo>
                             </MovieMeta>
                             <MovieTags>
-                              {movie.genres &&
-                                movie.genres
-                                  .filter((genre) => !genre.isDelete)
-                                  .slice(0, window.innerWidth <= 480 ? 2 : 3)
-                                  .map((genre) => (
-                                    <GenreTag key={genre.id}>
-                                      {genre.name}
-                                    </GenreTag>
-                                  ))}
+                              {movie.genres ? (
+                                Array.isArray(movie.genres) ? (
+                                  movie.genres
+                                    .filter(
+                                      (genre: Genre) => genre && !genre.isDelete
+                                    )
+                                    .slice(0, window.innerWidth <= 480 ? 2 : 3)
+                                    .map((genre: Genre) => (
+                                      <GenreTag key={genre.id || "unknown"}>
+                                        {genre.name || "Unknown"}
+                                      </GenreTag>
+                                    ))
+                                ) : // Xử lý khi genres là object
+                                typeof movie.genres === "object" &&
+                                  movie.genres !== null ? (
+                                  <GenreTag
+                                    key={
+                                      (movie.genres as Genre).id || "unknown"
+                                    }
+                                  >
+                                    {(movie.genres as Genre).name || "Unknown"}
+                                  </GenreTag>
+                                ) : null
+                              ) : null}
                             </MovieTags>
                             <ButtonContainer>
                               <DetailButton
@@ -673,7 +695,7 @@ const MoviesPage: React.FC = () => {
                                 </BookingButton>
                               )}
                             </ButtonContainer>
-                          </>
+                          </div>
                         }
                       />
                     </Card>
@@ -740,9 +762,7 @@ const MoviesPage: React.FC = () => {
                       placeholder="Thể loại"
                       style={{ width: "100%" }}
                       value={selectedGenre}
-                      onChange={(value: string | null) =>
-                        handleGenreChange(value)
-                      }
+                      onChange={(value: unknown) => handleGenreChange(value)}
                       allowClear
                       loading={genresLoading}
                     >
@@ -758,9 +778,7 @@ const MoviesPage: React.FC = () => {
                       placeholder="Năm phát hành"
                       style={{ width: "100%" }}
                       value={selectedYear}
-                      onChange={(value: string | null) =>
-                        handleYearChange(value)
-                      }
+                      onChange={(value: unknown) => handleYearChange(value)}
                       allowClear
                     >
                       <Select.Option value="2025">2025</Select.Option>
@@ -805,9 +823,7 @@ const MoviesPage: React.FC = () => {
                       placeholder="Thể loại"
                       style={{ width: "100%" }}
                       value={selectedGenre}
-                      onChange={(value: string | null) =>
-                        handleGenreChange(value)
-                      }
+                      onChange={(value: unknown) => handleGenreChange(value)}
                       allowClear
                       loading={genresLoading}
                     >
@@ -823,9 +839,7 @@ const MoviesPage: React.FC = () => {
                       placeholder="Năm phát hành"
                       style={{ width: "100%" }}
                       value={selectedYear}
-                      onChange={(value: string | null) =>
-                        handleYearChange(value)
-                      }
+                      onChange={(value: unknown) => handleYearChange(value)}
                       allowClear
                     >
                       <Select.Option value="2025">2025</Select.Option>
