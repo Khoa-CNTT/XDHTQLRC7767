@@ -40,10 +40,8 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomDTO createRoomWithSeats(RoomDTO room) {
         int capacity = room.getCapacity();  // Tổng số ghế
-        int cols = 10;                      // Số cột mỗi hàng
-        int rows = (int) Math.ceil((double) capacity / cols); // Tính số hàng
-
         Set<SeatFormat> seatFormats = new HashSet<>();
+
         Cinema cinema = cinemaRepository.findByid(room.getCinemaID());
         Room room1 = new Room();
 
@@ -53,42 +51,35 @@ public class RoomServiceImpl implements RoomService {
         room1.setStatus("ACTIVE");
         room1.setCinema(cinema);
 
-        Set<String> existingSeatNames = new HashSet<>();
-        for (int i = 0; i < rows; i++) {
-            char rowLetter = (char) ('A' + i);
-            for (int j = 1; j <= cols; j++) {
-                int currentSeatIndex = i * cols + (j - 1);
-                if (currentSeatIndex >= capacity) break;
+        for (int i = 1; i <= capacity; i++) {
+            SeatFormat seat = new SeatFormat();
+            seat.setName(String.valueOf(i)); // Ghế đánh số từ 1 đến capacity (ví dụ: "1", "2", ..., "100")
+            seat.setRoom(room1);
 
-                String seatName = rowLetter + String.valueOf(j);
-                if (existingSeatNames.contains(seatName)) continue; // Skip duplicates
-
-                SeatFormat c = new SeatFormat();
-                c.setName(seatName);
-                c.setRoom(room1);
-
-                if (currentSeatIndex >= capacity - 10) {
-                    c.setType("COUPLE");
-                } else {
-                    c.setType("STANDARD");
-                }
-
-                seatFormats.add(c);
-                existingSeatNames.add(seatName); // Track added seat names
+            if (i > capacity - 10) {
+                seat.setType("COUPLE");
+            } else {
+                seat.setType("STANDARD");
             }
-        }
-        seatFormatRepository.saveAll(seatFormats);
 
+            seatFormats.add(seat);
+        }
+
+        seatFormatRepository.saveAll(seatFormats);
         room1.setSeats(seatFormats);
-       RoomDTO roomDTO = new RoomDTO();
-       Room roomSaved = roomRepository.save(room1);
+
+        Room roomSaved = roomRepository.save(room1);
+
+        RoomDTO roomDTO = new RoomDTO();
         roomDTO.setStatus(roomSaved.getStatus());
         roomDTO.setName(roomSaved.getName());
         roomDTO.setType(roomSaved.getType());
         roomDTO.setCapacity(roomSaved.getCapacity());
         roomDTO.setCinemaID(roomSaved.getCinema().getName());
+
         return roomDTO;
     }
+
 
     @Transactional
     @Override
