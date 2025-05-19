@@ -39,15 +39,20 @@ public class RoomServiceImpl implements RoomService {
         int capacity = room.getCapacity();
         List<SeatFormat> seatFormats = new ArrayList<>();
 
-        Cinema cinema = cinemaRepository.findByid(room.getCinemaID());
+        // Fetch the Cinema and validate
+        Cinema cinema = cinemaRepository.findByid(room.getCinemaId());
+        if (cinema == null) {
+            throw new RuntimeException("Cinema not found with id: " + room.getCinemaId());
+        }
+
         Room room1 = new Room();
         room1.setName(room.getName());
         room1.setType(room.getType());
         room1.setCapacity(capacity);
         room1.setStatus("ACTIVE");
-        room1.setCinema(cinema);
+        room1.setCinema(cinema); // Ensure Cinema is set
 
-        // 💾 Lưu Room trước để có ID
+        // Save Room to generate ID
         Room savedRoom = roomRepository.save(room1);
 
         for (int i = 1; i <= capacity; i++) {
@@ -58,17 +63,17 @@ public class RoomServiceImpl implements RoomService {
             seatFormats.add(seat);
         }
 
-        // Lưu danh sách ghế sau khi room đã được lưu
+        // Save seats
         seatFormatRepository.saveAll(seatFormats);
         savedRoom.setSeats(new HashSet<>(seatFormats));
 
-        // Trả về DTO
+        // Return DTO
         RoomDTO roomDTO = new RoomDTO();
         roomDTO.setStatus(savedRoom.getStatus());
         roomDTO.setName(savedRoom.getName());
         roomDTO.setType(savedRoom.getType());
         roomDTO.setCapacity(savedRoom.getCapacity());
-        roomDTO.setCinemaID(savedRoom.getCinema().getName());
+        roomDTO.setCinemaId(savedRoom.getCinema().getName()); // Cinema is now guaranteed to be non-null
         return roomDTO;
     }
 
@@ -83,9 +88,9 @@ public class RoomServiceImpl implements RoomService {
         }
 
         Room room = optionalRoom.get();
-        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaID());
+        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
         if (cinema == null) {
-            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaID());
+            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
         }
 
         // Update room details
