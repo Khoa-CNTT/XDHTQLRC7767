@@ -53,14 +53,18 @@ public class RoomServiceImpl implements RoomService {
         room1.setStatus("ACTIVE");
         room1.setCinema(cinema);
 
+        Set<String> existingSeatNames = new HashSet<>();
         for (int i = 0; i < rows; i++) {
             char rowLetter = (char) ('A' + i);
             for (int j = 1; j <= cols; j++) {
                 int currentSeatIndex = i * cols + (j - 1);
                 if (currentSeatIndex >= capacity) break;
 
+                String seatName = rowLetter + String.valueOf(j);
+                if (existingSeatNames.contains(seatName)) continue; // Skip duplicates
+
                 SeatFormat c = new SeatFormat();
-                c.setName(rowLetter + String.valueOf(j));
+                c.setName(seatName);
                 c.setRoom(room1);
 
                 if (currentSeatIndex >= capacity - 10) {
@@ -70,6 +74,7 @@ public class RoomServiceImpl implements RoomService {
                 }
 
                 seatFormats.add(c);
+                existingSeatNames.add(seatName); // Track added seat names
             }
         }
         seatFormatRepository.saveAll(seatFormats);

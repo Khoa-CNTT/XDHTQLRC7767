@@ -51,20 +51,25 @@ public class ShowTimeServiceImpl implements ShowTimeService {
     public ShowTimeWithChairsDTO getShowTimeWithChairs(Long showTimeId) {
         List<Chair> chairList = chairRepository.findAllChairViewByShowTimeId(showTimeId);
         ShowTimeWithChairsDTO showTimeWithChairsDTO = new ShowTimeWithChairsDTO();
-        Set<ChairDTO>  chairDTOS = new HashSet<>();
+        List<ChairDTO> chairDTOS = new ArrayList<>();
+
         for (Chair chair : chairList) {
             showTimeWithChairsDTO.setPricePerShowTime(chair.getShowTime().getPricePerShowTime());
+
             ChairDTO chairDTO = new ChairDTO();
             chairDTO.setId(chair.getId());
             chairDTO.setStatus(chair.getStatus());
             chairDTO.setType(chair.getType());
             chairDTO.setName(chair.getName());
+
             chairDTOS.add(chairDTO);
-        }{
         }
 
-        showTimeWithChairsDTO.setChairs(chairDTOS);
-       return showTimeWithChairsDTO;
+        // Sắp xếp danh sách ghế theo tên ghế (A1, A2, B1, ...)
+        chairDTOS.sort(Comparator.comparing(ChairDTO::getName));
+
+        showTimeWithChairsDTO.setChairs(new LinkedHashSet<>(chairDTOS)); // preserve order if using Set
+        return showTimeWithChairsDTO;
     }
 
     @Override
