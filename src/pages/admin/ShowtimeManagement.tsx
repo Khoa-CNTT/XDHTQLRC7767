@@ -90,6 +90,14 @@ const ShowtimeManagement: React.FC = () => {
       form.resetFields();
       setCurrentShowtime(null);
       dispatch(resetCreateShowtimeState());
+
+      // Reload showtime list to ensure complete data after creating a new showtime
+      const emptyParams: ShowtimeParams = {
+        movieName: "",
+        roomName: "",
+        date: "",
+      };
+      dispatch(searchShowtimesRequest(emptyParams));
     }
   }, [createShowtime.success, dispatch, form]);
 
@@ -216,30 +224,30 @@ const ShowtimeManagement: React.FC = () => {
     {
       title: "Phim",
       key: "movie",
-      render: (_: unknown, record: Showtime) => record.movie.name,
+      render: (_: unknown, record: Showtime) => record?.movie?.name,
     },
     {
       title: "Phòng",
       key: "room",
-      render: (_: unknown, record: Showtime) => record.room.name,
+      render: (_: unknown, record: Showtime) => record?.room?.name,
     },
     {
       title: "Rạp",
       key: "cinema",
-      render: (_: unknown, record: Showtime) => record.room.cinema.name,
+      render: (_: unknown, record: Showtime) => record?.room?.cinema?.name,
     },
     {
       title: "Ngày chiếu",
       dataIndex: "date",
       key: "date",
-      render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
+      render: (date: string) => (date ? dayjs(date).format("DD/MM/YYYY") : ""),
     },
     {
       title: "Giờ chiếu",
       key: "time",
       render: (_: unknown, record: Showtime) => (
         <span>
-          {record.startTime} - {record.endTime}
+          {record?.startTime} - {record?.endTime}
         </span>
       ),
     },
@@ -247,15 +255,14 @@ const ShowtimeManagement: React.FC = () => {
       title: "Giá vé",
       dataIndex: "pricePerShowTime",
       key: "pricePerShowTime",
-      render: (price: number) => `${price?.toLocaleString()}đ`,
+      render: (price: number) => (price ? `${price.toLocaleString()}đ` : ""),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
-      ),
+      render: (status: string) =>
+        status ? <Tag color={getStatusColor(status)}>{status}</Tag> : null,
     },
   ];
 
@@ -328,11 +335,14 @@ const ShowtimeManagement: React.FC = () => {
           >
             <Select
               placeholder="Chọn rạp"
-              onChange={(value) => dispatch(getRoomListRequest({ id: value }))}
+              onChange={(value) => {
+                console.log(value);
+                dispatch(getRoomListRequest({ id: value }));
+              }}
             >
               {cinemaList?.data?.map((cinema: any) => (
                 <Option key={cinema.id} value={cinema.id}>
-                  {cinema.name} - {cinema.address}
+                  {cinema?.name} - {cinema.address}
                 </Option>
               ))}
             </Select>
@@ -360,7 +370,7 @@ const ShowtimeManagement: React.FC = () => {
             <Select placeholder="Chọn phòng chiếu">
               {roomList?.data?.map((room: any) => (
                 <Option key={room.id} value={room.id}>
-                  {room.name} (Sức chứa: {room.capacity})
+                  {room?.name} (Sức chứa: {room.capacity})
                 </Option>
               ))}
             </Select>

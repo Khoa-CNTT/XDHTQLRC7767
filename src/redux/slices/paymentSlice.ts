@@ -65,6 +65,7 @@ export interface DailyRevenueDTO {
   date: string;
   totalRevenue: number;
   ticketCount: number;
+  totalCustomer: number;
 }
 
 export interface PaymentStatistic {

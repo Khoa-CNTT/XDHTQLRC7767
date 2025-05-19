@@ -84,7 +84,7 @@ export function* getRoomListSaga(
 ): Generator<any, void, any> {
   try {
     const cinemaId = action.payload;
-    const url = cinemaId ? `/api/rooms/${cinemaId}` : "/api/rooms";
+    const url = cinemaId ? `/api/rooms/${cinemaId.id}` : "/api/rooms";
     const response = yield call(axiosInstance.get, url);
     yield put(getRoomListSuccess(response.data));
   } catch (error: any) {

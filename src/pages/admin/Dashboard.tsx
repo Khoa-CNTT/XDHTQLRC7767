@@ -13,9 +13,7 @@ import {
   UserOutlined,
   ShoppingCartOutlined,
   DollarOutlined,
-  EyeOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined,
 } from "@ant-design/icons";
 import { Line, Pie } from "@ant-design/charts";
 import styled from "styled-components";
@@ -38,6 +36,62 @@ const StyledCard = styled(Card)`
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   height: 100%;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const StatisticWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  .ant-statistic-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .ant-statistic-content {
+    font-size: 24px;
+    font-weight: 600;
+  }
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  h2 {
+    margin: 0;
+    color: #1f1f1f;
+    font-weight: 600;
+  }
+
+  .date-picker {
+    display: flex;
+    align-items: center;
+
+    .ant-picker {
+      border-radius: 8px;
+    }
+  }
+`;
+
+const StyledTable = styled(Table)`
+  .ant-table {
+    border-radius: 0;
+  }
+
+  .dashboard-table-row:hover td {
+    background-color: #f5f5f5;
+  }
 `;
 
 const Dashboard: React.FC = () => {
@@ -150,16 +204,6 @@ const Dashboard: React.FC = () => {
   };
 
   // Sample data for charts (will be replaced with API data)
-  const salesData = [
-    { month: "Tháng 1", sales: 3800 },
-    { month: "Tháng 2", sales: 5200 },
-    { month: "Tháng 3", sales: 4900 },
-    { month: "Tháng 4", sales: 6000 },
-    { month: "Tháng 5", sales: 7000 },
-    { month: "Tháng 6", sales: 6500 },
-    { month: "Tháng 7", sales: 8000 },
-  ];
-
   const movieData = [
     { type: "Hành động", value: 35 },
     { type: "Tình cảm", value: 25 },
@@ -319,82 +363,81 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 24,
-        }}
-      >
-        <Title level={2} style={{ margin: 0 }}>
-          Tổng quan
-        </Title>
-        <DatePicker
-          onChange={handleDateChange}
-          defaultValue={dayjs(selectedDate)}
-          format="YYYY-MM-DD"
-          placeholder="Chọn ngày"
-        />
-      </div>
+      <HeaderSection>
+        <Title level={2}>Tổng quan</Title>
+        <div className="date-picker">
+          <Text type="secondary" style={{ marginRight: 8 }}>
+            Chọn ngày:{" "}
+          </Text>
+          <DatePicker
+            onChange={handleDateChange}
+            defaultValue={dayjs(selectedDate)}
+            format="YYYY-MM-DD"
+            placeholder="Chọn ngày"
+          />
+        </div>
+      </HeaderSection>
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} sm={12} lg={6}>
-          <StyledCard loading={loading}>
-            <Statistic
-              title="Tổng người dùng"
-              value={1250}
-              prefix={<UserOutlined />}
-              suffix={
-                <Text type="success" style={{ fontSize: 14 }}>
-                  <ArrowUpOutlined /> 15%
-                </Text>
-              }
-            />
-          </StyledCard>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} md={8}>
           <StyledCard loading={loading || dailyRevenue.loading}>
-            <Statistic
-              title="Đơn hàng hôm nay"
-              value={dailyRevenue.data?.ticketCount || 48}
-              prefix={<ShoppingCartOutlined />}
-              suffix={
-                <Text type="success" style={{ fontSize: 14 }}>
-                  <ArrowUpOutlined /> 8%
-                </Text>
-              }
-            />
+            <StatisticWrapper>
+              <Statistic
+                title="Tổng người dùng"
+                value={dailyRevenue.data?.totalCustomer || 0}
+                prefix={
+                  <UserOutlined style={{ color: "#1890ff", marginRight: 8 }} />
+                }
+                suffix={
+                  <Text type="success" style={{ fontSize: 14 }}>
+                    <ArrowUpOutlined /> 15%
+                  </Text>
+                }
+              />
+            </StatisticWrapper>
           </StyledCard>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} md={8}>
           <StyledCard loading={loading || dailyRevenue.loading}>
-            <Statistic
-              title="Doanh thu hôm nay"
-              value={dailyRevenue.data?.totalRevenue || 9850000}
-              prefix={<DollarOutlined />}
-              suffix="VND"
-              valueStyle={{ color: "#3f8600" }}
-            />
+            <StatisticWrapper>
+              <Statistic
+                title="Đơn hàng hôm nay"
+                value={dailyRevenue.data?.ticketCount || 0}
+                prefix={
+                  <ShoppingCartOutlined
+                    style={{ color: "#52c41a", marginRight: 8 }}
+                  />
+                }
+                suffix={
+                  <Text type="success" style={{ fontSize: 14 }}>
+                    <ArrowUpOutlined /> 8%
+                  </Text>
+                }
+              />
+            </StatisticWrapper>
           </StyledCard>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StyledCard loading={loading}>
-            <Statistic
-              title="Lượt xem hôm nay"
-              value={1024}
-              prefix={<EyeOutlined />}
-              suffix={
-                <Text type="danger" style={{ fontSize: 14 }}>
-                  <ArrowDownOutlined /> 5%
-                </Text>
-              }
-            />
+        <Col xs={24} sm={12} md={8}>
+          <StyledCard loading={loading || dailyRevenue.loading}>
+            <StatisticWrapper>
+              <Statistic
+                title="Doanh thu hôm nay"
+                value={dailyRevenue.data?.totalRevenue || 0}
+                prefix={
+                  <DollarOutlined
+                    style={{ color: "#f5222d", marginRight: 8 }}
+                  />
+                }
+                suffix="VND"
+                valueStyle={{ color: "#3f8600" }}
+              />
+            </StatisticWrapper>
           </StyledCard>
         </Col>
       </Row>
 
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-        <Col xs={24} lg={16}>
+        <Col xs={24} md={16}>
           <StyledCard
             title="Doanh thu theo tháng"
             extra={
@@ -409,7 +452,7 @@ const Dashboard: React.FC = () => {
             <Line {...lineConfig} height={300} />
           </StyledCard>
         </Col>
-        <Col xs={24} lg={8}>
+        <Col xs={24} md={8}>
           <StyledCard
             title="Phân loại phim"
             extra={<Button type="link">Xem chi tiết</Button>}
@@ -423,20 +466,33 @@ const Dashboard: React.FC = () => {
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col span={24}>
           <StyledCard
-            title="Thống kê doanh thu theo ngày"
-            extra={
-              <RangePicker
-                onChange={handleRangeChange}
-                defaultValue={[dateRange[0], dateRange[1]]}
-                format="YYYY-MM-DD"
-              />
+            title={
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span>Thống kê doanh thu theo ngày</span>
+                <div style={{ marginLeft: "auto" }}>
+                  <RangePicker
+                    onChange={handleRangeChange}
+                    defaultValue={[dateRange[0], dateRange[1]]}
+                    format="YYYY-MM-DD"
+                    style={{ borderRadius: "8px" }}
+                  />
+                </div>
+              </div>
             }
             loading={loading || paymentStats.loading}
+            bodyStyle={{ padding: "24px" }}
           >
             {paymentStats.data.length > 0 ? (
               <Line {...statisticsConfig} height={300} />
             ) : (
-              <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "60px 0",
+                  color: "rgba(0, 0, 0, 0.45)",
+                  fontSize: "16px",
+                }}
+              >
                 Không có dữ liệu thống kê trong khoảng thời gian này
               </div>
             )}
@@ -447,11 +503,18 @@ const Dashboard: React.FC = () => {
       <Row style={{ marginTop: 24 }}>
         <Col span={24}>
           <StyledCard
-            title="Đơn hàng gần đây"
-            extra={<Button type="link">Xem tất cả</Button>}
+            title={
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span>Đơn hàng gần đây</span>
+                <Button type="link" style={{ marginLeft: "auto" }}>
+                  Xem tất cả
+                </Button>
+              </div>
+            }
             loading={loading || paymentsPage.loading}
+            bodyStyle={{ padding: "0" }}
           >
-            <Table
+            <StyledTable
               columns={columns}
               dataSource={recentOrders}
               pagination={{
@@ -459,7 +522,9 @@ const Dashboard: React.FC = () => {
                 total: paymentsPage.totalPages * 5, // Assuming 5 items per page
                 current: paymentsPage.currentPage + 1, // API uses 0-based indexing
                 onChange: handlePageChange,
+                style: { padding: "16px 24px" },
               }}
+              rowClassName={() => "dashboard-table-row"}
             />
           </StyledCard>
         </Col>
