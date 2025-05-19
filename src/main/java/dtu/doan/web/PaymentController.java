@@ -1,6 +1,7 @@
 package dtu.doan.web;
 
 import dtu.doan.dto.DailyRevenueDTO;
+import dtu.doan.dto.PaymentTicketDTO;
 import dtu.doan.model.Payment;
 import dtu.doan.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,8 @@ public class PaymentController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Payment>> getAllPayments() {
-        List<Payment> payments = paymentService.getAllPayments();
+    public ResponseEntity<List<PaymentTicketDTO>> getAllPayments() {
+        List<PaymentTicketDTO> payments = paymentService.getAllPayments();
         return new ResponseEntity<>(payments, HttpStatus.OK);
     }
     @GetMapping("/daily-revenue/{date}")

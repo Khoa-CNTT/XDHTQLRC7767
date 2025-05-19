@@ -24,5 +24,8 @@ public class Payment {
     private Double amount;
     private String status; // Ví dụ: PENDING, SUCCESS, FAILED
     private LocalDate date; // Import java.time.LocalDate
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Ticket> tickets;
 
 }
