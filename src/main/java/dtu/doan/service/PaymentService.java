@@ -16,4 +16,5 @@ public interface PaymentService {
     DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date);
     List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate);
     List<PaymentTicketDTO> getAllPayments();
+
 }

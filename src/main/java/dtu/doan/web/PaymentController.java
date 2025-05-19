@@ -52,4 +52,5 @@ public class PaymentController {
         List<Object[]> statistics = paymentService.getPaymentStatistics(startDate, endDate);
         return ResponseEntity.ok(statistics);
     }
+
 }
