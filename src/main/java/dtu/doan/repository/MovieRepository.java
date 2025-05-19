@@ -58,4 +58,25 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findByStatusAndIsDeleteFalse(int status);
 
 
+    @Query("SELECT DISTINCT m FROM Movie m " +
+            "LEFT JOIN m.movieGenres mg " +
+            "LEFT JOIN mg.genre g " +
+            "WHERE (:title IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :title, '%'))) " +
+            "AND (:status IS NULL OR m.status = :status) " +
+            "AND (:genre IS NULL OR LOWER(g.name) LIKE LOWER(CONCAT('%', :genre, '%'))) " +
+            "AND (:director IS NULL OR LOWER(m.director) LIKE LOWER(CONCAT('%', :director, '%'))) " +
+            "AND (:actor IS NULL OR LOWER(m.actor) LIKE LOWER(CONCAT('%', :actor, '%'))) " +
+            "AND (:startDate IS NULL OR m.releaseDate >= :startDate) " +
+            "AND (:endDate IS NULL OR m.releaseDate <= :endDate)")
+    List<Movie> findMoviesWithFilters(
+            @Param("title") String title,
+            @Param("status") Integer status,
+            @Param("genre") String genre,
+            @Param("director") String director,
+            @Param("actor") String actor,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+
 }

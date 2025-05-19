@@ -33,6 +33,12 @@ public class MovieController {
         }
     }
 
+    @GetMapping("/admin/getList")
+    public ResponseEntity<List<MovieAdminResponseDTO>> getListMovieAdmin(MovieFilterDTO filter) {
+        List<MovieAdminResponseDTO> movies = service.getListMovieAdmin(filter);
+        return ResponseEntity.ok(movies);
+    }
+
 
     @PostMapping
     public ResponseEntity<?> saveMovie(@RequestBody MovieRequestDTO movie) {

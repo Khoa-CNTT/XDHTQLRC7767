@@ -3,6 +3,7 @@ package dtu.doan.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 
 import java.time.LocalDate;
@@ -35,8 +36,9 @@ public class Movie {
     private int ageLimit;
     private String content;
     private boolean isDelete;
-    @OneToMany(mappedBy = "movie")
+    @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     @JsonIgnore
+    @ToString.Exclude
     private Set<MovieGenre> movieGenres;
     private LocalDate releaseDate;
     private int status;
