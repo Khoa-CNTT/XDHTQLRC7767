@@ -81,13 +81,12 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query(value = """
     SELECT m.name AS movieTitle,
-           COUNT(s.id) AS showtimesCount,
+           COUNT(DISTINCT s.id) AS showtimesCount,
            COUNT(c.id) AS ticketsSold,
-           SUM(s.price_per_show_time) AS revenue
+           COALESCE(SUM(s.price_per_show_time), 0) AS revenue
     FROM movie m
     LEFT JOIN show_time s ON s.movie_id = m.id
-    LEFT JOIN chair c ON c.show_time_id = s.id
-    WHERE c.status = 'BOOKED'
+    LEFT JOIN chair c ON c.show_time_id = s.id AND c.status = 'BOOKED'
     GROUP BY m.id, m.name
 """, nativeQuery = true)
     List<Object[]> getMovieStatistics();
