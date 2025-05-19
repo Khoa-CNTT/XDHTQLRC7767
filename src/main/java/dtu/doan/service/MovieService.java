@@ -23,6 +23,7 @@ public interface MovieService {
     public List<MovieHomeResponseDTO> getUpcomingMovies();
 
     List<MovieAdminResponseDTO> getListMovieAdmin(MovieFilterDTO filter);
+    List<MovieStatisticsDTO> getMovieStatistics();
 
 
 }

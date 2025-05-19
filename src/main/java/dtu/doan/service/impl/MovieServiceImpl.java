@@ -179,6 +179,19 @@ public class MovieServiceImpl implements MovieService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MovieStatisticsDTO> getMovieStatistics() {
+        List<Object[]> statistics = repository.getMovieStatistics();
+        return statistics.stream()
+                .map(row -> new MovieStatisticsDTO(
+                        (String) row[0], // movieTitle
+                        ((Number) row[1]).intValue(), // showtimesCount
+                        ((Number) row[2]).intValue(), // ticketsSold
+                        ((Number) row[3]).longValue() // revenue
+                ))
+                .collect(Collectors.toList());
+    }
+
     private MovieHomeResponseDTO mapToDTO(Movie movie) {
         MovieHomeResponseDTO dto = new MovieHomeResponseDTO();
         dto.setId(movie.getId());
