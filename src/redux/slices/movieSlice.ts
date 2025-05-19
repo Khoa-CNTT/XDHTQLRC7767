@@ -333,7 +333,7 @@ const movieSlice = createSlice({
       state.comments.loading = true;
       state.comments.error = null;
     },
-    getCommentsSuccess: (state, action: PayloadAction<Comment[]>) => {
+    getCommentsSuccess: (state, action: PayloadAction<any[]>) => {
       state.comments.loading = false;
       state.comments.data = action.payload;
     },

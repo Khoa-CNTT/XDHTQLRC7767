@@ -6,8 +6,8 @@ interface PaymentState {
   loading: boolean;
   success: boolean;
   error: string | null;
-  paymentResult: any;
-  bookingData: any | null;
+  paymentResult: Record<string, unknown>;
+  bookingData: Record<string, unknown> | null;
   // New states for payment statistics
   paymentsPage: {
     data: Payment[];
@@ -31,32 +31,35 @@ interface PaymentState {
     loading: boolean;
     error: string | null;
   };
+  // New state for all payments
+  allPayments: Payment[];
 }
 
 // Định nghĩa kiểu dữ liệu cho request thanh toán
 export interface PaymentRequest {
   amount: number;
   orderInfo: string;
-  bookingData?: any; // Thông tin đặt vé để sử dụng sau khi thanh toán
+  bookingData?: Record<string, unknown>; // Thông tin đặt vé để sử dụng sau khi thanh toán
 }
 
 // Định nghĩa kiểu dữ liệu cho response thanh toán thành công
 interface PaymentSuccessResponse {
   paymentUrl: string;
-  bookingData?: any;
+  bookingData?: Record<string, unknown>;
 }
 
 // New interfaces for payment statistics
 export interface Payment {
-  id: number;
-  amount: number;
-  date: string;
-  status: string;
-  type: string;
-  ticketId?: number;
-  customerId?: number;
-  customerName?: string;
-  // Add other payment fields as needed
+  paymentId: number | null;
+  paymentDate: string;
+  paymentAmount: number;
+  paymentStatus: string;
+  ticketName: string[];
+  cinemaName: string;
+  roomName: string;
+  showDate: string;
+  showTime: string;
+  movieName: string;
 }
 
 export type MonthlyRevenue = [number, number];
@@ -91,13 +94,19 @@ export interface StatisticsParams {
   endDate: string;
 }
 
+// New interface for payment status update
+export interface UpdatePaymentStatusParams {
+  paymentId: number;
+  status: string;
+}
+
 // Trạng thái ban đầu
 const initialState: PaymentState = {
   paymentUrl: null,
   loading: false,
   success: false,
   error: null,
-  paymentResult: null,
+  paymentResult: {},
   bookingData: null,
   paymentsPage: {
     data: [],
@@ -121,6 +130,8 @@ const initialState: PaymentState = {
     loading: false,
     error: null,
   },
+  // Initialize all payments state
+  allPayments: [],
 };
 
 // Tạo slice
@@ -129,7 +140,7 @@ const paymentSlice = createSlice({
   initialState,
   reducers: {
     // Yêu cầu tạo URL thanh toán
-    createPaymentRequest: (state, action: PayloadAction<PaymentRequest>) => {
+    createPaymentRequest: (state) => {
       state.loading = true;
       state.error = null;
       state.paymentUrl = null;
@@ -150,14 +161,14 @@ const paymentSlice = createSlice({
     },
 
     // Xử lý kết quả từ VNPay callback
-    handlePaymentReturnRequest: (
-      state,
-      action: PayloadAction<Record<string, string>>
-    ) => {
+    handlePaymentReturnRequest: (state) => {
       state.loading = true;
       state.error = null;
     },
-    handlePaymentReturnSuccess: (state, action: PayloadAction<any>) => {
+    handlePaymentReturnSuccess: (
+      state,
+      action: PayloadAction<Record<string, unknown>>
+    ) => {
       state.loading = false;
       state.paymentResult = action.payload;
       state.success = true;
@@ -174,15 +185,12 @@ const paymentSlice = createSlice({
       state.loading = false;
       state.success = false;
       state.error = null;
-      state.paymentResult = null;
+      state.paymentResult = {};
       state.bookingData = null;
     },
 
     // New reducers for payment statistics
-    getPaymentsPageRequest: (
-      state,
-      action: PayloadAction<PaymentPageParams>
-    ) => {
+    getPaymentsPageRequest: (state) => {
       state.paymentsPage.loading = true;
       state.paymentsPage.error = null;
     },
@@ -204,10 +212,7 @@ const paymentSlice = createSlice({
       state.paymentsPage.error = action.payload;
     },
 
-    getYearlyRevenueRequest: (
-      state,
-      action: PayloadAction<YearlyRevenueParams>
-    ) => {
+    getYearlyRevenueRequest: (state) => {
       state.yearlyRevenue.loading = true;
       state.yearlyRevenue.error = null;
     },
@@ -224,10 +229,7 @@ const paymentSlice = createSlice({
       state.yearlyRevenue.error = action.payload;
     },
 
-    getDailyRevenueRequest: (
-      state,
-      action: PayloadAction<DailyRevenueParams>
-    ) => {
+    getDailyRevenueRequest: (state) => {
       state.dailyRevenue.loading = true;
       state.dailyRevenue.error = null;
     },
@@ -240,17 +242,17 @@ const paymentSlice = createSlice({
       state.dailyRevenue.error = action.payload;
     },
 
-    getPaymentStatisticsRequest: (
-      state,
-      action: PayloadAction<StatisticsParams>
-    ) => {
+    getPaymentStatisticsRequest: (state) => {
       state.statisticsData.loading = true;
       state.statisticsData.error = null;
     },
-    getPaymentStatisticsSuccess: (state, action: PayloadAction<any[]>) => {
+    getPaymentStatisticsSuccess: (
+      state,
+      action: PayloadAction<Array<[string, number, number]>>
+    ) => {
       state.statisticsData.loading = false;
       // Transform backend data to match frontend PaymentStatistic interface
-      state.statisticsData.data = action.payload.map((item: any[]) => ({
+      state.statisticsData.data = action.payload.map((item) => ({
         date: item[0],
         amount: item[1],
         count: item[2],
@@ -259,6 +261,40 @@ const paymentSlice = createSlice({
     getPaymentStatisticsFailure: (state, action: PayloadAction<string>) => {
       state.statisticsData.loading = false;
       state.statisticsData.error = action.payload;
+    },
+
+    // New reducers for all payments
+    getAllPaymentsRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    getAllPaymentsSuccess: (state, action: PayloadAction<Payment[]>) => {
+      state.loading = false;
+      state.allPayments = action.payload;
+    },
+    getAllPaymentsFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    // Update payment status
+    updatePaymentStatusRequest: (state) => {
+      state.loading = true;
+      state.error = null;
+    },
+    updatePaymentStatusSuccess: (state, action: PayloadAction<Payment>) => {
+      state.loading = false;
+      // Update the payment in the allPayments array
+      const index = state.allPayments.findIndex(
+        (p) => p.paymentId === action.payload.paymentId
+      );
+      if (index !== -1) {
+        state.allPayments[index] = action.payload;
+      }
+    },
+    updatePaymentStatusFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
     },
   },
 });
@@ -285,6 +321,13 @@ export const {
   getPaymentStatisticsRequest,
   getPaymentStatisticsSuccess,
   getPaymentStatisticsFailure,
+  // New exports for all payments
+  getAllPaymentsRequest,
+  getAllPaymentsSuccess,
+  getAllPaymentsFailure,
+  updatePaymentStatusRequest,
+  updatePaymentStatusSuccess,
+  updatePaymentStatusFailure,
 } = paymentSlice.actions;
 
 // Export reducer

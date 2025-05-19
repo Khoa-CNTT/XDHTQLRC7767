@@ -370,58 +370,86 @@ const PaymentCallback: React.FC = () => {
         dataToUse
       );
 
-      // Kiểm tra dữ liệu giá vé
-      let ticketPrice = 90000; // Giá mặc định
-      let quantity = 1; // Số lượng mặc định
+      // Calculate the correct total if we have seat type information
+      if (dataToUse.pricing?.seatTypes) {
+        const seatTypes = dataToUse.pricing.seatTypes;
 
-      // Lấy giá vé hợp lệ
-      if (
-        dataToUse.pricing &&
-        !isNaN(dataToUse.pricing.ticketPrice) &&
-        dataToUse.pricing.ticketPrice > 0
-      ) {
-        ticketPrice = dataToUse.pricing.ticketPrice;
-      } else if (paymentResult && paymentResult.vnp_Amount) {
-        // Lấy giá từ kết quả thanh toán nếu có
-        ticketPrice = Math.round(parseInt(paymentResult.vnp_Amount) / 100);
+        const standardTotal = seatTypes.standard * seatTypes.standardPrice;
+        const vipTotal = seatTypes.vip * seatTypes.vipPrice;
+        const coupleTotal = seatTypes.couple * seatTypes.couplePrice;
+
+        const subtotal = standardTotal + vipTotal + coupleTotal;
+        // Remove service fee from calculation
+        const totalAmount = subtotal;
+
+        console.log(
+          `[PAYMENT_CALLBACK] Recalculated prices: standard(${standardTotal}), vip(${vipTotal}), couple(${coupleTotal}), subtotal(${subtotal}), total(${totalAmount})`
+        );
+
+        // Update the pricing data
+        dataToUse.pricing.subtotal = subtotal;
+        dataToUse.pricing.total = totalAmount;
+        // Set service fee to 0
+        dataToUse.pricing.serviceFee = 0;
+      } else {
+        // Kiểm tra dữ liệu giá vé
+        let ticketPrice = 90000; // Giá mặc định
+        let quantity = 1; // Số lượng mặc định
+
+        // Lấy giá vé hợp lệ
+        if (
+          dataToUse.pricing &&
+          !isNaN(dataToUse.pricing.ticketPrice) &&
+          dataToUse.pricing.ticketPrice > 0
+        ) {
+          ticketPrice = dataToUse.pricing.ticketPrice;
+        } else if (paymentResult && paymentResult.vnp_Amount) {
+          // Lấy giá từ kết quả thanh toán nếu có
+          ticketPrice = Math.round(
+            parseInt(paymentResult.vnp_Amount as string) / 100
+          );
+        }
+        console.log("[PAYMENT_CALLBACK] Using ticket price:", ticketPrice);
+
+        // Lấy số lượng ghế
+        if (
+          dataToUse.pricing &&
+          !isNaN(dataToUse.pricing.quantity) &&
+          dataToUse.pricing.quantity > 0
+        ) {
+          quantity = dataToUse.pricing.quantity;
+        } else if (dataToUse.seats && dataToUse.seats.length) {
+          quantity = dataToUse.seats.length;
+        }
+        console.log("[PAYMENT_CALLBACK] Using quantity:", quantity);
+
+        // Tính tổng tiền
+        const total = ticketPrice * quantity;
+
+        // Update pricing data with the calculated values
+        if (!dataToUse.pricing) {
+          dataToUse.pricing = {
+            ticketPrice,
+            quantity,
+            subtotal: total,
+            total,
+          };
+        } else {
+          dataToUse.pricing.ticketPrice = ticketPrice;
+          dataToUse.pricing.quantity = quantity;
+          dataToUse.pricing.subtotal = total;
+          dataToUse.pricing.total = total;
+        }
       }
-      console.log("[PAYMENT_CALLBACK] Using ticket price:", ticketPrice);
-
-      // Lấy số lượng ghế
-      if (
-        dataToUse.pricing &&
-        !isNaN(dataToUse.pricing.quantity) &&
-        dataToUse.pricing.quantity > 0
-      ) {
-        quantity = dataToUse.pricing.quantity;
-      } else if (dataToUse.seats && dataToUse.seats.length) {
-        quantity = dataToUse.seats.length;
-      }
-      console.log("[PAYMENT_CALLBACK] Using quantity:", quantity);
-
-      // Tính tổng tiền
-      const total = ticketPrice * quantity;
-
-      // Nếu có dữ liệu đặt vé, chuyển đến trang hóa đơn
-      const processedBookingData = {
-        ...dataToUse,
-        pricing: {
-          ...(dataToUse.pricing || {}),
-          ticketPrice,
-          quantity,
-          subtotal: total,
-          total,
-        },
-      };
 
       console.log(
         "[PAYMENT_CALLBACK] Final processed data:",
-        processedBookingData.pricing
+        dataToUse.pricing
       );
 
       navigate("/invoice", {
         state: {
-          bookingData: processedBookingData,
+          bookingData: dataToUse,
           ticketData: createTicket.data,
         },
       });
@@ -564,17 +592,63 @@ const PaymentCallback: React.FC = () => {
                                         (700 + index).toString()
                                     );
 
-                                const hasVipSeat = dataToUse.seatsInfo
-                                  ? dataToUse.seatsInfo.some(
-                                      (seat: { type: string }) =>
-                                        seat.type === "vip"
-                                    )
-                                  : false;
+                                // Determine the total price based on seat types
+                                let totalPrice =
+                                  parseInt(params.vnp_Amount) / 100;
+
+                                // If we have detailed seat type information, use it
+                                if (dataToUse.pricing?.seatTypes) {
+                                  const seatTypes = dataToUse.pricing.seatTypes;
+                                  const standardTotal =
+                                    seatTypes.standard *
+                                    seatTypes.standardPrice;
+                                  const vipTotal =
+                                    seatTypes.vip * seatTypes.vipPrice;
+                                  const coupleTotal =
+                                    seatTypes.couple * seatTypes.couplePrice;
+
+                                  totalPrice =
+                                    standardTotal + vipTotal + coupleTotal;
+                                  console.log(
+                                    `[PAYMENT_CALLBACK] Manual ticket price from seatTypes: ${totalPrice}`
+                                  );
+                                } else if (dataToUse.seatsInfo) {
+                                  // Otherwise calculate based on seat types if available
+                                  const basePrice =
+                                    dataToUse.pricing?.ticketPrice ||
+                                    parseInt(params.vnp_Amount) /
+                                      100 /
+                                      chairIds.length;
+
+                                  // Calculate extra charges for special seat types
+                                  const extraCharges =
+                                    dataToUse.seatsInfo.reduce(
+                                      (total, seat: any) => {
+                                        if (
+                                          seat.type?.toLowerCase() === "vip"
+                                        ) {
+                                          return total + 30000; // VIP seats cost 30,000 VND more
+                                        } else if (
+                                          seat.type?.toLowerCase() === "couple"
+                                        ) {
+                                          return total + 100000; // Couple seats cost 100,000 VND more
+                                        }
+                                        return total;
+                                      },
+                                      0
+                                    );
+
+                                  totalPrice =
+                                    basePrice * chairIds.length + extraCharges;
+                                  console.log(
+                                    `[PAYMENT_CALLBACK] Manual ticket price calculation: Base(${basePrice}) * Seats(${chairIds.length}) + Extra(${extraCharges}) = ${totalPrice}`
+                                  );
+                                }
 
                                 // Tạo payload
                                 const ticketRequestData = {
-                                  type: hasVipSeat ? "VIP" : "STANDARD",
-                                  price: parseInt(params.vnp_Amount) / 100,
+                                  type: "STANDARD", // Mặc định là Standard
+                                  price: totalPrice,
                                   id_showTime: showtimeId,
                                   id_customer: dataToUse.customerId,
                                   chairIds: chairIds,

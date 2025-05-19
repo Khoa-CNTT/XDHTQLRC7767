@@ -38,7 +38,7 @@ import {
   getCommentsRequest,
   addCommentRequest,
   resetAddCommentState,
-  Comment as CommentType,
+  Comment,
   getShowTimesRequest,
 } from "../redux/slices/movieSlice";
 import { RootState } from "../redux/store";
@@ -84,7 +84,37 @@ interface MovieDTO {
   [key: string]: unknown; // Allow additional properties
 }
 
-// Interface cho currentUser
+// Interface for API Comment
+interface APIComment {
+  id: number;
+  content: string;
+  user: {
+    id: number | string;
+    fullName: string;
+    email?: string;
+    phoneNumber?: string;
+  };
+  movie?: {
+    id: number;
+    name: string;
+  };
+  createdAt: string;
+  sentiment?: string;
+  score?: number;
+  deleted: boolean;
+  approved: boolean;
+}
+
+// Interface for display comment
+interface DisplayComment {
+  id: number | string;
+  author: string;
+  avatar: string;
+  content: string;
+  datetime: string;
+}
+
+// Interface for currentUser
 interface User {
   id: string; // Thay đổi từ number sang string theo đúng định nghĩa trong authSlice
   email: string;
@@ -97,7 +127,7 @@ interface User {
   isVerified?: boolean;
 }
 
-// Define comment interface for CustomComment
+// Interface for CustomComment
 interface CommentProps {
   author: string;
   avatar: string;
@@ -363,69 +393,155 @@ const ShowtimeTitle = styled.h3`
 
 const DateList = styled.div`
   display: flex;
-  gap: 0;
+  gap: 15px;
   overflow-x: auto;
-  padding-bottom: 15px;
-  margin-bottom: 25px;
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 25px;
+  margin-bottom: 30px;
+  border-radius: 20px;
+  background: linear-gradient(
+    to right,
+    rgba(26, 32, 46, 0.8),
+    rgba(20, 30, 48, 0.8)
+  );
+  backdrop-filter: blur(15px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 191, 255, 0.5) rgba(255, 255, 255, 0.1);
 
   &::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
   }
 
   &::-webkit-scrollbar-thumb {
     background-color: rgba(0, 191, 255, 0.5);
-    border-radius: 3px;
+    border-radius: 4px;
   }
 
   &::-webkit-scrollbar-track {
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    border-radius: 4px;
   }
 `;
 
 const DateItem = styled(Button)<{ $active?: boolean }>`
-  min-width: 80px;
-  background-color: ${(props) => (props.$active ? "#00bfff" : "#1e2747")};
+  min-width: 90px;
+  background: ${(props) =>
+    props.$active
+      ? "linear-gradient(135deg, #0080ff, #00bfff)"
+      : "rgba(20, 30, 48, 0.6)"};
   color: ${(props) => (props.$active ? "white" : "#ccc")};
-  border: none;
-  border-radius: 0;
-  height: 56px;
-  padding: 6px 0;
+  border: ${(props) =>
+    props.$active ? "none" : "1px solid rgba(0, 191, 255, 0.2)"};
+  border-radius: 16px;
+  height: 90px;
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: ${(props) =>
+    props.$active
+      ? "0 10px 25px rgba(0, 127, 255, 0.5)"
+      : "0 5px 15px rgba(0, 0, 0, 0.2)"};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: ${(props) => (props.$active ? "-30%" : "-100%")};
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    background: radial-gradient(
+      circle,
+      rgba(0, 247, 255, 0.1) 0%,
+      transparent 70%
+    );
+    transform: scale(0);
+    opacity: 0;
+    transition: all 0.6s ease-out;
+    transform-origin: center;
+  }
+
+  &:hover::before {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: ${(props) => (props.$active ? "90%" : "0")};
+    height: 3px;
+    background: linear-gradient(to right, #00f2ff, #0080ff);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
 
   .date-day {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 16px;
-    margin-bottom: 2px;
+    margin-bottom: 8px;
     text-transform: uppercase;
+    color: ${(props) => (props.$active ? "#ffffff" : "#00bfff")};
+    position: relative;
+    z-index: 2;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: ${(props) => (props.$active ? "100%" : "0")};
+      height: 1px;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
   }
 
   .date-date {
-    font-size: 14px;
-    opacity: 0.8;
-  }
-
-  &:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-
-  &:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+    font-size: 24px;
+    font-weight: ${(props) => (props.$active ? "700" : "500")};
+    position: relative;
+    z-index: 2;
+    letter-spacing: 1px;
+    background: ${(props) =>
+      props.$active ? "linear-gradient(to bottom, #ffffff, #e0f7ff)" : "none"};
+    -webkit-background-clip: ${(props) => (props.$active ? "text" : "none")};
+    -webkit-text-fill-color: ${(props) =>
+      props.$active ? "transparent" : "inherit"};
   }
 
   &:hover {
-    background-color: ${(props) => (props.$active ? "#00bfff" : "#2a3554")};
+    background: ${(props) =>
+      props.$active
+        ? "linear-gradient(135deg, #0088ff, #00d0ff)"
+        : "rgba(0, 127, 255, 0.2)"};
+    transform: translateY(-7px);
     color: white;
+    box-shadow: 0 15px 30px rgba(0, 127, 255, 0.3);
+  }
+
+  &:focus {
+    background: ${(props) =>
+      props.$active
+        ? "linear-gradient(135deg, #0088ff, #00d0ff)"
+        : "rgba(0, 127, 255, 0.2)"};
+    color: white;
+    box-shadow: 0 10px 25px rgba(0, 127, 255, 0.4);
+  }
+
+  &:active {
+    transform: translateY(-3px);
+    transition: all 0.1s;
   }
 `;
 
@@ -488,47 +604,83 @@ const ShowtimeList = styled.div`
 
 const ShowtimeItem = styled(Button)`
   height: auto;
-  background-color: rgba(255, 255, 255, 0.05);
+  background: rgba(20, 30, 48, 0.7);
   color: white;
-  border: 1px solid rgba(0, 191, 255, 0.5);
+  border: 1px solid rgba(0, 191, 255, 0.3);
   margin-bottom: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 10px;
-  border-radius: 10px;
+  padding: 15px 10px;
+  border-radius: 14px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle,
+      rgba(0, 191, 255, 0.1) 0%,
+      transparent 70%
+    );
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.5s ease-out;
+  }
 
   .time {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     color: #00bfff;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(to right, #00bfff, #0080ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .room {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-bottom: 6px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
   }
 
   .price {
-    font-size: 13px;
+    font-size: 15px;
     color: #ffd700;
-    font-weight: 500;
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
   }
 
   &:hover {
-    background-color: rgba(0, 191, 255, 0.15);
+    background: rgba(0, 127, 255, 0.2);
     color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 7px 15px rgba(0, 191, 255, 0.25);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 127, 255, 0.3);
     border-color: #00bfff;
+
+    &::before {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   &:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 8px rgba(0, 191, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 127, 255, 0.2);
   }
 `;
 
@@ -733,7 +885,6 @@ const MovieDetail: React.FC = () => {
   const [favorite, setFavorite] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [commentValue, setCommentValue] = useState("");
-  const [userRating, setUserRating] = useState(0);
   const [form] = Form.useForm();
 
   // Get current user from auth state (if logged in)
@@ -762,26 +913,11 @@ const MovieDetail: React.FC = () => {
   } = useSelector((state: RootState) => state.movie.showTimes);
 
   // Get add comment status
-  const {
-    loading: addCommentLoading,
-    error: addCommentError,
-    success: addCommentSuccess,
-  } = useSelector((state: RootState) => state.movie.addComment);
+  const { loading: addCommentLoading, success: addCommentSuccess } =
+    useSelector((state: RootState) => state.movie.addComment);
 
   // Ensure movie data has the right type
   const movie = movieData as MovieDTO;
-
-  // Format comments data for display
-  const comments = commentsData.map((comment: CommentType) => ({
-    id: comment.id,
-    author: comment.user?.username || "Người dùng ẩn danh",
-    avatar:
-      comment.user?.avatar ||
-      "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png",
-    content: comment.content,
-    datetime: new Date(comment.createdAt).toLocaleDateString("vi-VN"),
-    rating: 5, // API does not support ratings yet, using default value
-  }));
 
   // Custom Comment component
   const CustomComment = ({
@@ -820,19 +956,25 @@ const MovieDetail: React.FC = () => {
       dispatch(
         getCommentsRequest({
           movieId: parseInt(id),
-          userId: currentUser?.id, // Pass user ID if available
         })
       );
     }
-  }, [dispatch, id, currentUser?.id]);
+  }, [dispatch, id]);
+
+  // Add a new useEffect to log comments data for debugging
+  useEffect(() => {
+    // Log comments data when it changes
+    console.log("Comments data:", commentsData);
+  }, [commentsData]);
 
   useEffect(() => {
     // Auto-select today's date and fetch showtimes for today
-    const today = new Date().toISOString().split("T")[0]; // ISO format: YYYY-MM-DD
-    setSelectedDate(today);
+    const today = new Date();
+    const todayFormatted = today.toISOString().split("T")[0];
+    setSelectedDate(todayFormatted);
 
     if (id) {
-      fetchShowtimes(id, today);
+      fetchShowtimes(id, todayFormatted);
     }
   }, [id, dispatch]);
 
@@ -840,7 +982,6 @@ const MovieDetail: React.FC = () => {
     // Reset comment form when comment is successfully added
     if (addCommentSuccess) {
       setCommentValue("");
-      setUserRating(0);
       form.resetFields();
 
       // Reset the success state
@@ -911,16 +1052,13 @@ const MovieDetail: React.FC = () => {
     );
   };
 
-  const calculateAverageRating = () => {
-    if (comments.length === 0) return "0";
-    const sum = comments.reduce((total, comment) => total + comment.rating, 0);
-    return (sum / comments.length).toFixed(1);
-  };
-
   // Generate dates for the next 7 days
   const generateDates = () => {
     const dates = [];
     const today = new Date();
+
+    // Format today's date as YYYY-MM-DD for comparison
+    const todayFormatted = today.toISOString().split("T")[0];
 
     for (let i = 0; i < 7; i++) {
       const date = new Date();
@@ -928,7 +1066,7 @@ const MovieDetail: React.FC = () => {
       const dateStr = date.toISOString().split("T")[0]; // ISO format: YYYY-MM-DD
       dates.push({
         date: dateStr,
-        isToday: i === 0,
+        isToday: dateStr === todayFormatted,
       });
     }
 
@@ -1157,34 +1295,16 @@ const MovieDetail: React.FC = () => {
                   </TabPane>
 
                   <TabPane
-                    tab={`Đánh giá & Bình luận (${comments.length})`}
+                    tab={`Bình luận (${
+                      Array.isArray(commentsData) ? commentsData.length : 0
+                    })`}
                     key="2"
                   >
                     <TabContent>
                       <CommentSection>
-                        <RatingContainer>
-                          <StyledRate
-                            allowHalf
-                            disabled
-                            value={parseFloat(calculateAverageRating())}
-                          />
-                          <RatingText>
-                            {calculateAverageRating()} / 5 ({comments.length}{" "}
-                            đánh giá)
-                          </RatingText>
-                        </RatingContainer>
-
-                        <StyledDivider />
-
                         <CommentForm form={form} onFinish={handleCommentSubmit}>
                           <div style={{ marginBottom: "16px" }}>
-                            <SectionLabel>Đánh giá của bạn:</SectionLabel>
-                            <StyledRate
-                              allowHalf
-                              value={userRating}
-                              onChange={setUserRating}
-                              character={<StarFilled />}
-                            />
+                            <SectionLabel>Bình luận của bạn:</SectionLabel>
                           </div>
 
                           <Form.Item
@@ -1240,12 +1360,13 @@ const MovieDetail: React.FC = () => {
                               Không thể tải bình luận. Vui lòng thử lại sau.
                             </p>
                           </div>
-                        ) : comments.length > 0 ? (
+                        ) : Array.isArray(commentsData) &&
+                          commentsData.length > 0 ? (
                           <List
-                            dataSource={comments}
+                            dataSource={commentsData}
                             header={
                               <SectionLabel>
-                                {comments.length} bình luận
+                                {commentsData.length} bình luận
                               </SectionLabel>
                             }
                             itemLayout="horizontal"
@@ -1257,20 +1378,24 @@ const MovieDetail: React.FC = () => {
                                 }}
                               >
                                 <CustomComment
-                                  author={item.author}
-                                  avatar={item.avatar}
-                                  content={
-                                    <>
-                                      <StyledRate
-                                        disabled
-                                        defaultValue={item.rating}
-                                      />
-                                      <RatingContent>
-                                        {item.content}
-                                      </RatingContent>
-                                    </>
+                                  author={
+                                    item.user && typeof item.user === "object"
+                                      ? item.user.fullName ||
+                                        item.user.username ||
+                                        "Người dùng ẩn danh"
+                                      : "Người dùng ẩn danh"
                                   }
-                                  datetime={item.datetime}
+                                  avatar={
+                                    "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+                                  }
+                                  content={
+                                    <RatingContent>
+                                      {item.content}
+                                    </RatingContent>
+                                  }
+                                  datetime={new Date(
+                                    item.createdAt
+                                  ).toLocaleDateString("vi-VN")}
                                 />
                               </List.Item>
                             )}
@@ -1411,8 +1536,9 @@ const MovieDetail: React.FC = () => {
                                             <div className="room">
                                               <ProjectOutlined
                                                 style={{
-                                                  marginRight: "4px",
-                                                  fontSize: "10px",
+                                                  marginRight: "8px",
+                                                  fontSize: "12px",
+                                                  color: "#00bfff",
                                                 }}
                                               />
                                               {showtime.roomName ||
@@ -1447,18 +1573,6 @@ const MovieDetail: React.FC = () => {
                                             }
                                           >
                                             <div className="time">{time}</div>
-                                            <div className="room">
-                                              <ProjectOutlined
-                                                style={{
-                                                  marginRight: "4px",
-                                                  fontSize: "10px",
-                                                }}
-                                              />
-                                              Phòng chiếu
-                                            </div>
-                                            <div className="price">
-                                              75.000 VND
-                                            </div>
                                           </ShowtimeItem>
                                         </motion.div>
                                       )

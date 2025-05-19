@@ -25,39 +25,117 @@ const TotalRow = styled(PriceRow)`
   margin-top: 5px;
 `;
 
+interface SeatTypes {
+  standard: number;
+  vip: number;
+  couple: number;
+  standardPrice: number;
+  couplePrice: number;
+  vipPrice: number;
+}
+
 interface TicketInfoCardProps {
   ticketPrice?: number;
   quantity?: number;
   total?: number;
+  serviceFee?: number;
+  seatTypes?: SeatTypes;
+  displayCard?: boolean;
 }
 
 const TicketInfoCard: React.FC<TicketInfoCardProps> = ({
-  ticketPrice = 90000,
-  quantity = 1,
-  total,
+  ticketPrice = 0,
+  quantity = 0,
+  total = 0,
+  serviceFee = 0,
+  seatTypes,
+  displayCard = true,
 }) => {
-  // Đảm bảo không hiển thị NaN
-  const displayTicketPrice =
-    !isNaN(Number(ticketPrice)) && ticketPrice > 0 ? ticketPrice : 90000;
-  const displayQuantity =
-    !isNaN(Number(quantity)) && quantity > 0 ? quantity : 1;
+  const content = (
+    <>
+      {seatTypes ? (
+        <>
+          {seatTypes.standard > 0 && (
+            <PriceRow>
+              <div>Ghế thường ({seatTypes.standard} ghế)</div>
+              <div>
+                {(seatTypes.standard * seatTypes.standardPrice).toLocaleString(
+                  "vi-VN"
+                )}{" "}
+                VNĐ
+              </div>
+            </PriceRow>
+          )}
 
-  return (
-    <StyledCard>
-      <Title level={5}>Chi tiết thanh toán</Title>
-      <PriceRow>
-        <span>Giá vé x {displayQuantity}</span>
-        <span>
-          {displayTicketPrice}đ x {displayQuantity}
-        </span>
-      </PriceRow>
-      <Divider style={{ margin: "10px 0" }} />
-      <TotalRow>
-        <span>Tổng cộng</span>
-        <span>{displayTicketPrice * displayQuantity}đ</span>
-      </TotalRow>
-    </StyledCard>
+          {seatTypes.vip > 0 && (
+            <PriceRow>
+              <div>Ghế VIP ({seatTypes.vip} ghế)</div>
+              <div>
+                {(seatTypes.vip * seatTypes.vipPrice).toLocaleString("vi-VN")}{" "}
+                VNĐ
+              </div>
+            </PriceRow>
+          )}
+
+          {seatTypes.couple > 0 && (
+            <PriceRow>
+              <div>Ghế Couple ({seatTypes.couple} ghế)</div>
+              <div>
+                {(seatTypes.couple * seatTypes.couplePrice).toLocaleString(
+                  "vi-VN"
+                )}{" "}
+                VNĐ
+              </div>
+            </PriceRow>
+          )}
+
+          <Divider style={{ margin: "10px 0" }} />
+
+          <TotalRow>
+            <div>Tổng cộng</div>
+            <div>
+              {(
+                seatTypes.standard * seatTypes.standardPrice +
+                seatTypes.vip * seatTypes.vipPrice +
+                seatTypes.couple * seatTypes.couplePrice
+              ).toLocaleString("vi-VN")}{" "}
+              VNĐ
+            </div>
+          </TotalRow>
+        </>
+      ) : (
+        <>
+          <PriceRow>
+            <div>Giá vé</div>
+            <div>{ticketPrice.toLocaleString("vi-VN")} VNĐ</div>
+          </PriceRow>
+
+          <PriceRow>
+            <div>Số lượng</div>
+            <div>{quantity}</div>
+          </PriceRow>
+
+          <PriceRow>
+            <div>Thành tiền</div>
+            <div>{(ticketPrice * quantity).toLocaleString("vi-VN")} VNĐ</div>
+          </PriceRow>
+
+          <Divider style={{ margin: "10px 0" }} />
+
+          <TotalRow>
+            <div>Tổng cộng</div>
+            <div>{total.toLocaleString("vi-VN")} VNĐ</div>
+          </TotalRow>
+        </>
+      )}
+    </>
   );
+
+  if (displayCard) {
+    return <StyledCard>{content}</StyledCard>;
+  }
+
+  return content;
 };
 
 export default TicketInfoCard;

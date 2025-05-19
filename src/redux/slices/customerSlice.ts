@@ -21,6 +21,11 @@ export interface CustomerState {
     loading: boolean;
     error: string | null;
   };
+  customerCount: {
+    data: number;
+    loading: boolean;
+    error: string | null;
+  };
   deleteCustomer: {
     loading: boolean;
     error: string | null;
@@ -48,6 +53,11 @@ export interface CustomerState {
 const initialState: CustomerState = {
   customerList: {
     data: [],
+    loading: false,
+    error: null,
+  },
+  customerCount: {
+    data: 0,
     loading: false,
     error: null,
   },
@@ -91,6 +101,20 @@ const customerSlice = createSlice({
     getCustomerListFailure: (state, action: PayloadAction<string>) => {
       state.customerList.loading = false;
       state.customerList.error = action.payload;
+    },
+
+    // Get customer count
+    getCustomerCountRequest: (state) => {
+      state.customerCount.loading = true;
+      state.customerCount.error = null;
+    },
+    getCustomerCountSuccess: (state, action: PayloadAction<number>) => {
+      state.customerCount.loading = false;
+      state.customerCount.data = action.payload;
+    },
+    getCustomerCountFailure: (state, action: PayloadAction<string>) => {
+      state.customerCount.loading = false;
+      state.customerCount.error = action.payload;
     },
 
     // Delete customer
@@ -212,6 +236,9 @@ export const {
   getCustomerListRequest,
   getCustomerListSuccess,
   getCustomerListFailure,
+  getCustomerCountRequest,
+  getCustomerCountSuccess,
+  getCustomerCountFailure,
   deleteCustomerRequest,
   deleteCustomerSuccess,
   deleteCustomerFailure,

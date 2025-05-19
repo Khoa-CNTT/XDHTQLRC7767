@@ -370,6 +370,14 @@ interface BookingData {
     quantity: number;
     subtotal: number;
     total: number;
+    seatTypes?: {
+      standard: number;
+      vip: number;
+      couple: number;
+      standardPrice: number;
+      couplePrice: number;
+      vipPrice: number;
+    };
   };
   customerName?: string;
   email?: string;
@@ -604,6 +612,8 @@ const InvoicePage: React.FC = () => {
                       ticketPrice={bookingData.pricing.ticketPrice}
                       quantity={bookingData.pricing.quantity}
                       total={bookingData.pricing.total}
+                      seatTypes={bookingData.pricing.seatTypes}
+                      displayCard={false}
                     />
                   ) : (
                     <p>Không có thông tin giá vé</p>

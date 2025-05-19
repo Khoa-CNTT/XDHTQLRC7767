@@ -105,6 +105,14 @@ interface SentimentStat {
   iconType: SentimentIconType;
 }
 
+// Before moving to component implementation, add the User interface
+interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  // Other user fields as needed
+}
+
 const ReviewManagement: React.FC = () => {
   // State for reviews
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -497,7 +505,7 @@ const ReviewManagement: React.FC = () => {
         movieId: String(comment.movieId),
         movieTitle: comment.movieTitle || selectedMovie?.title || "",
         userId: String(comment.userId),
-        userName: comment.userName || "User",
+        userName: comment.user?.fullName || comment.userName || "User",
         rating: 5, // Assuming rating not in API data
         content: comment.content,
         date: comment.createdAt,

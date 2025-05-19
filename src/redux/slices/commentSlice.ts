@@ -10,6 +10,22 @@ export interface Comment {
   createdAt: string;
   userName?: string;
   movieTitle?: string;
+  user?: {
+    id: number;
+    fullName: string;
+    email: string;
+    gender?: string | null;
+    birthday?: string | null;
+    phoneNumber?: string | null;
+    address?: string | null;
+    cardId?: string | null;
+    account?: {
+      username: string;
+      role: string;
+      loginType: string;
+    };
+    isDelete: boolean;
+  };
 }
 
 // Define sentiment statistics interface

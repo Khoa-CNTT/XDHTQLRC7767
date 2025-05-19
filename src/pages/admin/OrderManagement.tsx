@@ -28,6 +28,12 @@ import {
 } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getAllPaymentsRequest,
+  updatePaymentStatusRequest,
+} from "../../redux/slices/paymentSlice";
+import { RootState } from "../../redux/store";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -53,125 +59,48 @@ const StyledBadge = styled(Badge)`
   }
 `;
 
-// Interface cho đơn hàng
-interface Order {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  movieTitle: string;
-  showtime: string;
-  seats: string[];
-  totalAmount: number;
-  paymentMethod: string;
-  status: string;
-  createdAt: string;
+// Interface for Payment from backend
+interface Payment {
+  paymentId: number | null;
+  paymentDate: string;
+  paymentAmount: number;
+  paymentStatus: string;
+  ticketName: string[];
+  cinemaName: string;
+  roomName: string;
+  showDate: string;
+  showTime: string;
+  movieName: string;
 }
 
-// Interface cho chi tiết đơn hàng
-interface OrderDetail extends Order {
-  roomName: string;
-  ticketCount: number;
-  concessions: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+// Interface for payment details with additional customer info
+interface PaymentDetail extends Payment {
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
 }
 
 const OrderManagement: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const dispatch = useDispatch();
+  const paymentState = useSelector((state: RootState) => state.payment);
+  const loading = paymentState.loading;
+  // Safe access to allPayments with default empty array if not available
+  const allPayments: Payment[] = paymentState.allPayments || [];
+
   const [searchText, setSearchText] = useState<string>("");
   const [dateRange, setDateRange] = useState<
     [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   >(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
-  const [currentOrder, setCurrentOrder] = useState<OrderDetail | null>(null);
+  const [currentPayment, setCurrentPayment] = useState<PaymentDetail | null>(
+    null
+  );
 
-  // Mock data
+  // Fetch payments using Redux
   useEffect(() => {
-    // Giả lập tải dữ liệu
-    setTimeout(() => {
-      const mockOrders: Order[] = [
-        {
-          id: 1,
-          orderNumber: "ORD-20230715-001",
-          customerName: "Nguyễn Văn A",
-          customerEmail: "nguyenvana@example.com",
-          customerPhone: "0901234567",
-          movieTitle: "Avengers: Endgame",
-          showtime: "15/07/2023 10:00",
-          seats: ["A1", "A2"],
-          totalAmount: 180000,
-          paymentMethod: "Thẻ tín dụng",
-          status: "Đã thanh toán",
-          createdAt: "2023-07-15T08:30:00",
-        },
-        {
-          id: 2,
-          orderNumber: "ORD-20230715-002",
-          customerName: "Trần Thị B",
-          customerEmail: "tranthib@example.com",
-          customerPhone: "0912345678",
-          movieTitle: "Spider-Man: No Way Home",
-          showtime: "15/07/2023 14:00",
-          seats: ["B3", "B4", "B5"],
-          totalAmount: 255000,
-          paymentMethod: "Ví điện tử",
-          status: "Đã thanh toán",
-          createdAt: "2023-07-15T12:15:00",
-        },
-        {
-          id: 3,
-          orderNumber: "ORD-20230716-001",
-          customerName: "Lê Văn C",
-          customerEmail: "levanc@example.com",
-          customerPhone: "0923456789",
-          movieTitle: "The Batman",
-          showtime: "16/07/2023 18:00",
-          seats: ["C6", "C7"],
-          totalAmount: 200000,
-          paymentMethod: "Chuyển khoản",
-          status: "Chờ xác nhận",
-          createdAt: "2023-07-16T15:45:00",
-        },
-        {
-          id: 4,
-          orderNumber: "ORD-20230716-002",
-          customerName: "Phạm Thị D",
-          customerEmail: "phamthid@example.com",
-          customerPhone: "0934567890",
-          movieTitle: "Dune",
-          showtime: "16/07/2023 20:00",
-          seats: ["D8", "D9", "D10", "D11"],
-          totalAmount: 340000,
-          paymentMethod: "Thẻ tín dụng",
-          status: "Chờ thanh toán",
-          createdAt: "2023-07-16T18:20:00",
-        },
-        {
-          id: 5,
-          orderNumber: "ORD-20230717-001",
-          customerName: "Hoàng Văn E",
-          customerEmail: "hoangvane@example.com",
-          customerPhone: "0945678901",
-          movieTitle: "Encanto",
-          showtime: "17/07/2023 15:00",
-          seats: ["E1", "E2", "E3"],
-          totalAmount: 225000,
-          paymentMethod: "Ví điện tử",
-          status: "Đã hủy",
-          createdAt: "2023-07-17T10:10:00",
-        },
-      ];
-
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    dispatch(getAllPaymentsRequest());
+  }, [dispatch]);
 
   // Handlers
   const handleSearch = (value: string) => {
@@ -188,71 +117,71 @@ const OrderManagement: React.FC = () => {
     setStatusFilter(value);
   };
 
-  const showOrderDetail = (id: number) => {
-    const order = orders.find((o) => o.id === id);
-    if (order) {
-      // Giả lập thêm dữ liệu chi tiết
-      const orderDetail: OrderDetail = {
-        ...order,
-        roomName: "Phòng " + Math.floor(Math.random() * 5 + 1),
-        ticketCount: order.seats.length,
-        concessions: [
-          {
-            name: "Bắp rang",
-            quantity: Math.floor(Math.random() * 3) + 1,
-            price: 45000,
-          },
-          {
-            name: "Nước ngọt",
-            quantity: Math.floor(Math.random() * 3) + 1,
-            price: 35000,
-          },
-        ],
-      };
-      setCurrentOrder(orderDetail);
-      setDrawerVisible(true);
+  const showPaymentDetail = (payment: Payment) => {
+    // Enhance payment with additional details for display
+    const paymentDetail: PaymentDetail = {
+      ...payment,
+      // These could be fetched from a different API if available
+      customerName: "Khách hàng",
+      customerEmail: "customer@example.com",
+      customerPhone: "0123456789",
+    };
+    setCurrentPayment(paymentDetail);
+    setDrawerVisible(true);
+  };
+
+  const handleConfirmPayment = (paymentId: number | null) => {
+    if (paymentId) {
+      // Cast to any to work around type issues
+      dispatch(
+        updatePaymentStatusRequest({
+          paymentId,
+          status: "success",
+        } as any)
+      );
+      message.success("Xác nhận thanh toán thành công!");
     }
   };
 
-  const handleConfirmOrder = (id: number) => {
-    const updatedOrders = orders.map((order) =>
-      order.id === id ? { ...order, status: "Đã thanh toán" } : order
-    );
-    setOrders(updatedOrders);
-    message.success("Xác nhận đơn hàng thành công!");
+  const handleCancelPayment = (paymentId: number | null) => {
+    if (paymentId) {
+      // Cast to any to work around type issues
+      dispatch(
+        updatePaymentStatusRequest({
+          paymentId,
+          status: "cancelled",
+        } as any)
+      );
+      message.success("Hủy thanh toán thành công!");
+    }
   };
 
-  const handleCancelOrder = (id: number) => {
-    const updatedOrders = orders.map((order) =>
-      order.id === id ? { ...order, status: "Đã hủy" } : order
-    );
-    setOrders(updatedOrders);
-    message.success("Hủy đơn hàng thành công!");
-  };
-
-  // Lọc đơn hàng
-  const filteredOrders = orders.filter((order) => {
+  // Filter payments
+  const filteredPayments = allPayments.filter((payment) => {
     let matchesSearch = true;
     let matchesDate = true;
     let matchesStatus = true;
 
     if (searchText) {
       matchesSearch =
-        order.orderNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-        order.customerPhone.includes(searchText) ||
-        order.movieTitle.toLowerCase().includes(searchText.toLowerCase());
+        (payment.paymentId?.toString() || "").includes(searchText) ||
+        (payment.cinemaName || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase()) ||
+        (payment.movieName || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
     }
 
     if (dateRange && dateRange[0] && dateRange[1]) {
-      const orderDate = dayjs(order.createdAt);
+      const paymentDate = dayjs(payment.paymentDate);
       matchesDate =
-        orderDate.isAfter(dateRange[0].startOf("day")) &&
-        orderDate.isBefore(dateRange[1].endOf("day"));
+        paymentDate.isAfter(dateRange[0].startOf("day")) &&
+        paymentDate.isBefore(dateRange[1].endOf("day"));
     }
 
     if (statusFilter) {
-      matchesStatus = order.status === statusFilter;
+      matchesStatus = payment.paymentStatus === statusFilter;
     }
 
     return matchesSearch && matchesDate && matchesStatus;
@@ -261,94 +190,112 @@ const OrderManagement: React.FC = () => {
   // Helpers
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Đã thanh toán":
+      case "success":
         return "success";
-      case "Chờ thanh toán":
+      case "pending":
         return "warning";
-      case "Chờ xác nhận":
+      case "processing":
         return "processing";
-      case "Đã hủy":
+      case "cancelled":
         return "error";
       default:
         return "default";
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "success":
+        return "Đã thanh toán";
+      case "pending":
+        return "Chờ thanh toán";
+      case "processing":
+        return "Đang xử lý";
+      case "cancelled":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
+
   const columns = [
     {
-      title: "Mã đơn hàng",
-      dataIndex: "orderNumber",
-      key: "orderNumber",
-    },
-    {
-      title: "Khách hàng",
-      key: "customer",
-      render: (_: any, record: Order) => (
-        <div>
-          <div>{record.customerName}</div>
-          <div style={{ fontSize: "12px", color: "#888" }}>
-            {record.customerPhone}
-          </div>
-        </div>
-      ),
+      title: "Mã thanh toán",
+      key: "paymentId",
+      render: (_: unknown, record: Payment) => record.paymentId || "Chưa có mã",
     },
     {
       title: "Phim",
-      dataIndex: "movieTitle",
-      key: "movieTitle",
+      dataIndex: "movieName",
+      key: "movieName",
+    },
+    {
+      title: "Rạp chiếu",
+      dataIndex: "cinemaName",
+      key: "cinemaName",
     },
     {
       title: "Suất chiếu",
-      dataIndex: "showtime",
       key: "showtime",
+      render: (_: unknown, record: Payment) =>
+        `${record.showDate} ${record.showTime}`,
     },
     {
       title: "Ghế",
       key: "seats",
-      render: (_: any, record: Order) => (
+      render: (_: unknown, record: Payment) => (
         <div>
-          {record.seats.map((seat) => (
-            <Tag key={seat}>{seat}</Tag>
-          ))}
+          {record.ticketName &&
+            record.ticketName.map((seat) => <Tag key={seat}>{seat}</Tag>)}
         </div>
       ),
     },
     {
       title: "Tổng tiền",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
+      dataIndex: "paymentAmount",
+      key: "paymentAmount",
       render: (amount: number) => `${amount?.toLocaleString()}đ`,
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
       render: (status: string) => (
-        <StyledBadge status={getStatusColor(status) as any} text={status} />
+        <StyledBadge
+          status={
+            getStatusColor(status) as
+              | "success"
+              | "warning"
+              | "processing"
+              | "error"
+              | "default"
+          }
+          text={getStatusText(status)}
+        />
       ),
     },
     {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm"),
+      title: "Ngày thanh toán",
+      dataIndex: "paymentDate",
+      key: "paymentDate",
+      render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
     },
     {
       title: "Hành động",
       key: "action",
-      render: (_: any, record: Order) => (
+      render: (_: unknown, record: Payment) => (
         <Space size="small">
           <Button
             type="primary"
             icon={<EyeOutlined />}
             size="small"
-            onClick={() => showOrderDetail(record.id)}
+            onClick={() => showPaymentDetail(record)}
           />
-          {record.status === "Chờ xác nhận" && (
+          {record.paymentStatus === "pending" && (
             <>
               <Popconfirm
-                title="Xác nhận đơn hàng này?"
-                onConfirm={() => handleConfirmOrder(record.id)}
+                title="Xác nhận thanh toán này?"
+                onConfirm={() => handleConfirmPayment(record.paymentId)}
                 okText="Có"
                 cancelText="Không"
               >
@@ -360,8 +307,8 @@ const OrderManagement: React.FC = () => {
                 />
               </Popconfirm>
               <Popconfirm
-                title="Hủy đơn hàng này?"
-                onConfirm={() => handleCancelOrder(record.id)}
+                title="Hủy thanh toán này?"
+                onConfirm={() => handleCancelPayment(record.paymentId)}
                 okText="Có"
                 cancelText="Không"
               >
@@ -374,10 +321,10 @@ const OrderManagement: React.FC = () => {
               </Popconfirm>
             </>
           )}
-          {record.status === "Chờ thanh toán" && (
+          {record.paymentStatus === "processing" && (
             <Popconfirm
-              title="Hủy đơn hàng này?"
-              onConfirm={() => handleCancelOrder(record.id)}
+              title="Hủy thanh toán này?"
+              onConfirm={() => handleCancelPayment(record.paymentId)}
               okText="Có"
               cancelText="Không"
             >
@@ -389,7 +336,7 @@ const OrderManagement: React.FC = () => {
               />
             </Popconfirm>
           )}
-          {record.status === "Đã thanh toán" && (
+          {record.paymentStatus === "success" && (
             <Button type="default" icon={<PrinterOutlined />} size="small" />
           )}
         </Space>
@@ -400,7 +347,7 @@ const OrderManagement: React.FC = () => {
   return (
     <div>
       <PageHeader>
-        <Title level={2}>Quản lý đơn hàng</Title>
+        <Title level={2}>Quản lý thanh toán</Title>
         <Button icon={<ExportOutlined />}>Xuất báo cáo</Button>
       </PageHeader>
 
@@ -408,7 +355,7 @@ const OrderManagement: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
             <Input
-              placeholder="Tìm kiếm theo mã đơn, tên khách hàng..."
+              placeholder="Tìm kiếm theo mã, tên phim..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => handleSearch(e.target.value)}
@@ -431,10 +378,10 @@ const OrderManagement: React.FC = () => {
               onChange={handleStatusChange}
               allowClear
             >
-              <Option value="Đã thanh toán">Đã thanh toán</Option>
-              <Option value="Chờ thanh toán">Chờ thanh toán</Option>
-              <Option value="Chờ xác nhận">Chờ xác nhận</Option>
-              <Option value="Đã hủy">Đã hủy</Option>
+              <Option value="success">Đã thanh toán</Option>
+              <Option value="pending">Chờ thanh toán</Option>
+              <Option value="processing">Đang xử lý</Option>
+              <Option value="cancelled">Đã hủy</Option>
             </Select>
           </Col>
         </Row>
@@ -442,14 +389,16 @@ const OrderManagement: React.FC = () => {
 
       <Table
         columns={columns}
-        dataSource={filteredOrders}
-        rowKey="id"
+        dataSource={filteredPayments}
+        rowKey={(record) =>
+          record.paymentId?.toString() || Math.random().toString()
+        }
         loading={loading}
         pagination={{ pageSize: 10 }}
       />
 
       <Drawer
-        title="Chi tiết đơn hàng"
+        title="Chi tiết thanh toán"
         placement="right"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
@@ -460,23 +409,27 @@ const OrderManagement: React.FC = () => {
           </Space>
         }
       >
-        {currentOrder && (
+        {currentPayment && (
           <>
-            <Descriptions title="Thông tin đơn hàng" bordered column={1}>
-              <Descriptions.Item label="Mã đơn hàng">
-                {currentOrder.orderNumber}
+            <Descriptions title="Thông tin thanh toán" bordered column={1}>
+              <Descriptions.Item label="Mã thanh toán">
+                {currentPayment.paymentId || "Chưa có mã"}
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
                 <StyledBadge
-                  status={getStatusColor(currentOrder.status) as any}
-                  text={currentOrder.status}
+                  status={
+                    getStatusColor(currentPayment.paymentStatus) as
+                      | "success"
+                      | "warning"
+                      | "processing"
+                      | "error"
+                      | "default"
+                  }
+                  text={getStatusText(currentPayment.paymentStatus)}
                 />
               </Descriptions.Item>
-              <Descriptions.Item label="Ngày đặt">
-                {dayjs(currentOrder.createdAt).format("DD/MM/YYYY HH:mm")}
-              </Descriptions.Item>
-              <Descriptions.Item label="Phương thức thanh toán">
-                {currentOrder.paymentMethod}
+              <Descriptions.Item label="Ngày thanh toán">
+                {dayjs(currentPayment.paymentDate).format("DD/MM/YYYY")}
               </Descriptions.Item>
             </Descriptions>
 
@@ -484,13 +437,13 @@ const OrderManagement: React.FC = () => {
 
             <Descriptions title="Thông tin khách hàng" bordered column={1}>
               <Descriptions.Item label="Họ tên">
-                {currentOrder.customerName}
+                {currentPayment.customerName || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label="Email">
-                {currentOrder.customerEmail}
+                {currentPayment.customerEmail || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">
-                {currentOrder.customerPhone}
+                {currentPayment.customerPhone || "N/A"}
               </Descriptions.Item>
             </Descriptions>
 
@@ -498,16 +451,19 @@ const OrderManagement: React.FC = () => {
 
             <Descriptions title="Thông tin vé" bordered column={1}>
               <Descriptions.Item label="Phim">
-                {currentOrder.movieTitle}
+                {currentPayment.movieName}
               </Descriptions.Item>
-              <Descriptions.Item label="Suất chiếu">
-                {currentOrder.showtime}
+              <Descriptions.Item label="Rạp chiếu">
+                {currentPayment.cinemaName}
               </Descriptions.Item>
               <Descriptions.Item label="Phòng chiếu">
-                {currentOrder.roomName}
+                {currentPayment.roomName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Suất chiếu">
+                {`${currentPayment.showDate} ${currentPayment.showTime}`}
               </Descriptions.Item>
               <Descriptions.Item label="Ghế">
-                {currentOrder.seats.join(", ")}
+                {currentPayment.ticketName.join(", ")}
               </Descriptions.Item>
             </Descriptions>
 
@@ -516,28 +472,11 @@ const OrderManagement: React.FC = () => {
             <Title level={5}>Chi tiết thanh toán</Title>
             <div style={{ marginBottom: 16 }}>
               <Row>
-                <Col span={16}>Vé ({currentOrder.ticketCount} vé)</Col>
+                <Col span={16}>Vé ({currentPayment.ticketName.length} vé)</Col>
                 <Col span={8} style={{ textAlign: "right" }}>
-                  {(
-                    currentOrder.totalAmount -
-                    currentOrder.concessions.reduce(
-                      (sum, item) => sum + item.price * item.quantity,
-                      0
-                    )
-                  )?.toLocaleString()}
-                  đ
+                  {currentPayment.paymentAmount?.toLocaleString()}đ
                 </Col>
               </Row>
-              {currentOrder.concessions.map((item, index) => (
-                <Row key={index}>
-                  <Col span={16}>
-                    {item.name} (x{item.quantity})
-                  </Col>
-                  <Col span={8} style={{ textAlign: "right" }}>
-                    {(item.price * item.quantity)?.toLocaleString()}đ
-                  </Col>
-                </Row>
-              ))}
               <Divider style={{ margin: "12px 0" }} />
               <Row>
                 <Col span={16}>
@@ -545,7 +484,7 @@ const OrderManagement: React.FC = () => {
                 </Col>
                 <Col span={8} style={{ textAlign: "right" }}>
                   <Text strong>
-                    {currentOrder.totalAmount?.toLocaleString()}đ
+                    {currentPayment.paymentAmount?.toLocaleString()}đ
                   </Text>
                 </Col>
               </Row>

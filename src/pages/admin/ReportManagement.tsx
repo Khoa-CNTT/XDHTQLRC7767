@@ -25,6 +25,14 @@ import {
 import { Line, Bar, Pie } from "@ant-design/charts";
 import styled from "styled-components";
 import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getPaymentStatisticsRequest,
+  StatisticsParams,
+} from "../../redux/slices/paymentSlice";
+import { getCustomerCountRequest } from "../../redux/slices/customerSlice";
+import { RootState } from "../../redux/store";
+import type { AppDispatch } from "../../redux/store";
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -50,57 +58,80 @@ const FilterContainer = styled.div`
   flex-wrap: wrap;
 `;
 
+// Defining interfaces for better type safety
+interface TableDataItem {
+  key: number;
+  date: string;
+  tickets: number;
+  revenue: number;
+}
+
+interface MovieTableDataItem {
+  key: string;
+  title: string;
+  showtimeCount: number;
+  ticketCount: number;
+  revenue: number;
+}
+
+// Adding type definition for chart data
+interface GenreDataItem {
+  genre: string;
+  value: number;
+}
+
+interface TimeSlotDataItem {
+  time: string;
+  value: number;
+}
+
 const ReportManagement: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
+  const dispatch = useDispatch<AppDispatch>();
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
     dayjs().subtract(30, "day"),
     dayjs(),
   ]);
   const [reportType, setReportType] = useState<string>("revenue");
 
+  // Get statistics data from Redux store
+  const { data: paymentStatistics, loading: paymentLoading } = useSelector(
+    (state: RootState) => state.payment.statisticsData
+  );
+
+  // Get customer count data
+  const { data: customerCount, loading: customerLoading } = useSelector(
+    (state: RootState) => state.customer.customerCount
+  );
+
+  // Fetch statistics when component mounts or date range changes
   useEffect(() => {
-    // Giả lập tải dữ liệu
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const startDate = dateRange[0].format("YYYY-MM-DD");
+    const endDate = dateRange[1].format("YYYY-MM-DD");
+    dispatch(
+      getPaymentStatisticsRequest({ startDate, endDate } as StatisticsParams)
+    );
+    dispatch(getCustomerCountRequest());
+  }, [dispatch, dateRange]);
 
-  // Dữ liệu mẫu cho biểu đồ
-  const revenueData = [
-    { date: "01/07/2023", revenue: 5800000 },
-    { date: "02/07/2023", revenue: 6200000 },
-    { date: "03/07/2023", revenue: 5500000 },
-    { date: "04/07/2023", revenue: 4800000 },
-    { date: "05/07/2023", revenue: 5200000 },
-    { date: "06/07/2023", revenue: 7500000 },
-    { date: "07/07/2023", revenue: 8200000 },
-    { date: "08/07/2023", revenue: 7800000 },
-    { date: "09/07/2023", revenue: 6500000 },
-    { date: "10/07/2023", revenue: 5900000 },
-    { date: "11/07/2023", revenue: 6100000 },
-    { date: "12/07/2023", revenue: 6800000 },
-    { date: "13/07/2023", revenue: 7200000 },
-    { date: "14/07/2023", revenue: 7500000 },
-  ];
+  // Transform payment statistics into the format needed for charts and tables
+  const transformedStatistics = paymentStatistics.map((stat) => ({
+    date: dayjs(stat.date).format("DD/MM/YYYY"),
+    revenue: stat.amount,
+    tickets: stat.count,
+  }));
 
-  const ticketData = [
-    { date: "01/07/2023", tickets: 320 },
-    { date: "02/07/2023", tickets: 350 },
-    { date: "03/07/2023", tickets: 310 },
-    { date: "04/07/2023", tickets: 280 },
-    { date: "05/07/2023", tickets: 290 },
-    { date: "06/07/2023", tickets: 420 },
-    { date: "07/07/2023", tickets: 480 },
-    { date: "08/07/2023", tickets: 450 },
-    { date: "09/07/2023", tickets: 380 },
-    { date: "10/07/2023", tickets: 340 },
-    { date: "11/07/2023", tickets: 350 },
-    { date: "12/07/2023", tickets: 390 },
-    { date: "13/07/2023", tickets: 410 },
-    { date: "14/07/2023", tickets: 430 },
-  ];
+  // Calculate total statistics
+  const totalRevenue = paymentStatistics.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
+  const totalTickets = paymentStatistics.reduce(
+    (sum, item) => sum + item.count,
+    0
+  );
 
-  const genreData = [
+  // Using dummy data for genre distribution and time slots
+  const genreData: GenreDataItem[] = [
     { genre: "Hành động", value: 35 },
     { genre: "Tình cảm", value: 20 },
     { genre: "Hoạt hình", value: 15 },
@@ -109,7 +140,7 @@ const ReportManagement: React.FC = () => {
     { genre: "Khoa học viễn tưởng", value: 8 },
   ];
 
-  const timeSlotData = [
+  const timeSlotData: TimeSlotDataItem[] = [
     { time: "10:00 - 12:00", value: 15 },
     { time: "12:00 - 14:00", value: 20 },
     { time: "14:00 - 16:00", value: 18 },
@@ -119,9 +150,9 @@ const ReportManagement: React.FC = () => {
     { time: "22:00 - 00:00", value: 12 },
   ];
 
-  // Cấu hình biểu đồ
+  // Chart configurations
   const lineConfig = {
-    data: revenueData,
+    data: transformedStatistics.length > 0 ? transformedStatistics : [],
     xField: "date",
     yField: "revenue",
     point: {
@@ -137,7 +168,7 @@ const ReportManagement: React.FC = () => {
   };
 
   const ticketLineConfig = {
-    data: ticketData,
+    data: transformedStatistics.length > 0 ? transformedStatistics : [],
     xField: "date",
     yField: "tickets",
     point: {
@@ -172,7 +203,7 @@ const ReportManagement: React.FC = () => {
     legend: { position: "top-left" },
   };
 
-  // Cấu hình bảng
+  // Table configurations
   const columns = [
     {
       title: "Ngày",
@@ -183,31 +214,26 @@ const ReportManagement: React.FC = () => {
       title: "Số vé bán",
       dataIndex: "tickets",
       key: "tickets",
-      sorter: (a: any, b: any) => a.tickets - b.tickets,
+      sorter: (a: TableDataItem, b: TableDataItem) => a.tickets - b.tickets,
     },
     {
       title: "Doanh thu (VNĐ)",
       dataIndex: "revenue",
       key: "revenue",
       render: (value: number) => value?.toLocaleString(),
-      sorter: (a: any, b: any) => a.revenue - b.revenue,
-    },
-    {
-      title: "Tỷ lệ lấp đầy",
-      dataIndex: "occupancyRate",
-      key: "occupancyRate",
-      render: (value: number) => `${value}%`,
-      sorter: (a: any, b: any) => a.occupancyRate - b.occupancyRate,
+      sorter: (a: TableDataItem, b: TableDataItem) => a.revenue - b.revenue,
     },
   ];
 
-  const tableData = revenueData.map((item, index) => ({
-    key: index,
-    date: item.date,
-    tickets: ticketData[index].tickets,
-    revenue: item.revenue,
-    occupancyRate: Math.floor(Math.random() * 30 + 60), // Random từ 60-90%
-  }));
+  // Create table data from statistics
+  const tableData: TableDataItem[] = transformedStatistics.map(
+    (item, index) => ({
+      key: index,
+      date: item.date,
+      tickets: item.tickets,
+      revenue: item.revenue,
+    })
+  );
 
   const movieTableColumns = [
     {
@@ -219,37 +245,32 @@ const ReportManagement: React.FC = () => {
       title: "Số suất chiếu",
       dataIndex: "showtimeCount",
       key: "showtimeCount",
-      sorter: (a: any, b: any) => a.showtimeCount - b.showtimeCount,
+      sorter: (a: MovieTableDataItem, b: MovieTableDataItem) =>
+        a.showtimeCount - b.showtimeCount,
     },
     {
       title: "Số vé bán",
       dataIndex: "ticketCount",
       key: "ticketCount",
-      sorter: (a: any, b: any) => a.ticketCount - b.ticketCount,
-    },
-    {
-      title: "Tỷ lệ lấp đầy",
-      dataIndex: "occupancyRate",
-      key: "occupancyRate",
-      render: (value: number) => `${value}%`,
-      sorter: (a: any, b: any) => a.occupancyRate - b.occupancyRate,
+      sorter: (a: MovieTableDataItem, b: MovieTableDataItem) =>
+        a.ticketCount - b.ticketCount,
     },
     {
       title: "Doanh thu (VNĐ)",
       dataIndex: "revenue",
       key: "revenue",
       render: (value: number) => value?.toLocaleString(),
-      sorter: (a: any, b: any) => a.revenue - b.revenue,
+      sorter: (a: MovieTableDataItem, b: MovieTableDataItem) =>
+        a.revenue - b.revenue,
     },
   ];
 
-  const movieTableData = [
+  const movieTableData: MovieTableDataItem[] = [
     {
       key: "1",
       title: "Avengers: Endgame",
       showtimeCount: 45,
       ticketCount: 3600,
-      occupancyRate: 85,
       revenue: 45000000,
     },
     {
@@ -257,7 +278,6 @@ const ReportManagement: React.FC = () => {
       title: "Spider-Man: No Way Home",
       showtimeCount: 42,
       ticketCount: 3200,
-      occupancyRate: 82,
       revenue: 38000000,
     },
     {
@@ -265,7 +285,6 @@ const ReportManagement: React.FC = () => {
       title: "The Batman",
       showtimeCount: 38,
       ticketCount: 2800,
-      occupancyRate: 78,
       revenue: 32000000,
     },
     {
@@ -273,7 +292,6 @@ const ReportManagement: React.FC = () => {
       title: "Dune",
       showtimeCount: 35,
       ticketCount: 2400,
-      occupancyRate: 75,
       revenue: 28000000,
     },
     {
@@ -281,13 +299,12 @@ const ReportManagement: React.FC = () => {
       title: "Black Widow",
       showtimeCount: 32,
       ticketCount: 2200,
-      occupancyRate: 72,
       revenue: 25000000,
     },
   ];
 
   const handleDateRangeChange = (dates: any) => {
-    if (dates && dates.length === 2) {
+    if (dates) {
       setDateRange(dates);
     }
   };
@@ -297,15 +314,19 @@ const ReportManagement: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    const startDate = dateRange[0].format("YYYY-MM-DD");
+    const endDate = dateRange[1].format("YYYY-MM-DD");
+    dispatch(
+      getPaymentStatisticsRequest({ startDate, endDate } as StatisticsParams)
+    );
   };
 
   const handleExport = () => {
     message.success("Đã xuất báo cáo thành công!");
   };
+
+  // Combined loading state
+  const loading = paymentLoading || customerLoading;
 
   return (
     <div>
@@ -340,43 +361,32 @@ const ReportManagement: React.FC = () => {
       </FilterContainer>
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <StyledCard loading={loading}>
             <Statistic
               title="Tổng doanh thu"
-              value={89500000}
+              value={totalRevenue}
               prefix={<DollarOutlined />}
               suffix="VNĐ"
               valueStyle={{ color: "#3f8600" }}
             />
           </StyledCard>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <StyledCard loading={loading}>
             <Statistic
               title="Tổng số vé bán"
-              value={5120}
+              value={totalTickets}
               prefix={<ShoppingCartOutlined />}
               valueStyle={{ color: "#1890ff" }}
             />
           </StyledCard>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={24} lg={8}>
           <StyledCard loading={loading}>
             <Statistic
-              title="Tỷ lệ lấp đầy trung bình"
-              value={78.5}
-              suffix="%"
-              precision={1}
-              valueStyle={{ color: "#faad14" }}
-            />
-          </StyledCard>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StyledCard loading={loading}>
-            <Statistic
-              title="Số khách hàng mới"
-              value={245}
+              title="Số khách hàng"
+              value={customerCount}
               prefix={<TeamOutlined />}
               valueStyle={{ color: "#722ed1" }}
             />

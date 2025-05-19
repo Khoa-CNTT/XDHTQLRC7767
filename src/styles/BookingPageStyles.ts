@@ -429,11 +429,15 @@ export const LegendItem = styled.div`
   }
 `;
 
-export const LegendColor = styled.div<{ $color: string }>`
+export const LegendColor = styled.div<{
+  $color: string;
+  $borderColor?: string;
+}>`
   width: 16px;
   height: 16px;
   border-radius: 4px;
   background-color: ${(props) => props.$color};
+  border: 1px solid ${(props) => props.$borderColor || props.$color};
 
   @media (max-width: 576px) {
     width: 14px;
@@ -473,17 +477,20 @@ export const Seat = styled.div<{
   background-color: ${(props) => {
     if (props.$selected) return "#fd6b0a";
     if (props.$status === "booked") return "#d9d9d9";
+    if (props.$type === "couple") return "#ff66aa";
     return props.$type === "vip" ? "#ffe082" : "#bbdefb";
   }};
   color: ${(props) => {
     if (props.$selected) return "white";
     if (props.$status === "booked") return "#999";
+    if (props.$type === "couple") return "white";
     return props.$type === "vip" ? "#f57c00" : "#1976d2";
   }};
   border: 1px solid
     ${(props) => {
       if (props.$selected) return "#fd6b0a";
       if (props.$status === "booked") return "#d9d9d9";
+      if (props.$type === "couple") return "#e6007e";
       return props.$type === "vip" ? "#ffca28" : "#90caf9";
     }};
   font-weight: 500;

@@ -211,6 +211,30 @@ const TypingDot = styled.span`
   }
 `;
 
+const TypingText = styled(Text)`
+  margin-left: 5px;
+  font-size: 14px;
+  color: #666;
+`;
+
+const MessageContent = styled.div`
+  white-space: pre-line;
+`;
+
+const ListItem = styled.div`
+  margin: 4px 0;
+  display: flex;
+`;
+
+const ListItemNumber = styled.span`
+  margin-right: 8px;
+  font-weight: bold;
+`;
+
+const ListItemContent = styled.span`
+  flex: 1;
+`;
+
 const ChatBox: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, isLoading, sendMessage } = useChat();
@@ -228,8 +252,45 @@ const ChatBox: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    await sendMessage(inputMessage);
+    // Clear input immediately
+    const messageToSend = inputMessage;
     setInputMessage("");
+
+    // Then send the message
+    await sendMessage(messageToSend);
+  };
+
+  // Format message content - recognizing list patterns
+  const formatMessageContent = (content: string) => {
+    // Look for numbered list patterns: "1. Item", "2. Item" etc.
+    if (/^\d+\.\s.+(\n\d+\.\s.+)+$/.test(content)) {
+      const lines = content.split("\n");
+      const listItems = lines.filter((line) => /^\d+\.\s.+$/.test(line));
+
+      // If we have list items, render as a formatted list
+      if (listItems.length > 0) {
+        return (
+          <>
+            {lines.map((line, index) => {
+              const match = line.match(/^(\d+)\.(.+)$/);
+              if (match) {
+                return (
+                  <ListItem key={index}>
+                    <ListItemNumber>{match[1]}.</ListItemNumber>
+                    <ListItemContent>{match[2]}</ListItemContent>
+                  </ListItem>
+                );
+              } else {
+                return <div key={index}>{line}</div>;
+              }
+            })}
+          </>
+        );
+      }
+    }
+
+    // For other content, preserve line breaks
+    return <MessageContent>{content}</MessageContent>;
   };
 
   // Close chat box when clicking outside on mobile
@@ -273,7 +334,9 @@ const ChatBox: React.FC = () => {
           <MessagesContainer>
             {messages.map((message, index) => (
               <MessageBubble key={index} isUser={message.role === "user"}>
-                {message.content}
+                {message.role === "assistant"
+                  ? formatMessageContent(message.content)
+                  : message.content}
               </MessageBubble>
             ))}
             {isLoading && (
@@ -282,6 +345,7 @@ const ChatBox: React.FC = () => {
                   <TypingDot />
                   <TypingDot />
                   <TypingDot />
+                  <TypingText>AI đang soạn tin nhắn...</TypingText>
                 </TypingIndicator>
               </MessageBubble>
             )}

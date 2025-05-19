@@ -3,6 +3,9 @@ import {
   getCustomerListRequest,
   getCustomerListSuccess,
   getCustomerListFailure,
+  getCustomerCountRequest,
+  getCustomerCountSuccess,
+  getCustomerCountFailure,
   deleteCustomerRequest,
   deleteCustomerSuccess,
   deleteCustomerFailure,
@@ -66,6 +69,22 @@ function* getCustomerListSaga(): Generator<unknown, void, AxiosResponse> {
       message: "Lỗi",
       description: "Không thể lấy danh sách khách hàng",
     });
+  }
+}
+
+// Get customer count saga
+function* getCustomerCountSaga(): Generator<unknown, void, AxiosResponse> {
+  try {
+    const response = yield call(axiosInstance.get, "/api/customers/sum");
+    yield put(getCustomerCountSuccess(response.data));
+  } catch (error: unknown) {
+    const err = error as ApiError;
+    yield put(
+      getCustomerCountFailure(
+        err.response?.data?.message || "Không thể lấy số lượng khách hàng"
+      )
+    );
+    console.error("Không thể lấy số lượng khách hàng", error);
   }
 }
 
@@ -182,6 +201,7 @@ function* updateCustomerSaga(
 // Root customer saga
 export default function* customerSaga() {
   yield takeEvery(getCustomerListRequest.type, getCustomerListSaga);
+  yield takeEvery(getCustomerCountRequest.type, getCustomerCountSaga);
   yield takeEvery(deleteCustomerRequest.type, deleteCustomerSaga);
   yield takeEvery(disableCustomerRequest.type, disableCustomerSaga);
   yield takeEvery(enableCustomerRequest.type, enableCustomerSaga);

@@ -26,6 +26,13 @@ import {
   StatisticsParams,
   Payment,
   DailyRevenueDTO,
+  getAllPaymentsRequest,
+  getAllPaymentsSuccess,
+  getAllPaymentsFailure,
+  updatePaymentStatusRequest,
+  updatePaymentStatusSuccess,
+  updatePaymentStatusFailure,
+  UpdatePaymentStatusParams,
 } from "../slices/paymentSlice";
 import { createTicketRequest } from "../slices/ticketSlice";
 import { vnpayService } from "../../utils/vnpayService";
@@ -45,6 +52,14 @@ interface BookingData {
   }>;
   pricing?: {
     ticketPrice: number;
+    seatTypes?: {
+      standard: number;
+      standardPrice: number;
+      vip: number;
+      vipPrice: number;
+      couple: number;
+      couplePrice: number;
+    };
   };
   customerId?: string | number;
 }
@@ -109,20 +124,53 @@ function* createTicket(bookingData: BookingData) {
       throw new Error("Không tìm thấy thông tin ghế đã chọn!");
     }
 
-    // Lấy giá vé từ bookingData (từ BookingPage)
-    const bookingPrice = bookingData.pricing?.ticketPrice || 0;
-    const seatCount = seatsToProcess.length;
+    // Check for seatTypes information in the pricing data
+    const seatTypes = bookingData.pricing?.seatTypes;
+    let totalPrice = 0;
 
-    // Tính tổng giá = giá vé đơn vị * số ghế
-    const totalPrice = bookingPrice * seatCount;
+    if (seatTypes) {
+      // Calculate price based on seat types
+      console.log(
+        "[PAYMENT_SAGA] Using seat types for price calculation:",
+        seatTypes
+      );
 
-    console.log(
-      `[PAYMENT_SAGA] Giá vé đơn vị: ${bookingPrice}, Số lượng ghế: ${seatCount}, Tổng giá: ${totalPrice}`
-    );
+      const standardTotal = seatTypes.standard * seatTypes.standardPrice;
+      const vipTotal = seatTypes.vip * seatTypes.vipPrice;
+      const coupleTotal = seatTypes.couple * seatTypes.couplePrice;
 
-    if (!bookingPrice || bookingPrice <= 0) {
-      console.error("[PAYMENT_SAGA] Giá vé đơn vị không hợp lệ:", bookingPrice);
-      throw new Error("Giá vé đơn vị không hợp lệ");
+      totalPrice = standardTotal + vipTotal + coupleTotal;
+
+      console.log(
+        `[PAYMENT_SAGA] Price calculation: Standard(${seatTypes.standard} x ${seatTypes.standardPrice}) + VIP(${seatTypes.vip} x ${seatTypes.vipPrice}) + Couple(${seatTypes.couple} x ${seatTypes.couplePrice}) = ${totalPrice}`
+      );
+    } else {
+      // Use the old price calculation method as fallback
+      // Lấy giá vé từ bookingData (từ BookingPage)
+      const bookingPrice = bookingData.pricing?.ticketPrice || 0;
+      const seatCount = seatsToProcess.length;
+
+      // Calculate extra charges for special seat types
+      const extraCharges = seatsToProcess.reduce((total, seat) => {
+        if (seat.type?.toLowerCase() === "vip") {
+          return total + 30000; // VIP seats cost 30,000 VND more
+        } else if (seat.type?.toLowerCase() === "couple") {
+          return total + 100000; // Couple seats cost 100,000 VND more
+        }
+        return total;
+      }, 0);
+
+      // Tính tổng giá = giá vé đơn vị * số ghế + phụ phí ghế đặc biệt
+      totalPrice = bookingPrice * seatCount + extraCharges;
+
+      console.log(
+        `[PAYMENT_SAGA] Giá vé đơn vị: ${bookingPrice}, Số lượng ghế: ${seatCount}, Phụ phí ghế đặc biệt: ${extraCharges}, Tổng giá: ${totalPrice}`
+      );
+    }
+
+    if (totalPrice <= 0) {
+      console.error("[PAYMENT_SAGA] Tổng giá không hợp lệ:", totalPrice);
+      throw new Error("Tổng giá không hợp lệ");
     }
 
     // Thu thập tất cả ID ghế
@@ -131,7 +179,7 @@ function* createTicket(bookingData: BookingData) {
     // Tạo một vé duy nhất cho tất cả các ghế
     const ticketRequestData = {
       type: "Standard", // Không phân biệt loại ghế
-      price: totalPrice, // Sử dụng tổng giá thay vì giá đơn vị
+      price: totalPrice, // Sử dụng tổng giá từ tính toán
       id_showTime: parseInt(showtimeId.toString()),
       id_customer: bookingData.customerId?.toString() || "",
       chairIds: allChairIds, // Tất cả ghế trong một vé
@@ -411,6 +459,53 @@ function* getPaymentStatisticsSaga(action: PayloadAction<StatisticsParams>) {
   }
 }
 
+// New saga to get all payments
+function* getAllPaymentsSaga() {
+  try {
+    const response = yield call(axiosInstance.get, "/api/payment/all");
+    yield put(getAllPaymentsSuccess(response.data));
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Không thể lấy danh sách thanh toán";
+    yield put(getAllPaymentsFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể lấy danh sách thanh toán. Vui lòng thử lại sau.",
+    });
+  }
+}
+
+// New saga to update payment status
+function* updatePaymentStatusSaga(
+  action: PayloadAction<UpdatePaymentStatusParams>
+) {
+  try {
+    const { paymentId, status } = action.payload;
+    // Call API to update payment status
+    const response = yield call(
+      axiosInstance.put,
+      `/api/payment/${paymentId}/status`,
+      { status }
+    );
+    yield put(updatePaymentStatusSuccess(response.data));
+    // Refresh payments list after update
+    yield put(getAllPaymentsRequest());
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Không thể cập nhật trạng thái thanh toán";
+    yield put(updatePaymentStatusFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi",
+      description:
+        "Không thể cập nhật trạng thái thanh toán. Vui lòng thử lại sau.",
+    });
+  }
+}
+
 // Saga chính
 export default function* paymentSaga() {
   yield takeEvery(createPaymentRequest.type, createPaymentSaga);
@@ -421,4 +516,8 @@ export default function* paymentSaga() {
   yield takeEvery(getYearlyRevenueRequest.type, getYearlyRevenueSaga);
   yield takeEvery(getDailyRevenueRequest.type, getDailyRevenueSaga);
   yield takeEvery(getPaymentStatisticsRequest.type, getPaymentStatisticsSaga);
+
+  // Register additional sagas for all payments
+  yield takeEvery(getAllPaymentsRequest.type, getAllPaymentsSaga);
+  yield takeEvery(updatePaymentStatusRequest.type, updatePaymentStatusSaga);
 }

@@ -86,6 +86,7 @@ const DatePicker = (props: any) => {
 };
 
 const VIP_PRICE = 120000; // 120k VND
+// Giá ghế couple được tính là giá ghế thường + 50,000 VND
 
 const formatShowtime = (startTime: string, endTime: string) => {
   const start = startTime.substring(0, 5);
@@ -166,13 +167,25 @@ const BookingPage: React.FC = () => {
   useEffect(() => {
     if (showtimeWithChairs?.data) {
       // Ánh xạ dữ liệu ghế từ API sang định dạng hiển thị trong ứng dụng
-      const formattedSeats = showtimeWithChairs.data.chairs.map((chair) => ({
-        id: chair.name,
-        type: chair.type?.toLowerCase() === "vip" ? "vip" : "standard",
-        status:
-          chair.status?.toLowerCase() === "available" ? "available" : "booked",
-        price: chair.price,
-      }));
+      const formattedSeats = showtimeWithChairs.data.chairs.map((chair) => {
+        // Determine seat type
+        let seatType = "standard";
+        if (chair.type?.toLowerCase() === "vip") {
+          seatType = "vip";
+        } else if (chair.type?.toLowerCase() === "couple") {
+          seatType = "couple";
+        }
+
+        return {
+          id: chair.name,
+          type: seatType,
+          status:
+            chair.status?.toLowerCase() === "available"
+              ? "available"
+              : "booked",
+          price: chair.price,
+        };
+      });
 
       setSeats(formattedSeats);
     }
@@ -265,17 +278,25 @@ const BookingPage: React.FC = () => {
 
   // Tính tổng tiền
   const calculateTotalPrice = () => {
+    const standardPrice = showtimeWithChairs?.data?.pricePerShowTime || 0;
+    const couplePrice = standardPrice + 100000; // Giá ghế couple = giá thường + 100,000đ
+
     return (
       selectedSeats.filter((id) => {
         const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "standard";
       }).length *
-        showtimeWithChairs?.data?.pricePerShowTime +
+        standardPrice +
       selectedSeats.filter((id) => {
         const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "vip";
       }).length *
-        VIP_PRICE
+        VIP_PRICE +
+      selectedSeats.filter((id) => {
+        const seat = seats.find((s) => s.id === id);
+        return seat && seat.type === "couple";
+      }).length *
+        couplePrice
     );
   };
 
@@ -363,6 +384,31 @@ const BookingPage: React.FC = () => {
     // Đảm bảo selectedDate là string nếu là Dayjs object
     const formattedDate = selectedDate ? selectedDate.format("DD/MM/YYYY") : "";
 
+    // Calculate the actual total price
+    const standardPrice = showtimeWithChairs?.data?.pricePerShowTime || 0;
+    const couplePrice = standardPrice + 100000;
+
+    const standardTotal =
+      selectedSeats.filter((id) => {
+        const seat = seats.find((s) => s.id === id);
+        return seat && seat.type === "standard";
+      }).length * standardPrice;
+
+    const vipTotal =
+      selectedSeats.filter((id) => {
+        const seat = seats.find((s) => s.id === id);
+        return seat && seat.type === "vip";
+      }).length * VIP_PRICE;
+
+    const coupleTotal =
+      selectedSeats.filter((id) => {
+        const seat = seats.find((s) => s.id === id);
+        return seat && seat.type === "couple";
+      }).length * couplePrice;
+
+    const subtotal = standardTotal + vipTotal + coupleTotal;
+    const totalAmount = subtotal;
+
     // Tạo dữ liệu booking để truyền sang trang hóa đơn
     const bookingData = {
       movie: {
@@ -388,15 +434,27 @@ const BookingPage: React.FC = () => {
       seats: selectedSeats,
       seatsInfo: selectedSeatsInfo,
       pricing: {
-        ticketPrice: showtimeWithChairs?.data?.pricePerShowTime || 0,
+        ticketPrice: standardPrice,
         quantity: selectedSeats.length,
-        subtotal:
-          (showtimeWithChairs?.data?.pricePerShowTime || 0) *
-          selectedSeats.length,
-        serviceFee: 10000 * selectedSeats.length,
-        total:
-          ((showtimeWithChairs?.data?.pricePerShowTime || 0) + 10000) *
-          selectedSeats.length,
+        subtotal: subtotal,
+        total: totalAmount,
+        seatTypes: {
+          standard: selectedSeats.filter((id) => {
+            const seat = seats.find((s) => s.id === id);
+            return seat && seat.type === "standard";
+          }).length,
+          vip: selectedSeats.filter((id) => {
+            const seat = seats.find((s) => s.id === id);
+            return seat && seat.type === "vip";
+          }).length,
+          couple: selectedSeats.filter((id) => {
+            const seat = seats.find((s) => s.id === id);
+            return seat && seat.type === "couple";
+          }).length,
+          standardPrice: standardPrice,
+          couplePrice: couplePrice,
+          vipPrice: VIP_PRICE,
+        },
       },
       // Add customer information for ticket creation
       customerName: user?.fullName || "",
@@ -412,7 +470,6 @@ const BookingPage: React.FC = () => {
     if (paymentMethod === "vnpay") {
       try {
         // Tạo thông tin đơn hàng
-        const totalAmount = calculateTotalPrice();
         const orderInfo = `Thanh toan ve xem phim ${movie?.name} - ${selectedSeats.length} ve`;
 
         // Gọi API tạo URL thanh toán VNPAY
@@ -652,10 +709,17 @@ const BookingPage: React.FC = () => {
                         </LegendItem>
                         <LegendItem>
                           <LegendColor
-                            $color="#ffd700"
-                            $borderColor="#ffd700"
+                            $color="#ffe082"
+                            $borderColor="#ffca28"
                           />
                           Ghế VIP
+                        </LegendItem>
+                        <LegendItem>
+                          <LegendColor
+                            $color="#ff66aa"
+                            $borderColor="#e6007e"
+                          />
+                          Ghế Couple (Ghế đôi +100.000đ)
                         </LegendItem>
                         <LegendItem>
                           <LegendColor
@@ -669,6 +733,21 @@ const BookingPage: React.FC = () => {
                           Đã đặt
                         </LegendItem>
                       </SeatLegend>
+
+                      <div
+                        style={{
+                          textAlign: "center",
+                          marginBottom: "20px",
+                          color: "#666",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <p>
+                          <strong>Lưu ý:</strong> Ghế Couple là ghế dành cho 2
+                          người ngồi thoải mái và có giá cao hơn ghế thường
+                          50.000đ
+                        </p>
+                      </div>
                     </SeatsContainer>
                   )}
                 </Col>
@@ -744,6 +823,28 @@ const BookingPage: React.FC = () => {
                             const seat = seats.find((s) => s.id === id);
                             return seat && seat.type === "vip";
                           }).length * VIP_PRICE
+                        )?.toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </SummaryValue>
+                    </SummaryItem>
+                    <SummaryItem>
+                      <SummaryLabel>
+                        Ghế Couple (
+                        {
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "couple";
+                          }).length
+                        }{" "}
+                        ghế):
+                      </SummaryLabel>
+                      <SummaryValue>
+                        {(
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "couple";
+                          }).length *
+                          (showtimeWithChairs?.data?.pricePerShowTime + 100000)
                         )?.toLocaleString("vi-VN")}{" "}
                         VNĐ
                       </SummaryValue>
@@ -886,6 +987,70 @@ const BookingPage: React.FC = () => {
                       </SummaryValue>
                     </SummaryItem>
                     <Divider style={{ margin: "12px 0" }} />
+                    <SummaryItem>
+                      <SummaryLabel>
+                        Ghế thường (
+                        {
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "standard";
+                          }).length
+                        }{" "}
+                        ghế):
+                      </SummaryLabel>
+                      <SummaryValue>
+                        {(
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "standard";
+                          }).length * showtimeWithChairs?.data?.pricePerShowTime
+                        )?.toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </SummaryValue>
+                    </SummaryItem>
+                    <SummaryItem>
+                      <SummaryLabel>
+                        Ghế VIP (
+                        {
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "vip";
+                          }).length
+                        }{" "}
+                        ghế):
+                      </SummaryLabel>
+                      <SummaryValue>
+                        {(
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "vip";
+                          }).length * VIP_PRICE
+                        )?.toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </SummaryValue>
+                    </SummaryItem>
+                    <SummaryItem>
+                      <SummaryLabel>
+                        Ghế Couple (
+                        {
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "couple";
+                          }).length
+                        }{" "}
+                        ghế):
+                      </SummaryLabel>
+                      <SummaryValue>
+                        {(
+                          selectedSeats.filter((id) => {
+                            const seat = seats.find((s) => s.id === id);
+                            return seat && seat.type === "couple";
+                          }).length *
+                          (showtimeWithChairs?.data?.pricePerShowTime + 100000)
+                        )?.toLocaleString("vi-VN")}{" "}
+                        VNĐ
+                      </SummaryValue>
+                    </SummaryItem>
                     <TotalPrice>
                       Tổng tiền:{" "}
                       {calculateTotalPrice()?.toLocaleString("vi-VN")} VNĐ
