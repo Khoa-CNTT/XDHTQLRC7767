@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class RoomServiceImpl implements RoomService {
@@ -39,46 +36,42 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     @Override
     public RoomDTO createRoomWithSeats(RoomDTO room) {
-        int capacity = room.getCapacity();  // Tổng số ghế
-        Set<SeatFormat> seatFormats = new HashSet<>();
+        int capacity = room.getCapacity();
+        List<SeatFormat> seatFormats = new ArrayList<>();
 
         Cinema cinema = cinemaRepository.findByid(room.getCinemaID());
         Room room1 = new Room();
-
         room1.setName(room.getName());
         room1.setType(room.getType());
         room1.setCapacity(capacity);
         room1.setStatus("ACTIVE");
         room1.setCinema(cinema);
 
+        // 💾 Lưu Room trước để có ID
+        Room savedRoom = roomRepository.save(room1);
+
         for (int i = 1; i <= capacity; i++) {
             SeatFormat seat = new SeatFormat();
-            seat.setName(String.valueOf(i)); // Ghế đánh số từ 1 đến capacity (ví dụ: "1", "2", ..., "100")
-            seat.setRoom(room1);
-
-            if (i > capacity - 10) {
-                seat.setType("COUPLE");
-            } else {
-                seat.setType("STANDARD");
-            }
-
+            seat.setName(String.valueOf(i));
+            seat.setRoom(savedRoom);
+            seat.setType(i > capacity - 10 ? "COUPLE" : "STANDARD");
             seatFormats.add(seat);
         }
 
+        // Lưu danh sách ghế sau khi room đã được lưu
         seatFormatRepository.saveAll(seatFormats);
-        room1.setSeats(seatFormats);
+        savedRoom.setSeats(new HashSet<>(seatFormats));
 
-        Room roomSaved = roomRepository.save(room1);
-
+        // Trả về DTO
         RoomDTO roomDTO = new RoomDTO();
-        roomDTO.setStatus(roomSaved.getStatus());
-        roomDTO.setName(roomSaved.getName());
-        roomDTO.setType(roomSaved.getType());
-        roomDTO.setCapacity(roomSaved.getCapacity());
-        roomDTO.setCinemaID(roomSaved.getCinema().getName());
-
+        roomDTO.setStatus(savedRoom.getStatus());
+        roomDTO.setName(savedRoom.getName());
+        roomDTO.setType(savedRoom.getType());
+        roomDTO.setCapacity(savedRoom.getCapacity());
+        roomDTO.setCinemaID(savedRoom.getCinema().getName());
         return roomDTO;
     }
+
 
 
     @Transactional

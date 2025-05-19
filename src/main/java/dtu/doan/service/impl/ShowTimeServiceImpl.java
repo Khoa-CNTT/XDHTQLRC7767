@@ -66,7 +66,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         }
 
         // Sắp xếp danh sách ghế theo tên ghế (A1, A2, B1, ...)
-        chairDTOS.sort(Comparator.comparing(ChairDTO::getName));
+        chairDTOS.sort(Comparator.comparingInt(c -> Integer.parseInt(c.getName())));
 
         showTimeWithChairsDTO.setChairs(new LinkedHashSet<>(chairDTOS)); // preserve order if using Set
         return showTimeWithChairsDTO;
