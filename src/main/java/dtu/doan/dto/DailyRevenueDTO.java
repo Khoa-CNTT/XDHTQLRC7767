@@ -8,14 +8,14 @@ import java.time.LocalDate;
 @Data
 public class DailyRevenueDTO {
     private LocalDate date;
-    private Long totalRevenue;
+    private Double totalRevenue;
     private Long totalTickets;
     private Long totalCustomer;
 
     public DailyRevenueDTO() {
     }
 
-    public DailyRevenueDTO(LocalDate date, Long totalRevenue, Long totalTickets, Long totalCustomer) {
+    public DailyRevenueDTO(LocalDate date, Double totalRevenue, Long totalTickets, Long totalCustomer) {
         this.date = date;
         this.totalRevenue = totalRevenue;
         this.totalTickets = totalTickets;

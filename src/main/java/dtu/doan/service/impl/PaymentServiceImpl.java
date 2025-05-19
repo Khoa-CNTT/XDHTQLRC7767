@@ -38,12 +38,12 @@ public class PaymentServiceImpl implements PaymentService {
         if (result != null) {
             Object[] data = (Object[]) result;
             dailyRevenueDTO.setDate(date);
-            dailyRevenueDTO.setTotalRevenue((Long) data[1]);
+            dailyRevenueDTO.setTotalRevenue((Double) data[1]);
             dailyRevenueDTO.setTotalTickets((Long) data[2]);
             dailyRevenueDTO.setTotalCustomer(customerRepository.sumById());
         } else {
             dailyRevenueDTO.setDate(date);
-            dailyRevenueDTO.setTotalRevenue(0L);
+            dailyRevenueDTO.setTotalRevenue(0.0);
             dailyRevenueDTO.setTotalTickets(0L);
             dailyRevenueDTO.setTotalCustomer(customerRepository.sumById());
         }
