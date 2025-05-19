@@ -534,7 +534,7 @@ const InvoicePage: React.FC = () => {
 
       <LogoContainer>
         <Logo>
-          UBAN<span>FLIX</span>
+          BSCMSAA<span>PUE</span>
         </Logo>
         <CinemaText>CINEMA</CinemaText>
       </LogoContainer>
@@ -556,7 +556,7 @@ const InvoicePage: React.FC = () => {
             <InvoiceHeader>
               <LogoSection>
                 <SmallLogo>
-                  UBAN<span>FLIX</span>
+                  BSCMSAA<span>PUE</span>
                 </SmallLogo>
                 <SmallCinemaText>CINEMA</SmallCinemaText>
               </LogoSection>

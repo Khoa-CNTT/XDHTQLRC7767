@@ -47,6 +47,10 @@ import {
   bulkUpdateStatusFailure,
   MovieFilterParams,
   Movie,
+  getMovieStatisticsRequest,
+  getMovieStatisticsSuccess,
+  getMovieStatisticsFailure,
+  MovieStatisticsDTO,
 } from "../slices/movieSlice";
 import axiosInstance from "../../utils/axiosConfig";
 import { notificationUtils } from "../../utils/notificationConfig";
@@ -647,6 +651,24 @@ export function* getShowTimesSaga(
   }
 }
 
+// Get movie statistics saga
+export function* getMovieStatisticsSaga(): Generator<any, void, any> {
+  try {
+    const response = yield call(axiosInstance.get, "/api/movies/statistics");
+    yield put(getMovieStatisticsSuccess(response.data));
+  } catch (error: any) {
+    yield put(
+      getMovieStatisticsFailure(
+        error.response?.data?.message || "Không thể lấy thống kê phim"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi",
+      description: "Không thể lấy thống kê phim theo doanh thu",
+    });
+  }
+}
+
 // Root auth saga
 export default function* movieSaga() {
   yield takeEvery(getMovieListRequest.type, getMovieListSaga);
@@ -665,4 +687,7 @@ export default function* movieSaga() {
   yield takeEvery(deleteMovieRequest.type, deleteMovieSaga);
   yield takeEvery(bulkDeleteMoviesRequest.type, bulkDeleteMoviesSaga);
   yield takeEvery(bulkUpdateStatusRequest.type, bulkUpdateStatusSaga);
+
+  // Movie statistics
+  yield takeEvery(getMovieStatisticsRequest.type, getMovieStatisticsSaga);
 }

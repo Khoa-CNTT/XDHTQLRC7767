@@ -242,7 +242,10 @@ const paymentSlice = createSlice({
       state.dailyRevenue.error = action.payload;
     },
 
-    getPaymentStatisticsRequest: (state) => {
+    getPaymentStatisticsRequest: (
+      state,
+      action: PayloadAction<StatisticsParams>
+    ) => {
       state.statisticsData.loading = true;
       state.statisticsData.error = null;
     },

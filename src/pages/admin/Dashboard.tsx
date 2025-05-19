@@ -402,7 +402,7 @@ const Dashboard: React.FC = () => {
             <StatisticWrapper>
               <Statistic
                 title="Đơn hàng hôm nay"
-                value={dailyRevenue.data?.ticketCount || 0}
+                value={dailyRevenue.data?.totalTickets || 0}
                 prefix={
                   <ShoppingCartOutlined
                     style={{ color: "#52c41a", marginRight: 8 }}

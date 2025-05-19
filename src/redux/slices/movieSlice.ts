@@ -21,6 +21,14 @@ export interface Movie {
   content?: string;
 }
 
+// Định nghĩa kiểu cho thống kê phim
+export interface MovieStatisticsDTO {
+  movieTitle: string;
+  showtimesCount: number;
+  ticketsSold: number;
+  revenue: number;
+}
+
 // Định nghĩa kiểu cho phim ở trang chủ
 export interface MovieHomeResponseDTO {
   id: number;
@@ -161,6 +169,11 @@ export interface MovieState {
     error: string | null;
     success: boolean;
   };
+  movieStatistics: {
+    data: MovieStatisticsDTO[];
+    loading: boolean;
+    error: string | null;
+  };
 }
 
 // State ban đầu
@@ -230,6 +243,11 @@ const initialState: MovieState = {
     loading: false,
     error: null,
     success: false,
+  },
+  movieStatistics: {
+    data: [],
+    loading: false,
+    error: null,
   },
 };
 
@@ -492,6 +510,22 @@ const movieSlice = createSlice({
       state.adminBulkActions.error = null;
       state.adminBulkActions.success = false;
     },
+    // Get movie statistics
+    getMovieStatisticsRequest: (state) => {
+      state.movieStatistics.loading = true;
+      state.movieStatistics.error = null;
+    },
+    getMovieStatisticsSuccess: (
+      state,
+      action: PayloadAction<MovieStatisticsDTO[]>
+    ) => {
+      state.movieStatistics.loading = false;
+      state.movieStatistics.data = action.payload;
+    },
+    getMovieStatisticsFailure: (state, action: PayloadAction<string>) => {
+      state.movieStatistics.loading = false;
+      state.movieStatistics.error = action.payload;
+    },
   },
 });
 
@@ -542,6 +576,9 @@ export const {
   bulkUpdateStatusSuccess,
   bulkUpdateStatusFailure,
   resetAdminMovieState,
+  getMovieStatisticsRequest,
+  getMovieStatisticsSuccess,
+  getMovieStatisticsFailure,
 } = movieSlice.actions;
 
 // Export reducer

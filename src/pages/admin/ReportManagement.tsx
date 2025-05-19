@@ -13,6 +13,7 @@ import {
   Space,
   message,
 } from "antd";
+import type { RangePickerProps } from "antd/es/date-picker";
 import {
   BarChartOutlined,
   LineChartOutlined,
@@ -26,11 +27,9 @@ import { Line, Bar, Pie } from "@ant-design/charts";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getPaymentStatisticsRequest,
-  StatisticsParams,
-} from "../../redux/slices/paymentSlice";
+import { getPaymentStatisticsRequest } from "../../redux/slices/paymentSlice";
 import { getCustomerCountRequest } from "../../redux/slices/customerSlice";
+import { getMovieStatisticsRequest } from "../../redux/slices/movieSlice";
 import { RootState } from "../../redux/store";
 import type { AppDispatch } from "../../redux/store";
 
@@ -103,14 +102,17 @@ const ReportManagement: React.FC = () => {
     (state: RootState) => state.customer.customerCount
   );
 
+  // Get movie statistics data
+  const { data: movieStatistics, loading: movieStatisticsLoading } =
+    useSelector((state: RootState) => state.movie.movieStatistics);
+
   // Fetch statistics when component mounts or date range changes
   useEffect(() => {
     const startDate = dateRange[0].format("YYYY-MM-DD");
     const endDate = dateRange[1].format("YYYY-MM-DD");
-    dispatch(
-      getPaymentStatisticsRequest({ startDate, endDate } as StatisticsParams)
-    );
+    dispatch(getPaymentStatisticsRequest({ startDate, endDate }));
     dispatch(getCustomerCountRequest());
+    dispatch(getMovieStatisticsRequest());
   }, [dispatch, dateRange]);
 
   // Transform payment statistics into the format needed for charts and tables
@@ -265,47 +267,20 @@ const ReportManagement: React.FC = () => {
     },
   ];
 
-  const movieTableData: MovieTableDataItem[] = [
-    {
-      key: "1",
-      title: "Avengers: Endgame",
-      showtimeCount: 45,
-      ticketCount: 3600,
-      revenue: 45000000,
-    },
-    {
-      key: "2",
-      title: "Spider-Man: No Way Home",
-      showtimeCount: 42,
-      ticketCount: 3200,
-      revenue: 38000000,
-    },
-    {
-      key: "3",
-      title: "The Batman",
-      showtimeCount: 38,
-      ticketCount: 2800,
-      revenue: 32000000,
-    },
-    {
-      key: "4",
-      title: "Dune",
-      showtimeCount: 35,
-      ticketCount: 2400,
-      revenue: 28000000,
-    },
-    {
-      key: "5",
-      title: "Black Widow",
-      showtimeCount: 32,
-      ticketCount: 2200,
-      revenue: 25000000,
-    },
-  ];
+  // Create movie table data from statistics
+  const movieTableData: MovieTableDataItem[] =
+    movieStatistics?.map((item, index) => ({
+      key: index.toString(),
+      title: item.movieTitle,
+      showtimeCount: item.showtimesCount,
+      ticketCount: item.ticketsSold,
+      revenue: item.revenue,
+    })) || [];
 
-  const handleDateRangeChange = (dates: any) => {
-    if (dates) {
-      setDateRange(dates);
+  // Handle date range change
+  const handleDateRangeChange: RangePickerProps["onChange"] = (dates) => {
+    if (dates && dates[0] && dates[1]) {
+      setDateRange([dates[0], dates[1]]);
     }
   };
 
@@ -316,9 +291,8 @@ const ReportManagement: React.FC = () => {
   const handleRefresh = () => {
     const startDate = dateRange[0].format("YYYY-MM-DD");
     const endDate = dateRange[1].format("YYYY-MM-DD");
-    dispatch(
-      getPaymentStatisticsRequest({ startDate, endDate } as StatisticsParams)
-    );
+    dispatch(getPaymentStatisticsRequest({ startDate, endDate }));
+    dispatch(getMovieStatisticsRequest());
   };
 
   const handleExport = () => {
@@ -326,7 +300,7 @@ const ReportManagement: React.FC = () => {
   };
 
   // Combined loading state
-  const loading = paymentLoading || customerLoading;
+  const loading = paymentLoading || customerLoading || movieStatisticsLoading;
 
   return (
     <div>
