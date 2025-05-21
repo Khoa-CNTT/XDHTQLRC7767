@@ -1,7 +1,5 @@
 # BSCMSAAPUE Cinema - Hệ thống đặt vé xem phim
 
-![BSCMSAAPUE Cinema](https://i.imgur.com/AvmwQ5D.jpg)
-
 ## Giới thiệu
 
 BSCMSAAPUE Cinema là một hệ thống đặt vé xem phim trực tuyến, được xây dựng với công nghệ hiện đại, giúp người dùng dễ dàng xem thông tin phim, suất chiếu và đặt vé một cách nhanh chóng, thuận tiện.
