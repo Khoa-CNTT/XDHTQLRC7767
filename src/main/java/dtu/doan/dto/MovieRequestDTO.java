@@ -23,4 +23,5 @@ public class MovieRequestDTO {
     private List<Long> genreIds;
     private String backdrop;
     private LocalDate releaseDate;
+    private int status;
 }

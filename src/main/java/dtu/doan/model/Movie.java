@@ -23,6 +23,7 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     private String imageUrl;
     private String director;
@@ -34,6 +35,7 @@ public class Movie {
     private String language;
     private String subtitle;
     private int ageLimit;
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
     private boolean isDelete;
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)

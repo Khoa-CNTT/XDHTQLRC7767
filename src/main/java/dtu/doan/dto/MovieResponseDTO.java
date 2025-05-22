@@ -21,9 +21,9 @@ public class MovieResponseDTO {
     private String subtitle;
     private int ageLimit;
     private String content;
-
     private List<Genre> movieGenres;
     private String backdrop;
     private LocalDate releaseDate;
+    private int status;
 
 }
