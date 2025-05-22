@@ -12,5 +12,5 @@ public class RoomDTO {
     private String type;
     private int capacity;
     private String status;
-    private String cinemaID;
+    private String cinemaId;
 }

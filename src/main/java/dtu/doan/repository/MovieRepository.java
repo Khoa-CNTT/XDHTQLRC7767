@@ -2,6 +2,7 @@ package dtu.doan.repository;
 
 import dtu.doan.dto.IMovieBookingDTO;
 import dtu.doan.dto.IMovieDetailDTO;
+import dtu.doan.dto.MovieStatisticsDTO;
 import dtu.doan.model.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -78,5 +79,16 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             @Param("endDate") LocalDate endDate
     );
 
+    @Query(value = """
+    SELECT m.name AS movieTitle,
+           COUNT(DISTINCT s.id) AS showtimesCount,
+           COUNT(c.id) AS ticketsSold,
+           COALESCE(SUM(s.price_per_show_time), 0) AS revenue
+    FROM movie m
+    LEFT JOIN show_time s ON s.movie_id = m.id
+    LEFT JOIN chair c ON c.show_time_id = s.id AND c.status = 'BOOKED'
+    GROUP BY m.id, m.name
+""", nativeQuery = true)
+    List<Object[]> getMovieStatistics();
 
 }

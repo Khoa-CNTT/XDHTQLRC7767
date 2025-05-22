@@ -19,6 +19,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Customer findByFullName(String fullName);
 
     List<Customer> findByIsDeleteFalse();
-    @Query("SELECT SUM(c.id) FROM Customer c WHERE c.isDelete = false")
+    @Query("SELECT count(c.id) FROM Customer c WHERE c.isDelete = false")
     Long sumById();
 }

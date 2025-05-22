@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class RoomServiceImpl implements RoomService {
@@ -39,51 +36,48 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     @Override
     public RoomDTO createRoomWithSeats(RoomDTO room) {
-        int capacity = room.getCapacity();  // Tổng số ghế
-        int cols = 10;                      // Số cột mỗi hàng
-        int rows = (int) Math.ceil((double) capacity / cols); // Tính số hàng
+        int capacity = room.getCapacity();
+        List<SeatFormat> seatFormats = new ArrayList<>();
 
-        Set<SeatFormat> seatFormats = new HashSet<>();
-        Cinema cinema = cinemaRepository.findByid(room.getCinemaID());
+        // Fetch the Cinema and validate
+        Cinema cinema = cinemaRepository.findByid(room.getCinemaId());
+        if (cinema == null) {
+            throw new RuntimeException("Cinema not found with id: " + room.getCinemaId());
+        }
+
         Room room1 = new Room();
-
         room1.setName(room.getName());
         room1.setType(room.getType());
         room1.setCapacity(capacity);
         room1.setStatus("ACTIVE");
-        room1.setCinema(cinema);
+        room1.setCinema(cinema); // Ensure Cinema is set
 
-        for (int i = 0; i < rows; i++) {
-            char rowLetter = (char) ('A' + i);
-            for (int j = 1; j <= cols; j++) {
-                int currentSeatIndex = i * cols + (j - 1);
-                if (currentSeatIndex >= capacity) break;
+        // Save Room to generate ID
+        Room savedRoom = roomRepository.save(room1);
 
-                SeatFormat c = new SeatFormat();
-                c.setName(rowLetter + String.valueOf(j));
-                c.setRoom(room1);
-
-                if (currentSeatIndex >= capacity - 10) {
-                    c.setType("COUPLE");
-                } else {
-                    c.setType("STANDARD");
-                }
-
-                seatFormats.add(c);
-            }
+        for (int i = 1; i <= capacity; i++) {
+            SeatFormat seat = new SeatFormat();
+            seat.setName(String.valueOf(i));
+            seat.setRoom(savedRoom);
+            seat.setType(i > capacity - 10 ? "COUPLE" : "STANDARD");
+            seatFormats.add(seat);
         }
-        seatFormatRepository.saveAll(seatFormats);
 
-        room1.setSeats(seatFormats);
-       RoomDTO roomDTO = new RoomDTO();
-       Room roomSaved = roomRepository.save(room1);
-        roomDTO.setStatus(roomSaved.getStatus());
-        roomDTO.setName(roomSaved.getName());
-        roomDTO.setType(roomSaved.getType());
-        roomDTO.setCapacity(roomSaved.getCapacity());
-        roomDTO.setCinemaID(roomSaved.getCinema().getName());
+        // Save seats
+        seatFormatRepository.saveAll(seatFormats);
+        savedRoom.setSeats(new HashSet<>(seatFormats));
+
+        // Return DTO
+        RoomDTO roomDTO = new RoomDTO();
+        roomDTO.setStatus(savedRoom.getStatus());
+        roomDTO.setName(savedRoom.getName());
+        roomDTO.setType(savedRoom.getType());
+        roomDTO.setCapacity(savedRoom.getCapacity());
+        roomDTO.setCinemaId(savedRoom.getCinema().getName()); // Cinema is now guaranteed to be non-null
         return roomDTO;
     }
+
+
 
     @Transactional
     @Override
@@ -94,9 +88,9 @@ public class RoomServiceImpl implements RoomService {
         }
 
         Room room = optionalRoom.get();
-        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaID());
+        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
         if (cinema == null) {
-            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaID());
+            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
         }
 
         // Update room details

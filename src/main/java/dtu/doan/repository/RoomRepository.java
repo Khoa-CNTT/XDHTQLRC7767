@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
-    @Query("SELECT r FROM Room r WHERE r.cinema.id = :cinemaId")
+    @Query("SELECT r FROM Room r WHERE r.cinema.id = :cinemaId and r.status = 'ACTIVE'")
     List<Room> findRoomsByCinemaId(@Param("cinemaId") Long cinemaId);
 }

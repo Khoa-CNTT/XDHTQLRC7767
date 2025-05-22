@@ -1,6 +1,7 @@
 package dtu.doan.repository;
 
 import dtu.doan.dto.DailyRevenueDTO;
+import dtu.doan.dto.PaymentTicketDTO;
 import dtu.doan.model.Payment;
 import dtu.doan.model.Promotion;
 import org.springframework.data.domain.Page;
@@ -19,13 +20,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query(value = "select * from payment", nativeQuery = true)
     Page<Payment> getPageOfPayment(Pageable pageable);
-    @Query(value = """
-            SELECT p
-            FROM Payment p
-            WHERE p.status = 'SUCCESS'
-            ORDER BY p.date DESC
-            """)
-    List<Payment> findAll();
+
 
     @Query(value = """
             SELECT 
@@ -39,11 +34,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Object[]> getMonthlyRevenueByYear(@Param("year") int year);
 
     @Query("""
-    SELECT FUNCTION('DATE', p.date), SUM(p.amount), COUNT(p)
-    FROM Payment p
-    WHERE p.status = 'SUCCESS' AND FUNCTION('DATE', p.date) = :date
-    GROUP BY FUNCTION('DATE', p.date)
-    """)
+            SELECT FUNCTION('DATE', p.date), SUM(p.amount), COUNT(p)
+            FROM Payment p
+            WHERE p.status = 'SUCCESS' AND FUNCTION('DATE', p.date) = :date
+            GROUP BY FUNCTION('DATE', p.date)
+            """)
     Object getRevenueAndTicketCountByDate(@Param("date") LocalDate date);
 
     @Query("""

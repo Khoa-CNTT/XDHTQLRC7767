@@ -15,9 +15,8 @@ import java.util.Set;
 @Repository
 public interface ChairRepository extends JpaRepository<Chair, Long> {
     @Query(value = "SELECT c.* FROM chair c " +
-            "INNER JOIN show_time st ON st.id = c.show_time_id " +
-            "WHERE st.id = ?1 " +
-            "ORDER BY LEFT(c.name, 1), CAST(SUBSTRING(c.name, 2) AS UNSIGNED)", nativeQuery = true)
+            "WHERE c.show_time_id = ?1 " +
+            "ORDER BY CAST(c.name AS UNSIGNED)", nativeQuery = true)
     List<Chair> findAllChairViewByShowTimeId(Long showTimeId);
 
 

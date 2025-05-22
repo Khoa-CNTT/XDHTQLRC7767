@@ -115,6 +115,11 @@ public class MovieController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("/statistics")
+    public ResponseEntity<List<MovieStatisticsDTO>> getMovieStatistics() {
+        List<MovieStatisticsDTO> statistics = service.getMovieStatistics();
+        return ResponseEntity.ok(statistics);
+    }
 
 
 }
