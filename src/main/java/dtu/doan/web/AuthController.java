@@ -145,11 +145,16 @@ public class AuthController {
             if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
                 String username = userDetails.getUsername();
-                Customer customer = customerService.getCustomerByEmail(username);
-                if (customer == null) {
-                    return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+                String role = userDetails.getAuthorities().stream().findFirst().orElse(null).getAuthority();
+                System.out.println(role);
+                if("ROLE_USER".equals(role)){
+                    Customer customer = customerService.getCustomerByEmail(username);
+                    if (customer == null) {
+                        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+                    }
+                    return new ResponseEntity<>(customer, HttpStatus.OK);
                 }
-                return new ResponseEntity<>(customer, HttpStatus.OK);
+
             }
             return new ResponseEntity<>(null, HttpStatus.OK);
         } catch (Exception e) {
