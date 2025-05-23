@@ -35,7 +35,7 @@ import { notificationUtils } from "../../utils/notificationConfig";
 const api = {
   register: (data: RegisterPayload) => axiosInstance.post("/signup", data),
   updateUser: (data: Partial<User>) =>
-    axiosInstance.put("/update-profile", data),
+    axiosInstance.put("/api/customers/update-customer", data),
   changePassword: (data: ChangePasswordPayload) =>
     axiosInstance.post("/change-password", data),
   forgotPassword: (email: string) =>

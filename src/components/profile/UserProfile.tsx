@@ -127,9 +127,12 @@ const UserProfile: React.FC = () => {
 
   const onFinish = async (values: any) => {
     try {
+      // debugger
       if (values.birthday) {
         values.birthday = values.birthday.format("YYYY-MM-DD");
       }
+      values.id = user?.id;
+      
       dispatch(updateUserStart(values));
       setIsEditing(false);
     } catch (error) {}
