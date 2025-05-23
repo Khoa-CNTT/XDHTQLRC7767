@@ -233,6 +233,7 @@ const MovieCard = styled(motion.div)`
     -webkit-box-orient: vertical !important;
     line-height: 1.3 !important;
     margin-bottom: 8px !important;
+    height: 50px !important;
 
     @media (max-width: 480px) {
       font-size: 16px !important;
@@ -261,7 +262,7 @@ const MovieInfo = styled.span`
 `;
 
 const MovieTags = styled.div`
-  height: 70px;
+  height: 50px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

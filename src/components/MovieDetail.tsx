@@ -38,7 +38,6 @@ import {
   getCommentsRequest,
   addCommentRequest,
   resetAddCommentState,
-  Comment,
   getShowTimesRequest,
 } from "../redux/slices/movieSlice";
 import { RootState } from "../redux/store";
@@ -832,7 +831,6 @@ const RatingDate = styled.span`
   font-size: 14px;
 `;
 
-// Custom Comment component
 const CommentItem = styled.div`
   display: flex;
   padding: 16px 0;
@@ -942,38 +940,16 @@ const MovieDetail: React.FC = () => {
   // Ensure movie data has the right type
   const movie = movieData as MovieDTO;
 
-  // Custom Comment component
-  const CustomComment = ({
-    author,
-    avatar,
-    content,
-    datetime,
-    children,
-  }: CommentProps) => (
-    <CommentItem>
-      <CommentAvatar>
-        <Avatar src={avatar} alt={author} size={40} />
-      </CommentAvatar>
-      <CommentContent>
-        <CommentAuthor>
-          <UserName>{author}</UserName>
-          <RatingDate>{datetime}</RatingDate>
-        </CommentAuthor>
-        <div>{content}</div>
-        {children && <CommentMeta>{children}</CommentMeta>}
-      </CommentContent>
-    </CommentItem>
-  );
-
   // Function to convert sentiment score to star rating
   const getSentimentStars = (score: number | undefined): number => {
     if (score === undefined) return 3; // Default to 3 stars if no score
 
-    if (score >= -1 && score < -0.6) return 1;
-    if (score >= -0.6 && score < -0.2) return 2;
-    if (score >= -0.2 && score < 0.2) return 3;
-    if (score >= 0.2 && score < 0.6) return 4;
-    if (score >= 0.6 && score <= 1) return 5;
+    // Chia đều thang điểm từ -1 đến 1 thành 5 mức
+    if (score >= -1 && score < -0.6) return 1; // -1.0 to -0.6
+    if (score >= -0.6 && score < -0.2) return 2; // -0.6 to -0.2
+    if (score >= -0.2 && score < 0.2) return 3; // -0.2 to 0.2
+    if (score >= 0.2 && score < 0.6) return 4; // 0.2 to 0.6
+    if (score >= 0.6 && score <= 1) return 5; // 0.6 to 1.0
 
     return 3; // Default for any scores outside the range
   };
@@ -1060,7 +1036,7 @@ const MovieDetail: React.FC = () => {
 
     // Navigate to booking page with the showtime ID and movie ID
     if (showtimeId) {
-      navigate(`/booking/showtime/${showtimeId}`);
+      navigate(`/booking/${id}`);
     } else {
       // Fallback to direct movie booking if no showtime ID
       navigate(`/booking/${id}`);
@@ -1406,50 +1382,109 @@ const MovieDetail: React.FC = () => {
                               </SectionLabel>
                             }
                             itemLayout="horizontal"
-                            renderItem={(item) => (
-                              <List.Item
-                                style={{
-                                  borderBottom:
-                                    "1px solid rgba(255, 255, 255, 0.1)",
-                                }}
-                              >
-                                <CustomComment
-                                  author={
-                                    item.user && typeof item.user === "object"
-                                      ? item.user.fullName ||
-                                        item.user.username ||
-                                        "Người dùng ẩn danh"
-                                      : "Người dùng ẩn danh"
-                                  }
-                                  avatar={
-                                    "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-                                  }
-                                  content={
-                                    <div>
+                            renderItem={(item: any) => {
+                              // Parse score to make sure it's a number
+                              const scoreValue =
+                                typeof item.score === "string"
+                                  ? parseFloat(item.score)
+                                  : Number(item.score);
+
+                              // Log score value to debug
+                              console.log("Comment raw score:", item.score);
+                              console.log(
+                                "Comment parsed score:",
+                                scoreValue,
+                                typeof scoreValue
+                              );
+
+                              // Get sentiment stars based on score
+                              const starRating = getSentimentStars(scoreValue);
+                              console.log(
+                                "Star rating calculated:",
+                                starRating
+                              );
+
+                              return (
+                                <List.Item
+                                  style={{
+                                    borderBottom:
+                                      "1px solid rgba(255, 255, 255, 0.1)",
+                                  }}
+                                >
+                                  <CommentItem>
+                                    <CommentAvatar>
+                                      <Avatar
+                                        src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+                                        alt={item.user?.fullName || "User"}
+                                        size={40}
+                                      />
+                                    </CommentAvatar>
+                                    <CommentContent>
+                                      <CommentAuthor>
+                                        <UserName>
+                                          {item.user &&
+                                          typeof item.user === "object"
+                                            ? item.user.fullName ||
+                                              item.user.username ||
+                                              "Người dùng ẩn danh"
+                                            : "Người dùng ẩn danh"}
+                                        </UserName>
+                                        <RatingDate>
+                                          {new Date(
+                                            item.createdAt
+                                          ).toLocaleDateString("vi-VN")}
+                                        </RatingDate>
+                                      </CommentAuthor>
                                       <RatingContent>
                                         {item.content}
                                       </RatingContent>
                                       <SentimentStar>
-                                        <Rate
-                                          disabled
-                                          defaultValue={getSentimentStars(
-                                            item.score
+                                        {/* Sử dụng component Rate với defaultValue thay vì value để tránh vấn đề re-render */}
+                                        <div>
+                                          {[...Array(starRating)].map(
+                                            (_, i) => (
+                                              <StarFilled
+                                                key={i}
+                                                style={{
+                                                  color: "#ffd700",
+                                                  fontSize: "16px",
+                                                  marginRight: "2px",
+                                                }}
+                                              />
+                                            )
                                           )}
-                                          character={
-                                            <StarFilled
-                                              style={{ color: "#ffd700" }}
-                                            />
-                                          }
-                                        />
+                                          {[...Array(5 - starRating)].map(
+                                            (_, i) => (
+                                              <StarFilled
+                                                key={i}
+                                                style={{
+                                                  color: "#d9d9d9",
+                                                  fontSize: "16px",
+                                                  marginRight: "2px",
+                                                }}
+                                              />
+                                            )
+                                          )}
+                                          <span
+                                            style={{
+                                              marginLeft: "10px",
+                                              color: "#aaa",
+                                              fontSize: "14px",
+                                            }}
+                                          >
+                                            (Điểm cảm xúc:{" "}
+                                            {scoreValue !== undefined
+                                              ? scoreValue.toFixed(2)
+                                              : "N/A"}
+                                            )
+                                          </span>
+                                        </div>
                                       </SentimentStar>
-                                    </div>
-                                  }
-                                  datetime={new Date(
-                                    item.createdAt
-                                  ).toLocaleDateString("vi-VN")}
-                                />
-                              </List.Item>
-                            )}
+                                    </CommentContent>
+                                  </CommentItem>
+                                </List.Item>
+                              );
+                            }}
                           />
                         ) : (
                           <div

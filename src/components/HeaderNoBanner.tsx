@@ -248,21 +248,6 @@ const HeaderNoBanner: React.FC = () => {
           </MobileMenu>
         </HeaderContent>
       </MainHeader>
-
-      <SearchBar>
-        <SearchBarContent>
-          <SearchInputWrapper>
-            <SearchIconWrapper>
-              <SearchOutlined />
-            </SearchIconWrapper>
-            <StyledInput
-              placeholder="Tìm kiếm phim..."
-              onPressEnter={(e) => handleSearch(e.currentTarget.value)}
-            />
-          </SearchInputWrapper>
-          <SearchButton onClick={() => handleSearch("")}>TÌM KIẾM</SearchButton>
-        </SearchBarContent>
-      </SearchBar>
     </StyledHeader>
   );
 };

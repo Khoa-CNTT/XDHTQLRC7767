@@ -211,18 +211,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
         </Row>
 
         <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item name="releaseYear" label="Năm phát hành">
-              <InputNumber
-                min={1900}
-                max={2100}
-                style={{ width: "100%" }}
-                placeholder="Nhập năm phát hành"
-                disabled={form.getFieldValue("releaseDate") !== null}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
               name="status"
               label="Trạng thái"

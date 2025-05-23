@@ -432,11 +432,9 @@ const MovieList: React.FC = () => {
                       CHI TIẾT
                     </DetailButton>
                   </Link>
-                  {activeTab === "now-showing" && (
-                    <Link to={`/booking/${movie.id}`}>
-                      <ActionButton>ĐẶT VÉ</ActionButton>
-                    </Link>
-                  )}
+                  <Link to={`/booking/${movie.id}`}>
+                    <ActionButton>ĐẶT VÉ</ActionButton>
+                  </Link>
                 </ButtonsContainer>
               </MovieCard>
             </motion.div>
