@@ -165,16 +165,16 @@ const Header: React.FC = () => {
   );
 
   const bannerImages = [
-    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853900/lm8_dp9ulu.jpg",
-    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853929/timxac_kcf0zr.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1747828893/doanratruong/drm_x7edum.webp",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1747884208/doanratruong/MV5BMjcwNDg2ZTItZmYzNS00NzI0LTgxOWEtZDg3MTNmNDJlNTM0XkEyXkFqcGc_._V1__qsbm8v.jpg",
     "https://res.cloudinary.com/dp489la7s/image/upload/v1745853885/diadao_zdcru1.jpg",
   ];
 
   const thumbnailImages = [
     "https://res.cloudinary.com/dp489la7s/image/upload/v1745853900/lm8_dp9ulu.jpg",
-    "https://res.cloudinary.com/dp489la7s/image/upload/v1745853929/timxac_kcf0zr.jpg",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1747884208/doanratruong/MV5BMjcwNDg2ZTItZmYzNS00NzI0LTgxOWEtZDg3MTNmNDJlNTM0XkEyXkFqcGc_._V1__qsbm8v.jpg",
     "https://res.cloudinary.com/dp489la7s/image/upload/v1745853885/diadao_zdcru1.jpg",
-    "https://s3-alpha-sig.figma.com/img/8401/bd80/d25bcd199f819265844ec8673349033f?Expires=1743379200&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=MeXIdLF5tp5CcenxV7EYS~SjXI0Qzt7bZf2KYAzavE9C4M39O2~Cpl4ImQWKINZvocy3mx~9cFPf5FAgTkqd8P5ooEImcHg9aiCuUbW8YyrooAqjdzMUXkqF8Ot65hWgktoIcUiq-SLuTKb1C9sQ~8RHMF6~YlPosjkVg0mTI98eS6ClYaNzUrQVs4u2FIwYS2As2kvq~7gWGwSqmBnrswjrdBDpZRcakqv04R0da8jpOP9cs4YIkckbMdIsmL-xbVXf6ZBty8xC~UQp28QBprlxhuMaVHlH5YrdndyxD1y-h741pFicG4ChxIA8VQfDF6VMt3E4-bms2UmFLIDAvQ__",
+    "https://res.cloudinary.com/dp489la7s/image/upload/v1747828893/doanratruong/drm_x7edum.webp",
   ];
 
   return (
