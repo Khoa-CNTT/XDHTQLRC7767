@@ -64,16 +64,17 @@ public class PaymentServiceImpl implements PaymentService {
             paymentTicketDTO.setPaymentAmount(payment.getAmount());
             paymentTicketDTO.setPaymentStatus(payment.getStatus());
             paymentTicketDTO.setPaymentId(payment.getId());
+            paymentTicketDTO.setMovieName(payment.getTickets().get(0).getShowTime().getMovie().getName());
+            paymentTicketDTO.setCinemaName(payment.getTickets().get(0).getShowTime().getRoom().getCinema().getName());
+            paymentTicketDTO.setRoomName(payment.getTickets().get(0).getShowTime().getRoom().getName());
+            paymentTicketDTO.setShowDate(payment.getTickets().get(0).getShowTime().getDate());
+            paymentTicketDTO.setShowTime(payment.getTickets().get(0).getShowTime().getStartTime());
+            paymentTicketDTO.setCustomerName(payment.getTickets().get(0).getCustomer().getFullName());
+            List<String> ticketNames = new ArrayList<>();
             for (int i = 0; i < payment.getTickets().size(); i++) {
-                List<String> ticketNames = new ArrayList<>();
                 ticketNames.add(payment.getTickets().get(i).getChairs().getName());
-                paymentTicketDTO.setTicketName(ticketNames);
-                paymentTicketDTO.setMovieName(payment.getTickets().get(i).getShowTime().getMovie().getName());
-                paymentTicketDTO.setCinemaName(payment.getTickets().get(i).getShowTime().getRoom().getCinema().getName());
-                paymentTicketDTO.setRoomName(payment.getTickets().get(i).getShowTime().getRoom().getName());
-                paymentTicketDTO.setShowDate(payment.getTickets().get(i).getShowTime().getDate());
-                paymentTicketDTO.setShowTime(payment.getTickets().get(i).getShowTime().getStartTime());
             }
+            paymentTicketDTO.setTicketName(ticketNames);
             paymentTicketDTOS.add(paymentTicketDTO);
         }
         return paymentTicketDTOS;
