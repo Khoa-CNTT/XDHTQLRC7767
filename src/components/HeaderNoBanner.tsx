@@ -73,7 +73,6 @@ const HeaderNoBanner: React.FC = () => {
     if (path === "/") return "home";
     if (path.includes("/movies")) return "movies";
     if (path.includes("/cinema")) return "cinema";
-    if (path.includes("/promotions")) return "promotions";
     if (path.includes("/news")) return "news";
     return "";
   };
@@ -82,7 +81,6 @@ const HeaderNoBanner: React.FC = () => {
     { key: "home", label: "Trang chủ", link: "/" },
     { key: "movies", label: "Phim", link: "/movies" },
     { key: "cinema", label: "Rạp chiếu", link: "/cinema" },
-    { key: "promotions", label: "Khuyến mãi", link: "/promotions" },
     { key: "news", label: "Tin tức", link: "/news" },
   ];
 

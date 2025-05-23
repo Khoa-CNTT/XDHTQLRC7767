@@ -94,10 +94,6 @@ export function* getEmployeeListSaga(
         apiError.response?.data?.message || "Không thể lấy danh sách nhân viên"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách nhân viên",
-    });
   }
 }
 
@@ -119,10 +115,6 @@ export function* getEmployeeDetailSaga(
         apiError.response?.data?.message || "Không thể lấy thông tin nhân viên"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy thông tin nhân viên",
-    });
   }
 }
 
@@ -145,11 +137,6 @@ export function* addEmployeeSaga(action: AddEmployeeAction): SagaIterator {
         apiError.response?.data?.message || "Không thể thêm nhân viên mới"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description:
-        apiError.response?.data?.message || "Không thể thêm nhân viên mới",
-    });
   }
 }
 
@@ -176,10 +163,6 @@ export function* updateEmployeeSaga(
           "Không thể cập nhật thông tin nhân viên"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể cập nhật thông tin nhân viên",
-    });
   }
 }
 
@@ -205,10 +188,6 @@ export function* deleteEmployeeSaga(
         apiError.response?.data?.message || "Không thể xóa nhân viên"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa nhân viên",
-    });
   }
 }
 

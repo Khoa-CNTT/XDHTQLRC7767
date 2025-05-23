@@ -58,10 +58,6 @@ function* getShowtimeListSaga(
         err.response?.data?.message || "Không thể lấy danh sách lịch chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách lịch chiếu",
-    });
   }
 }
 
@@ -83,10 +79,6 @@ function* getShowtimeWithChairsSaga(
         err.response?.data?.message || "Không thể lấy thông tin ghế ngồi"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy thông tin ghế ngồi",
-    });
   }
 }
 
@@ -112,11 +104,6 @@ function* createShowtimeSaga(
         err.response?.data?.message || "Không thể tạo lịch chiếu mới"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description:
-        err.response?.data?.message || "Không thể tạo lịch chiếu mới",
-    });
   }
 }
 
@@ -149,10 +136,6 @@ function* searchShowtimeSaga(
         err.response?.data?.message || "Không thể tìm kiếm lịch chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể tìm kiếm lịch chiếu",
-    });
   }
 }
 

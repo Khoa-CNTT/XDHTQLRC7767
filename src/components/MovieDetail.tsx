@@ -91,6 +91,7 @@ interface APIComment {
   user: {
     id: number | string;
     fullName: string;
+    username?: string;
     email?: string;
     phoneNumber?: string;
   };
@@ -134,6 +135,22 @@ interface CommentProps {
   content: React.ReactNode;
   datetime: string;
   children?: React.ReactNode;
+}
+
+// Update the Comment type to include score
+interface Comment {
+  id: number;
+  content: string;
+  user: {
+    id: number | string;
+    fullName: string;
+    username?: string;
+    email?: string;
+    phoneNumber?: string;
+  };
+  createdAt: string;
+  score?: number;
+  sentiment?: string;
 }
 
 // Styled Components
@@ -842,6 +859,12 @@ const CommentMeta = styled.div`
   margin-top: 8px;
 `;
 
+const SentimentStar = styled.div`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+`;
+
 const SectionLabel = styled.div`
   color: white;
   font-size: 16px;
@@ -941,6 +964,19 @@ const MovieDetail: React.FC = () => {
       </CommentContent>
     </CommentItem>
   );
+
+  // Function to convert sentiment score to star rating
+  const getSentimentStars = (score: number | undefined): number => {
+    if (score === undefined) return 3; // Default to 3 stars if no score
+
+    if (score >= -1 && score < -0.6) return 1;
+    if (score >= -0.6 && score < -0.2) return 2;
+    if (score >= -0.2 && score < 0.2) return 3;
+    if (score >= 0.2 && score < 0.6) return 4;
+    if (score >= 0.6 && score <= 1) return 5;
+
+    return 3; // Default for any scores outside the range
+  };
 
   // Function to fetch showtimes for a given date
   const fetchShowtimes = (movieId: string, date: string) => {
@@ -1389,9 +1425,24 @@ const MovieDetail: React.FC = () => {
                                     "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
                                   }
                                   content={
-                                    <RatingContent>
-                                      {item.content}
-                                    </RatingContent>
+                                    <div>
+                                      <RatingContent>
+                                        {item.content}
+                                      </RatingContent>
+                                      <SentimentStar>
+                                        <Rate
+                                          disabled
+                                          defaultValue={getSentimentStars(
+                                            item.score
+                                          )}
+                                          character={
+                                            <StarFilled
+                                              style={{ color: "#ffd700" }}
+                                            />
+                                          }
+                                        />
+                                      </SentimentStar>
+                                    </div>
                                   }
                                   datetime={new Date(
                                     item.createdAt

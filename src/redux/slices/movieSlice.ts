@@ -4,11 +4,15 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface Movie {
   id: number;
   title: string; // Tương ứng với name từ backend
+  name?: string; // Thêm trường name từ API
   description: string;
   director?: string;
   releaseDate?: string; // Thay đổi để phù hợp với string | null
   duration?: number;
   genre?: string[]; // Danh sách tên genre
+  genreIds?: number[]; // Danh sách ID của genre
+  genres?: { id: number; name: string }[]; // Thêm genres từ API response
+  movieGenres?: { id: number; name: string }[]; // Thêm movieGenres từ API response
   status?: string | number; // Status có thể là chuỗi hoặc số (1, 2, 3)
   poster?: string; // Tương ứng với imageUrl từ backend
   backdrop?: string; // Hình ảnh nền
@@ -392,6 +396,7 @@ const movieSlice = createSlice({
     getAdminMovieListSuccess: (state, action: PayloadAction<Movie[]>) => {
       state.adminMovieList.loading = false;
       state.adminMovieList.data = action.payload;
+      console.log(action.payload);
     },
     getAdminMovieListFailure: (state, action: PayloadAction<string>) => {
       state.adminMovieList.loading = false;

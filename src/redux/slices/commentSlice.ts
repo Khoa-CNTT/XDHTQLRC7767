@@ -10,6 +10,8 @@ export interface Comment {
   createdAt: string;
   userName?: string;
   movieTitle?: string;
+  movieName?: string;
+  score?: number;
   user?: {
     id: number;
     fullName: string;
@@ -95,7 +97,7 @@ const commentSlice = createSlice({
     // Get comments by movie for admin
     getMovieCommentsRequest: (
       state,
-      action: PayloadAction<{ movieId: number }>
+      _action: PayloadAction<{ movieId: number }>
     ) => {
       state.movieComments.loading = true;
       state.movieComments.error = null;
@@ -112,7 +114,7 @@ const commentSlice = createSlice({
     // Get sentiment statistics
     getSentimentStatsRequest: (
       state,
-      action: PayloadAction<{ movieId: number }>
+      _action: PayloadAction<{ movieId: number }>
     ) => {
       state.sentimentStats.loading = true;
       state.sentimentStats.error = null;
@@ -130,7 +132,7 @@ const commentSlice = createSlice({
     },
 
     // Approve comment
-    approveCommentRequest: (state, action: PayloadAction<{ id: number }>) => {
+    approveCommentRequest: (state, _action: PayloadAction<{ id: number }>) => {
       state.unapprovedComments.loading = true;
     },
     approveCommentSuccess: (state, action: PayloadAction<{ id: number }>) => {
@@ -146,7 +148,7 @@ const commentSlice = createSlice({
     },
 
     // Delete comment
-    deleteCommentRequest: (state, action: PayloadAction<{ id: number }>) => {
+    deleteCommentRequest: (state, _action: PayloadAction<{ id: number }>) => {
       state.unapprovedComments.loading = true;
     },
     deleteCommentSuccess: (state, action: PayloadAction<{ id: number }>) => {

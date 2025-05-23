@@ -65,10 +65,6 @@ function* getCustomerListSaga(): Generator<unknown, void, AxiosResponse> {
         err.response?.data?.message || "Không thể lấy danh sách khách hàng"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách khách hàng",
-    });
   }
 }
 
@@ -107,10 +103,6 @@ function* deleteCustomerSaga(
         err.response?.data?.message || "Không thể xóa khách hàng"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa khách hàng",
-    });
   }
 }
 
@@ -134,10 +126,6 @@ function* disableCustomerSaga(
           "Không thể vô hiệu hóa tài khoản khách hàng"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể vô hiệu hóa tài khoản khách hàng",
-    });
   }
 }
 
@@ -161,10 +149,6 @@ function* enableCustomerSaga(
           "Không thể kích hoạt tài khoản khách hàng"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể kích hoạt tài khoản khách hàng",
-    });
   }
 }
 

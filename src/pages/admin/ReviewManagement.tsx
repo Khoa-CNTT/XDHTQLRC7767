@@ -93,6 +93,8 @@ interface Review {
   content: string;
   date: string;
   status: string;
+  sentiment?: string;
+  score?: number;
 }
 
 type SentimentIconType = "positive" | "negative" | "neutral";
@@ -103,14 +105,6 @@ interface SentimentStat {
   color: string;
   description: string;
   iconType: SentimentIconType;
-}
-
-// Before moving to component implementation, add the User interface
-interface User {
-  id: number;
-  fullName: string;
-  email: string;
-  // Other user fields as needed
 }
 
 const ReviewManagement: React.FC = () => {
@@ -140,8 +134,16 @@ const ReviewManagement: React.FC = () => {
 
   // Fetch movies on component mount and page change
   useEffect(() => {
-    dispatch(getAdminMovieListRequest());
+    dispatch(getAdminMovieListRequest({}));
   }, [dispatch]);
+
+  // Log movie data when it changes
+  useEffect(() => {
+    console.log("Admin movie list data:", adminMovieList.data);
+    if (adminMovieList.data.length > 0) {
+      console.log("First movie:", adminMovieList.data[0]);
+    }
+  }, [adminMovieList.data]);
 
   // Select first movie by default when movies load
   useEffect(() => {
@@ -149,7 +151,10 @@ const ReviewManagement: React.FC = () => {
       // Convert Redux movie data to our local Movie interface
       const firstMovie: Movie = {
         id: String(adminMovieList.data[0].id),
-        title: adminMovieList.data[0].title,
+        title:
+          adminMovieList.data[0].id === 3
+            ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+            : adminMovieList.data[0].name || adminMovieList.data[0].title || "",
         image: adminMovieList.data[0].poster || "",
         releaseDate: adminMovieList.data[0].releaseDate || "",
       };
@@ -300,7 +305,15 @@ const ReviewManagement: React.FC = () => {
   };
 
   const handleMovieSelect = (movie: Movie) => {
-    setSelectedMovie(movie);
+    // Nếu là phim có ID 3, đảm bảo sử dụng tên phim cụ thể
+    if (movie.id === "3") {
+      setSelectedMovie({
+        ...movie,
+        title: "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh",
+      });
+    } else {
+      setSelectedMovie(movie);
+    }
     setReviews([]);
     setFilteredReviews([]);
   };
@@ -314,7 +327,10 @@ const ReviewManagement: React.FC = () => {
     .map(
       (movie: MovieType): Movie => ({
         id: String(movie.id),
-        title: movie.title,
+        title:
+          movie.id === 3
+            ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+            : movie.name || movie.title || "",
         image: movie.poster || "",
         releaseDate: movie.releaseDate || "",
       })
@@ -327,6 +343,7 @@ const ReviewManagement: React.FC = () => {
       dataIndex: "title",
       key: "title",
       sorter: (a: Movie, b: Movie) => a.title.localeCompare(b.title),
+      render: (title: string) => title,
     },
     {
       title: "Ngày phát hành",
@@ -350,6 +367,27 @@ const ReviewManagement: React.FC = () => {
     },
   ];
 
+  // Function to determine sentiment based on score
+  const getSentimentFromScore = (
+    score?: number
+  ): { text: string; color: string; icon: React.ReactNode } => {
+    if (score === undefined) {
+      return {
+        text: "Không xác định",
+        color: "default",
+        icon: <MehOutlined />,
+      };
+    }
+
+    if (score < 0) {
+      return { text: "Tiêu cực", color: "#1890ff", icon: <FrownOutlined /> };
+    } else if (score > 0.5) {
+      return { text: "Tích cực", color: "#06d6a0", icon: <SmileOutlined /> };
+    } else {
+      return { text: "Trung lập", color: "#f4a261", icon: <MehOutlined /> };
+    }
+  };
+
   const reviewColumns = [
     {
       title: "Người dùng",
@@ -368,6 +406,27 @@ const ReviewManagement: React.FC = () => {
             {content}
           </Text>
         </Tooltip>
+      ),
+    },
+    {
+      title: "Cảm xúc",
+      dataIndex: "score",
+      key: "sentiment",
+      render: (score: number) => {
+        const sentiment = getSentimentFromScore(score);
+        return (
+          <Tag color={sentiment.color} icon={sentiment.icon}>
+            {sentiment.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Điểm",
+      dataIndex: "score",
+      key: "score",
+      render: (score: number) => (
+        <span>{score !== undefined ? score.toFixed(2) : "N/A"}</span>
       ),
     },
     {
@@ -503,13 +562,20 @@ const ReviewManagement: React.FC = () => {
       const mappedReviews = movieComments.data.map((comment: CommentType) => ({
         id: String(comment.id),
         movieId: String(comment.movieId),
-        movieTitle: comment.movieTitle || selectedMovie?.title || "",
+        movieTitle:
+          comment.movieId === 3
+            ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+            : comment.movieName ||
+              comment.movieTitle ||
+              selectedMovie?.title ||
+              "",
         userId: String(comment.userId),
         userName: comment.user?.fullName || comment.userName || "User",
         rating: 5, // Assuming rating not in API data
         content: comment.content,
         date: comment.createdAt,
         status: comment.approved ? "approved" : "pending",
+        score: comment.score || 0, // Add sentiment score
       }));
 
       setReviews(mappedReviews);
@@ -559,7 +625,17 @@ const ReviewManagement: React.FC = () => {
                 <PieChartOutlined />
                 <span>
                   Thống kê cảm xúc cho phim:{" "}
-                  {selectedMovie?.title || "Chưa chọn phim"}
+                  {selectedMovie
+                    ? selectedMovie.id === "3"
+                      ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+                      : selectedMovie.title
+                    : adminMovieList.data.length > 0
+                    ? adminMovieList.data[0].id === 3
+                      ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+                      : adminMovieList.data[0].name ||
+                        adminMovieList.data[0].title ||
+                        "Chưa chọn phim"
+                    : "Chưa chọn phim"}
                 </span>
               </Space>
             }
@@ -642,7 +718,17 @@ const ReviewManagement: React.FC = () => {
         <TableContainer>
           <Title level={4}>
             Danh sách đánh giá cho phim:{" "}
-            {selectedMovie?.title || "Chưa chọn phim"}
+            {selectedMovie
+              ? selectedMovie.id === "3"
+                ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+                : selectedMovie.title
+              : adminMovieList.data.length > 0
+              ? adminMovieList.data[0].id === 3
+                ? "Nobita Và Cuộc Phiêu Lưu Vào Thế Giới Trong Tranh"
+                : adminMovieList.data[0].name ||
+                  adminMovieList.data[0].title ||
+                  "Chưa chọn phim"
+              : "Chưa chọn phim"}
           </Title>
 
           {selectedMovie ? (
@@ -715,6 +801,27 @@ const ReviewManagement: React.FC = () => {
                 defaultValue={currentReview.rating}
                 allowHalf
               />
+            </p>
+            <p>
+              <strong>Cảm xúc:</strong>{" "}
+              {(() => {
+                const sentiment = getSentimentFromScore(currentReview.score);
+                return (
+                  <Tag
+                    color={sentiment.color}
+                    icon={sentiment.icon}
+                    style={{ marginLeft: 8 }}
+                  >
+                    {sentiment.text}
+                  </Tag>
+                );
+              })()}
+              <strong style={{ marginLeft: 16 }}>Điểm:</strong>{" "}
+              <span style={{ marginLeft: 8 }}>
+                {currentReview.score !== undefined
+                  ? currentReview.score.toFixed(2)
+                  : "N/A"}
+              </span>
             </p>
             <p>
               <strong>Ngày đánh giá:</strong>{" "}

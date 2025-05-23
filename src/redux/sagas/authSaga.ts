@@ -206,7 +206,6 @@ function* logoutSaga(): Generator<any, void, any> {
     yield call(authService.logout);
   } catch (error) {
     console.error("Logout error:", error);
-    notificationUtils.errorMessage("Thất bại", "Không thể đăng xuất");
   }
 }
 

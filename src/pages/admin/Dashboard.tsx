@@ -437,7 +437,7 @@ const Dashboard: React.FC = () => {
       </Row>
 
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-        <Col xs={24} md={16}>
+        <Col xs={24} md={24}>
           <StyledCard
             title="Doanh thu theo tháng"
             extra={
@@ -450,15 +450,6 @@ const Dashboard: React.FC = () => {
             loading={loading || yearlyRevenue.loading}
           >
             <Line {...lineConfig} height={300} />
-          </StyledCard>
-        </Col>
-        <Col xs={24} md={8}>
-          <StyledCard
-            title="Phân loại phim"
-            extra={<Button type="link">Xem chi tiết</Button>}
-            loading={loading}
-          >
-            <Pie {...pieConfig} height={300} />
           </StyledCard>
         </Col>
       </Row>

@@ -14,6 +14,7 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   BellOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -175,10 +176,6 @@ const AdminLayout: React.FC = () => {
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="profile">
-        <Link to="/admin/settings">Thông tin cá nhân</Link>
-      </Menu.Item>
-      <Menu.Divider />
       <Menu.Item key="logout" onClick={handleLogout} icon={<LogoutOutlined />}>
         Đăng xuất
       </Menu.Item>
@@ -240,7 +237,7 @@ const AdminLayout: React.FC = () => {
             {
               key: "/admin/customers",
               icon: <UserOutlined />,
-              label: <Link to="/admin/customers">Quản lý khách hàng</Link>,
+              label: <Link to="/admin/customers">Quản lý người dùng</Link>,
             },
             {
               key: "/admin/staff",
@@ -250,29 +247,24 @@ const AdminLayout: React.FC = () => {
             {
               key: "/admin/reviews",
               icon: <StarOutlined />,
-              label: <Link to="/admin/reviews">Quản lý đánh giá</Link>,
+              label: (
+                <Link to="/admin/reviews">Quản lý đánh giá và bình luận</Link>
+              ),
             },
             {
               key: "/admin/orders",
               icon: <ShoppingCartOutlined />,
               label: <Link to="/admin/orders">Quản lý đơn hàng</Link>,
             },
-          ]}
-        />
-
-        <CategoryLabel>HỆ THỐNG</CategoryLabel>
-        <Menu
-          mode="inline"
-          items={[
             {
               key: "/admin/reports",
               icon: <BarChartOutlined />,
               label: <Link to="/admin/reports">Báo cáo & Thống kê</Link>,
             },
             {
-              key: "/admin/settings",
-              icon: <SettingOutlined />,
-              label: <Link to="/admin/settings">Cài đặt</Link>,
+              key: "/admin/cinema-rooms",
+              icon: <ProjectOutlined />,
+              label: <Link to="/admin/cinema-rooms">Quản lý phòng chiếu</Link>,
             },
           ]}
         />

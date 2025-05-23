@@ -132,9 +132,7 @@ const UserProfile: React.FC = () => {
       }
       dispatch(updateUserStart(values));
       setIsEditing(false);
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi cập nhật thông tin");
-    }
+    } catch (error) {}
   };
 
   const toggleEdit = () => {

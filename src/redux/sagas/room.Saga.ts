@@ -93,10 +93,6 @@ export function* getRoomListSaga(
         error.response?.data?.message || "Không thể lấy danh sách phòng chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách phòng chiếu",
-    });
   }
 }
 
@@ -114,10 +110,6 @@ export function* getRoomDetailSaga(
         error.response?.data?.message || "Không thể lấy thông tin phòng chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy thông tin phòng chiếu",
-    });
   }
 }
 
@@ -165,10 +157,6 @@ export function* getAdminRoomListSaga(
         error.response?.data?.message || "Không thể lấy danh sách phòng chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách phòng chiếu",
-    });
   }
 }
 
@@ -216,10 +204,6 @@ export function* addRoomSaga(action: AddRoomAction): Generator<any, void, any> {
         error.response?.data?.message || "Không thể thêm phòng chiếu mới"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể thêm phòng chiếu mới",
-    });
   }
 }
 
@@ -294,10 +278,6 @@ export function* deleteRoomSaga(
         error.response?.data?.message || "Không thể xóa phòng chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa phòng chiếu",
-    });
   }
 }
 

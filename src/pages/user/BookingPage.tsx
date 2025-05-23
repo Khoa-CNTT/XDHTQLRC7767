@@ -68,6 +68,7 @@ import {
 } from "../../redux/slices/cinemaSlice";
 import { getShowtimeWithChairsRequest } from "../../redux/slices/showtimeSlice";
 import { createPaymentRequest } from "../../redux/slices/paymentSlice";
+import BookingPageSkeleton from "../../components/movies/BookingPageSkeleton";
 
 const { Step } = Steps;
 
@@ -498,15 +499,7 @@ const BookingPage: React.FC = () => {
   };
 
   if (loading || movieBooking?.loading || !movie) {
-    return (
-      <PageContainer>
-        <BookingContent>
-          <ContentWrapper style={{ textAlign: "center", padding: "100px 0" }}>
-            <Spin size="large" tip="Đang tải thông tin phim..." />
-          </ContentWrapper>
-        </BookingContent>
-      </PageContainer>
-    );
+    return <BookingPageSkeleton />;
   }
 
   if (apiError) {

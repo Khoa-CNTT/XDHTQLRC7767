@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Input,
-  Space,
-  Typography,
-  Modal,
-  message,
-  Form,
-  Row,
-  Col,
-} from "antd";
+import { Button, Input, Space, Typography, Modal, Form, Row, Col } from "antd";
 import {
   PlusOutlined,
   SearchOutlined,
   FilterOutlined,
   ExportOutlined,
   ImportOutlined,
-  DeleteOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -63,8 +52,10 @@ const StyledCard = styled.div`
 `;
 
 // Định nghĩa các interface
-export interface Movie extends ReduxMovie {
+export interface Movie extends Omit<ReduxMovie, "genres"> {
   director: string; // Ensure director is required
+  movieGenres?: { id: number; name: string }[]; // Add movieGenres property
+  genres?: { id: number; name: string }[]; // Add genres property from direct API response
 }
 
 export interface FilterValues {
@@ -138,7 +129,7 @@ const MovieManagement: React.FC = () => {
       form.resetFields();
 
       // Reset states
-      dispatch(resetAdminMovieState());
+      // dispatch(resetAdminMovieState());
     }
   }, [addSuccess, updateSuccess, deleteSuccess, bulkActionSuccess]);
 
@@ -169,10 +160,32 @@ const MovieManagement: React.FC = () => {
     setCurrentMovie(movie);
     setIsModalVisible(true);
     if (movie) {
-      form.setFieldsValue({
-        ...movie,
+      // Ánh xạ dữ liệu từ API vào form
+      const formData = {
+        // Sử dụng các trường từ API hoặc từ Redux store
+        id: movie.id,
+        title: movie.title || movie.name,
+        description: movie.description,
+        director: movie.director,
         releaseDate: movie.releaseDate ? dayjs(movie.releaseDate) : null,
-      });
+        duration: movie.duration,
+        status: movie.status,
+        poster: movie.poster || movie.imageUrl,
+        backdrop: movie.backdrop,
+        rating: movie.rating,
+        actor: movie.actor,
+        country: movie.country,
+        language: movie.language,
+        subtitle: movie.subtitle,
+        ageLimit: movie.ageLimit,
+        content: movie.content,
+        // Xử lý thể loại
+        genreIds:
+          movie.movieGenres?.map((g) => g.id) ||
+          movie.genres?.map((g) => g.id) ||
+          [],
+      };
+      form.setFieldsValue(formData);
     } else {
       form.resetFields();
     }

@@ -95,14 +95,6 @@ function* getTicketByIdSaga(
         error.message || "Đã xảy ra lỗi khi lấy thông tin vé."
       )
     );
-
-    // Show error notification
-    notificationUtils.error({
-      message: "Lỗi",
-      description:
-        error.message ||
-        "Đã xảy ra lỗi khi lấy thông tin vé. Vui lòng thử lại.",
-    });
   }
 }
 
@@ -130,14 +122,6 @@ function* getTicketHistorySaga(
         error.message || "Đã xảy ra lỗi khi lấy lịch sử đặt vé."
       )
     );
-
-    // Show error notification
-    notificationUtils.error({
-      message: "Lỗi",
-      description:
-        error.message ||
-        "Đã xảy ra lỗi khi lấy lịch sử đặt vé. Vui lòng thử lại.",
-    });
   }
 }
 

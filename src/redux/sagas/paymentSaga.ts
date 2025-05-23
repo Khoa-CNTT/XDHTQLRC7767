@@ -362,10 +362,6 @@ function* getPaymentsPageSaga(action: PayloadAction<PaymentPageParams>) {
         ? error.message
         : "Không thể lấy danh sách thanh toán";
     yield put(getPaymentsPageFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách thanh toán. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -403,10 +399,6 @@ function* getYearlyRevenueSaga(action: PayloadAction<YearlyRevenueParams>) {
         ? error.message
         : "Không thể lấy doanh thu theo tháng";
     yield put(getYearlyRevenueFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy doanh thu theo tháng. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -426,10 +418,6 @@ function* getDailyRevenueSaga(action: PayloadAction<DailyRevenueParams>) {
         ? error.message
         : "Không thể lấy doanh thu theo ngày";
     yield put(getDailyRevenueFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy doanh thu theo ngày. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -452,10 +440,6 @@ function* getPaymentStatisticsSaga(action: PayloadAction<StatisticsParams>) {
         ? error.message
         : "Không thể lấy thống kê thanh toán";
     yield put(getPaymentStatisticsFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy thống kê thanh toán. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -470,10 +454,6 @@ function* getAllPaymentsSaga() {
         ? error.message
         : "Không thể lấy danh sách thanh toán";
     yield put(getAllPaymentsFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách thanh toán. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -498,11 +478,6 @@ function* updatePaymentStatusSaga(
         ? error.message
         : "Không thể cập nhật trạng thái thanh toán";
     yield put(updatePaymentStatusFailure(errorMessage));
-    notificationUtils.error({
-      message: "Lỗi",
-      description:
-        "Không thể cập nhật trạng thái thanh toán. Vui lòng thử lại sau.",
-    });
   }
 }
 

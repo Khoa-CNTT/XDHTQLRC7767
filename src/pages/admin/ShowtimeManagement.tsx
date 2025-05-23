@@ -354,11 +354,13 @@ const ShowtimeManagement: React.FC = () => {
             rules={[{ required: true, message: "Vui lòng chọn phim!" }]}
           >
             <Select placeholder="Chọn phim">
-              {movieList?.data?.map((movie: any) => (
-                <Option key={movie.id} value={movie.id}>
-                  {movie.name} ({movie.duration} phút)
-                </Option>
-              ))}
+              {Array.isArray(movieList?.data)
+                ? movieList.data.map((movie: any) => (
+                    <Option key={movie.id} value={movie.id}>
+                      {movie.name} ({movie.duration} phút)
+                    </Option>
+                  ))
+                : null}
             </Select>
           </Form.Item>
 

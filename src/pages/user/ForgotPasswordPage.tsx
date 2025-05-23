@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { forgotPasswordStart } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
 import { message } from "antd";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
 
 const { Title, Paragraph } = Typography;
 
@@ -158,11 +160,13 @@ const StyledLink = styled(Link)`
 `;
 
 const ForgotPasswordPage: React.FC = () => {
+  useDocumentTitle("Quên mật khẩu");
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { loading, error } = useSelector(
+  const { loading, error, success } = useSelector(
     (state: RootState) => state.auth.forgotPassword
   );
 
@@ -191,6 +195,10 @@ const ForgotPasswordPage: React.FC = () => {
     dispatch(forgotPasswordStart(values.email.trim().toLowerCase()));
     setIsSubmitted(true);
   };
+
+  if (loading) {
+    return <AuthPageSkeleton />;
+  }
 
   return (
     <FullPageContainer>

@@ -6,7 +6,6 @@ import cinemaReducer from "./slices/cinemaSlice";
 import rootSaga from "./sagas/index";
 import roomReducer from "./slices/room.slice";
 import showtimeReducer from "./slices/showtimeSlice";
-import promotionReducer from "./slices/promotionSlice";
 import paymentReducer from "./slices/paymentSlice";
 import ticketReducer from "./slices/ticketSlice";
 import customerReducer from "./slices/customerSlice";
@@ -24,7 +23,6 @@ export const store = configureStore({
     cinema: cinemaReducer,
     room: roomReducer,
     showtime: showtimeReducer,
-    promotion: promotionReducer,
     payment: paymentReducer,
     ticket: ticketReducer,
     customer: customerReducer,

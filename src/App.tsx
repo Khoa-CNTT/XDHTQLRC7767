@@ -16,7 +16,6 @@ import LoginPage from "./pages/user/LoginPage";
 import RegisterPage from "./pages/user/RegisterPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import NewsPage from "./pages/user/NewsPage";
-import PromotionsPage from "./pages/user/PromotionsPage";
 import ContactPage from "./pages/user/ContactPage";
 import ForgotPasswordPage from "./pages/user/ForgotPasswordPage";
 import CinemaPage from "./pages/user/CinemaPage";
@@ -28,6 +27,7 @@ import { store } from "./redux/store";
 import PrivateRoute from "./components/PrivateRoute";
 import GuestRoute from "./components/GuestRoute";
 import AdminRoute from "./components/AdminRoute";
+import EmployeeRoute from "./components/EmployeeRoute";
 import Dashboard from "./pages/admin/Dashboard";
 import EmailVerificationPage from "./pages/user/EmailVerificationPage";
 import LoadingScreen from "./components/common/LoadingScreen";
@@ -44,7 +44,7 @@ import CustomerManagement from "./pages/admin/CustomerManagement";
 import StaffManagement from "./pages/admin/StaffManagement";
 import ReviewManagement from "./pages/admin/ReviewManagement";
 import ReportManagement from "./pages/admin/ReportManagement";
-import SettingsManagement from "./pages/admin/SettingManagement";
+import CinemaRoomManagement from "./pages/admin/CinemaRoomManagement";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserInfoRequest } from "./redux/slices/authSlice";
 import { RootState } from "./redux/store";
@@ -106,7 +106,6 @@ const AppRoutes = () => {
         <Route path="/cinema" element={<CinemaPage />} />
         <Route path="/movie/:id" element={<MovieDetailPage />} />
         <Route path="/news" element={<NewsPage />} />
-        <Route path="/promotions" element={<PromotionsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         {/* VNPay Payment Callback - Không cần đăng nhập */}
         <Route path="/payment/vnpay-return" element={<PaymentCallback />} />
@@ -149,7 +148,19 @@ const AppRoutes = () => {
           <Route path="staff" element={<StaffManagement />} />
           <Route path="reviews" element={<ReviewManagement />} />
           <Route path="reports" element={<ReportManagement />} />
-          <Route path="settings" element={<SettingsManagement />} />
+          <Route path="cinema-rooms" element={<CinemaRoomManagement />} />
+        </Route>
+      </Route>
+
+      {/* Employee Routes - Yêu cầu quyền Admin hoặc Employee */}
+      <Route element={<EmployeeRoute />}>
+        <Route path="/employee" element={<AdminLayout />}>
+          <Route
+            index
+            element={<Navigate to="/employee/dashboard" replace />}
+          />
+          <Route path="dashboard" element={<Dashboard />} />
+          {/* Thêm các route dành cho nhân viên ở đây */}
         </Route>
       </Route>
 

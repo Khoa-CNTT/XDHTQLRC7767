@@ -1,15 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import {
   LockOutlined,
   EyeTwoTone,
   EyeInvisibleOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { resetPasswordStart } from "../../redux/slices/authSlice";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
 
 const { Title } = Typography;
 
@@ -153,6 +156,8 @@ const GlowingButton = styled(Button)`
 `;
 
 const ResetPasswordPage: React.FC = () => {
+  useDocumentTitle("Đặt lại mật khẩu");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
@@ -193,6 +198,10 @@ const ResetPasswordPage: React.FC = () => {
       dispatch(resetPasswordStart({ token, newPassword: values.newPassword }));
     }
   };
+
+  if (loading) {
+    return <AuthPageSkeleton />;
+  }
 
   return (
     <FullPageContainer>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, Divider, message, Card, Typography } from "antd";
 import {
@@ -14,6 +14,7 @@ import { RootState } from "../../redux/store";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { authService } from "../../services/authService";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
 
 const { Title, Text } = Typography;
 
@@ -180,11 +181,13 @@ const GoogleLoginContainer = styled.div`
 
 const LoginPage: React.FC = () => {
   useDocumentTitle("Đăng nhập");
-
+  const [form] = Form.useForm();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector(
-    (state: RootState) => state.auth.login
+
+  // Get the auth state from Redux
+  const { user, isAuthenticated, loading, error } = useSelector(
+    (state: RootState) => state.auth
   );
 
   const onFinish = (values: { email: string; password: string }) => {
@@ -218,6 +221,10 @@ const LoginPage: React.FC = () => {
       message.error("Đăng nhập thất bại. Vui lòng thử lại!");
     }
   };
+
+  if (loading) {
+    return <AuthPageSkeleton />;
+  }
 
   return (
     <FullPageContainer>

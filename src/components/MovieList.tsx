@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { Button, Empty, Spin } from "antd";
+import { Button, Empty } from "antd";
 import {
   LeftOutlined,
   RightOutlined,
@@ -8,14 +8,14 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { staggerContainer, fadeIn, slideInUp } from "../utils/animations";
+import { staggerContainer, fadeIn } from "../utils/animations";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import {
   getNowShowingMoviesRequest,
   getUpcomingMoviesRequest,
-  MovieHomeResponseDTO,
 } from "../redux/slices/movieSlice";
+import HomePageSkeleton from "./home/HomePageSkeleton";
 
 // Styled Components
 const MovieListContainer = styled.div`
@@ -140,6 +140,7 @@ const PosterOverlay = styled.div`
 `;
 
 const MovieTitle = styled.h3`
+  height: 60px;
   color: white;
   text-align: center;
   font-weight: bold;
@@ -196,47 +197,24 @@ const SliderButton = styled.div`
   }
 `;
 
-const LeftSlideButton = styled(Button)`
-  position: absolute;
-  top: 50%;
-  left: -40px;
-  transform: translateY(-50%);
-  z-index: 2;
-
-  @media (max-width: 768px) {
-    left: -20px;
-  }
-
-  @media (max-width: 480px) {
-    display: none;
-  }
+const LeftSlideButton = styled(SliderButton)`
+  left: -20px;
 `;
 
-const RightSlideButton = styled(Button)`
-  position: absolute;
-  top: 50%;
-  right: -40px;
-  transform: translateY(-50%);
-  z-index: 2;
-
-  @media (max-width: 768px) {
-    right: -20px;
-  }
-
-  @media (max-width: 480px) {
-    display: none;
-  }
+const RightSlideButton = styled(SliderButton)`
+  right: -20px;
 `;
 
-const MovieRating = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 2px 5px;
-  border-radius: 5px;
-`;
+// MovieRating component used for future star rating display
+// const MovieRating = styled.div`
+//   position: absolute;
+//   top: 10px;
+//   right: 10px;
+//   background-color: rgba(0, 0, 0, 0.5);
+//   color: white;
+//   padding: 2px 5px;
+//   border-radius: 5px;
+// `;
 
 // Thêm styled component cho nút Chi tiết phim
 const DetailButton = styled(Button)`
@@ -325,6 +303,19 @@ const MovieList: React.FC = () => {
 
   const totalPages = Math.ceil(totalMovies / moviesPerPage);
 
+  // Check loading status
+  const isLoading =
+    activeTab === "now-showing"
+      ? nowShowingMovies.loading
+      : upcomingMovies.loading;
+
+  // Check if the data is empty after loading
+  const isDataEmpty =
+    !isLoading &&
+    (activeTab === "now-showing"
+      ? nowShowingMovies.data.length === 0
+      : upcomingMovies.data.length === 0);
+
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setCurrentPage(0);
@@ -375,11 +366,85 @@ const MovieList: React.FC = () => {
     }),
   };
 
-  // Kiểm tra trạng thái loading
-  const isLoading =
-    activeTab === "now-showing"
-      ? nowShowingMovies.loading
-      : upcomingMovies.loading;
+  // Actual render logic
+  const renderMovieContent = () => {
+    if (isLoading) {
+      return <HomePageSkeleton />;
+    }
+
+    if (isDataEmpty) {
+      return (
+        <LoadingContainer>
+          <Empty
+            description={
+              <span style={{ color: "white" }}>Không có phim nào</span>
+            }
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </LoadingContainer>
+      );
+    }
+
+    return (
+      <motion.div
+        key={currentPage}
+        variants={staggerContainer}
+        initial="hidden"
+        animate={isVisible ? "visible" : "hidden"}
+      >
+        <MoviesContainer>
+          {getCurrentMovies().map((movie, index) => (
+            <motion.div
+              key={movie.id}
+              custom={slideDirection}
+              variants={slideAnimation}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{
+                delay: index * 0.08,
+                duration: 0.6,
+              }}
+            >
+              <MovieCard>
+                <MoviePoster>
+                  <PosterImage src={movie?.image} alt={movie.title} />
+                  <PosterOverlay className="overlay">
+                    <Link to={`/movie/${movie.id}`}>
+                      <DetailButton icon={<InfoCircleOutlined />}>
+                        CHI TIẾT
+                      </DetailButton>
+                    </Link>
+                  </PosterOverlay>
+                </MoviePoster>
+                <MovieTitle>{movie.title}</MovieTitle>
+                <MovieInfo>{movie.duration}</MovieInfo>
+                <MovieInfo>
+                  {activeTab === "now-showing"
+                    ? "ĐANG CHIẾU"
+                    : `KHỞI CHIẾU: ${new Date(
+                        movie.releaseDate
+                      ).toLocaleDateString("vi-VN")}`}
+                </MovieInfo>
+                <ButtonsContainer>
+                  <Link to={`/movie/${movie.id}`}>
+                    <DetailButton icon={<InfoCircleOutlined />}>
+                      CHI TIẾT
+                    </DetailButton>
+                  </Link>
+                  {activeTab === "now-showing" && (
+                    <Link to={`/booking/${movie.id}`}>
+                      <ActionButton>ĐẶT VÉ</ActionButton>
+                    </Link>
+                  )}
+                </ButtonsContainer>
+              </MovieCard>
+            </motion.div>
+          ))}
+        </MoviesContainer>
+      </motion.div>
+    );
+  };
 
   return (
     <MovieListContainer ref={sectionRef}>
@@ -407,81 +472,15 @@ const MovieList: React.FC = () => {
         </motion.div>
 
         <MoviesSlider>
-          {showPrevButton && (
+          {showPrevButton && !isDataEmpty && (
             <LeftSlideButton onClick={prevPage}>
               <LeftOutlined />
             </LeftSlideButton>
           )}
 
-          {isLoading ? (
-            <LoadingContainer>
-              <Spin size="large" />
-            </LoadingContainer>
-          ) : totalMovies === 0 ? (
-            <LoadingContainer>
-              <Empty description="Không có phim" />
-            </LoadingContainer>
-          ) : (
-            <motion.div
-              key={currentPage}
-              variants={staggerContainer}
-              initial="hidden"
-              animate={isVisible ? "visible" : "hidden"}
-            >
-              <MoviesContainer>
-                {getCurrentMovies().map((movie, index) => (
-                  <motion.div
-                    key={movie.id}
-                    custom={slideDirection}
-                    variants={slideAnimation}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    transition={{
-                      delay: index * 0.08, // Increased from 0.05 for slower staggering
-                      duration: 0.6, // Increased from 0.4 for slower individual animations
-                    }}
-                  >
-                    <MovieCard>
-                      <MoviePoster>
-                        <PosterImage src={movie?.image} alt={movie.title} />
-                        <PosterOverlay className="overlay">
-                          <Link to={`/movie/${movie.id}`}>
-                            <DetailButton icon={<InfoCircleOutlined />}>
-                              CHI TIẾT
-                            </DetailButton>
-                          </Link>
-                        </PosterOverlay>
-                      </MoviePoster>
-                      <MovieTitle>{movie.title}</MovieTitle>
-                      <MovieInfo>{movie.duration} phút</MovieInfo>
-                      <MovieInfo>
-                        {activeTab === "now-showing"
-                          ? "ĐANG CHIẾU"
-                          : `KHỞI CHIẾU: ${new Date(
-                              movie.releaseDate
-                            ).toLocaleDateString("vi-VN")}`}
-                      </MovieInfo>
-                      <ButtonsContainer>
-                        <Link to={`/movie/${movie.id}`}>
-                          <DetailButton icon={<InfoCircleOutlined />}>
-                            CHI TIẾT
-                          </DetailButton>
-                        </Link>
-                        {activeTab === "now-showing" && (
-                          <Link to={`/booking/${movie.id}`}>
-                            <ActionButton>ĐẶT VÉ</ActionButton>
-                          </Link>
-                        )}
-                      </ButtonsContainer>
-                    </MovieCard>
-                  </motion.div>
-                ))}
-              </MoviesContainer>
-            </motion.div>
-          )}
+          {renderMovieContent()}
 
-          {showNextButton && !isLoading && totalMovies > 0 && (
+          {showNextButton && !isLoading && !isDataEmpty && (
             <RightSlideButton onClick={nextPage}>
               <RightOutlined />
             </RightSlideButton>

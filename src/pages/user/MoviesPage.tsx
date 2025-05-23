@@ -1,4 +1,10 @@
-import React, { useState, useEffect, ReactNode } from "react";
+import React, {
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Row,
@@ -10,11 +16,8 @@ import {
   Select,
   Tag,
   Pagination,
-  Space,
-  Spin,
   Empty,
 } from "antd";
-import type { SelectProps } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -29,7 +32,6 @@ import {
   getUpcomingMoviesRequest,
 } from "../../redux/slices/movieSlice";
 import { RootState } from "../../redux/store";
-import { DefaultOptionType } from "antd/es/select";
 import axiosInstance from "../../utils/axiosConfig";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -352,13 +354,6 @@ const StyledSelect = styled(Select)`
   }
 `;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 400px;
-`;
-
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -428,7 +423,7 @@ const MoviesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("now-showing");
   const [filteredMovies, setFilteredMovies] = useState<MovieData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize] = useState(8);
 
   const [searchText, setSearchText] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
@@ -438,6 +433,9 @@ const MoviesPage: React.FC = () => {
   const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
   const [genresLoading, setGenresLoading] = useState(false);
 
+  // Use ref to track if initial data has been loaded
+  const initialDataLoaded = useRef(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -446,12 +444,11 @@ const MoviesPage: React.FC = () => {
     (state: RootState) => state.movie
   );
 
-  // Determine current movies and loading state based on active tab
+  // Determine current movies based on active tab
   const currentMovies =
     activeTab === "now-showing" ? nowShowingMovies : upcomingMovies;
-  const isLoading = currentMovies.loading;
 
-  // Add a useEffect to fetch genres
+  // Add a useEffect to fetch genres only once
   useEffect(() => {
     const fetchGenres = async () => {
       setGenresLoading(true);
@@ -480,27 +477,17 @@ const MoviesPage: React.FC = () => {
     fetchGenres();
   }, []);
 
+  // Fetch movie data only once when component mounts
   useEffect(() => {
-    // Fetch both movie lists when component mounts
-    dispatch(getNowShowingMoviesRequest());
-    dispatch(getUpcomingMoviesRequest());
+    if (!initialDataLoaded.current) {
+      dispatch(getNowShowingMoviesRequest());
+      dispatch(getUpcomingMoviesRequest());
+      initialDataLoaded.current = true;
+    }
   }, [dispatch]);
 
-  useEffect(() => {
-    // When the active tab changes or movies are loaded, update filtered movies
-    if (currentMovies.data) {
-      filterMovies();
-    }
-  }, [
-    activeTab,
-    nowShowingMovies.data,
-    upcomingMovies.data,
-    searchText,
-    selectedGenre,
-    selectedYear,
-  ]);
-
-  const filterMovies = () => {
+  // Memoize filterMovies to prevent it from being recreated on every render
+  const filterMovies = useCallback(() => {
     if (!currentMovies.data) return;
 
     let result = [...currentMovies.data] as MovieData[];
@@ -538,7 +525,14 @@ const MoviesPage: React.FC = () => {
 
     setFilteredMovies(result);
     setCurrentPage(1); // Reset về trang 1 khi lọc
-  };
+  }, [currentMovies.data, searchText, selectedGenre, selectedYear]);
+
+  // Update filtered movies when tab changes or filter criteria change
+  useEffect(() => {
+    if (currentMovies.data) {
+      filterMovies();
+    }
+  }, [activeTab, currentMovies.data, filterMovies]);
 
   const handleResetFilters = () => {
     setSearchText("");
@@ -598,19 +592,12 @@ const MoviesPage: React.FC = () => {
   };
 
   const renderMoviesContent = (): ReactNode => {
-    if (isLoading) {
-      return (
-        <LoadingContainer>
-          <Spin size="large" />
-        </LoadingContainer>
-      );
-    }
-
     if (filteredMovies.length === 0) {
       return (
-        <LoadingContainer>
-          <Empty description="Không tìm thấy phim phù hợp" />
-        </LoadingContainer>
+        <Empty
+          description="Không tìm thấy phim nào"
+          style={{ margin: "40px 0" }}
+        />
       );
     }
 

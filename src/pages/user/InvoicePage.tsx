@@ -17,6 +17,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import TicketInfoCard from "../../components/TicketInfoCard";
+import InvoicePageSkeleton from "../../components/invoice/InvoicePageSkeleton";
 
 const PageContainer = styled.div`
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -403,6 +404,7 @@ const InvoicePage: React.FC = () => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [invoiceId, setInvoiceId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -478,6 +480,8 @@ const InvoicePage: React.FC = () => {
             location.state.ticketData
           );
         }
+
+        setLoading(false);
       } else {
         // Nếu không có dữ liệu, chuyển hướng về trang chủ
         message.error("Không tìm thấy thông tin đặt vé!");
@@ -501,6 +505,10 @@ const InvoicePage: React.FC = () => {
   const handleBack = () => {
     navigate(-1);
   };
+
+  if (loading) {
+    return <InvoicePageSkeleton />;
+  }
 
   if (!bookingData) {
     return null;

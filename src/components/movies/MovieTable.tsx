@@ -1,8 +1,28 @@
 import React from "react";
-import { Table, Space, Button, Tooltip, Popconfirm, Tag, Image } from "antd";
+import {
+  Table,
+  Space,
+  Button,
+  Tooltip,
+  Popconfirm,
+  Tag,
+  Image,
+  Switch,
+} from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { Movie } from "../../pages/admin/MovieManagement";
+
+// Định nghĩa interface cho movieGenres từ API
+interface MovieGenre {
+  id: number;
+  name: string;
+}
+
+// Mở rộng Movie interface để bao gồm thuộc tính genre từ Redux
+interface ExtendedMovie extends Movie {
+  genre?: string[];
+}
 
 const ActionButton = styled(Button)`
   display: flex;
@@ -45,6 +65,7 @@ interface MovieTableProps {
   selectedRowKeys: React.Key[];
   onSelectChange: (selectedKeys: React.Key[]) => void;
   deleteLoading?: boolean;
+  onStatusChange?: (id: number, status: number) => void;
 }
 
 const MovieTable: React.FC<MovieTableProps> = ({
@@ -56,21 +77,26 @@ const MovieTable: React.FC<MovieTableProps> = ({
   selectedRowKeys,
   onSelectChange,
   deleteLoading,
+  onStatusChange,
 }) => {
   const getStatusColor = (status: string | number) => {
     if (typeof status === "number") {
       switch (status) {
+        case 0:
+          return "blue"; // Sắp chiếu
         case 1:
-          return "green";
+          return "green"; // Đang chiếu
         case 2:
-          return "blue";
-        case 3:
-          return "gray";
+          return "gray"; // Đã chiếu
         default:
           return "default";
       }
     } else {
       switch (status) {
+        case "Active":
+          return "green";
+        case "Inactive":
+          return "red";
         case "Đang chiếu":
           return "green";
         case "Sắp chiếu":
@@ -86,11 +112,11 @@ const MovieTable: React.FC<MovieTableProps> = ({
   const getStatusText = (status: string | number) => {
     if (typeof status === "number") {
       switch (status) {
+        case 0:
+          return "Sắp chiếu";
         case 1:
           return "Đang chiếu";
         case 2:
-          return "Sắp chiếu";
-        case 3:
           return "Đã chiếu";
         default:
           return "Không xác định";
@@ -108,24 +134,23 @@ const MovieTable: React.FC<MovieTableProps> = ({
     },
     {
       title: "Poster",
-      dataIndex: "poster",
-      key: "poster",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
       width: 100,
-      render: (poster: string) => (
+      render: (imageUrl: string, record: Movie) => (
         <Image
-          src={poster}
+          src={imageUrl || record.poster}
           alt="Movie poster"
           style={{ width: 50, height: 75, objectFit: "cover" }}
-          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3PTWBSGcbGzM6GCKqlIBRV0dHRJFarQ0eUT8LH4BnRU0NHR0UEFVdIlFRV7TzRksomPY8uykTk/zewQfKw/9znv4yvJynLv4uLiV2dBoDiBf4qP3/ARuCRABEFAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghgg"
         />
       ),
     },
     {
       title: "Tên phim",
-      dataIndex: "title",
-      key: "title",
+      dataIndex: "name",
+      key: "name",
       render: (text: string, record: Movie) => (
-        <a onClick={() => onView(record)}>{text}</a>
+        <a onClick={() => onView(record)}>{text || record.title}</a>
       ),
     },
     {
@@ -141,22 +166,60 @@ const MovieTable: React.FC<MovieTableProps> = ({
     },
     {
       title: "Thể loại",
-      dataIndex: "genre",
       key: "genre",
-      render: (genres: string[]) => (
-        <>
-          {genres?.map((genre) => (
-            <StyledTag key={genre}>{genre}</StyledTag>
-          ))}
-        </>
-      ),
+      render: (_: unknown, record: Movie) => {
+        const movieRecord = record as ExtendedMovie;
+
+        // 1. Check if record has genres property (direct from network response)
+        if (record.genres && Array.isArray(record.genres)) {
+          return (
+            <>
+              {record.genres.map((genre: MovieGenre) => (
+                <StyledTag key={genre.id}>{genre.name}</StyledTag>
+              ))}
+            </>
+          );
+        }
+        // 2. Check if record has movieGenres property (direct API response)
+        else if (record.movieGenres && Array.isArray(record.movieGenres)) {
+          return (
+            <>
+              {record.movieGenres.map((genre: MovieGenre) => (
+                <StyledTag key={genre.id}>{genre.name}</StyledTag>
+              ))}
+            </>
+          );
+        }
+        // 3. Check if record has genre property (transformed in Redux)
+        else if (movieRecord.genre && Array.isArray(movieRecord.genre)) {
+          return (
+            <>
+              {movieRecord.genre.map((genreName: string, index: number) => (
+                <StyledTag key={index}>{genreName}</StyledTag>
+              ))}
+            </>
+          );
+        }
+        // Fallback
+        return null;
+      },
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string | number) => (
-        <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
+      render: (status: string | number, record: Movie) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {status == 0 ? (
+            <Tag color={getStatusColor(status)}>
+              {getStatusText("Sắp chiếu")}
+            </Tag>
+          ) : (
+            <Tag color={getStatusColor(status)}>
+              {getStatusText("Đang chiếu")}
+            </Tag>
+          )}
+        </div>
       ),
     },
     {
@@ -174,7 +237,7 @@ const MovieTable: React.FC<MovieTableProps> = ({
       title: "Hành động",
       key: "action",
       width: 150,
-      render: (_: any, record: Movie) => (
+      render: (_: unknown, record: Movie) => (
         <Space size="small">
           <Tooltip title="Xem">
             <ActionButton

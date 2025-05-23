@@ -1,6 +1,15 @@
-import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Form, Input, Button, Divider, message, Card, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Form,
+  Input,
+  Button,
+  Divider,
+  message,
+  Card,
+  Typography,
+  Spin,
+} from "antd";
 import {
   UserOutlined,
   LockOutlined,
@@ -15,6 +24,8 @@ import styled, { keyframes } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { registerStart } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
 
 const { Title, Text } = Typography;
 
@@ -207,6 +218,8 @@ const StyledDivider = styled(Divider)`
 `;
 
 const RegisterPage: React.FC = () => {
+  useDocumentTitle("Đăng ký");
+
   const dispatch = useDispatch();
   const { loading, error } = useSelector(
     (state: RootState) => state.auth.register
@@ -261,6 +274,10 @@ const RegisterPage: React.FC = () => {
     });
     // Implement Facebook signup logic
   };
+
+  if (loading) {
+    return <AuthPageSkeleton />;
+  }
 
   return (
     <FullPageContainer>

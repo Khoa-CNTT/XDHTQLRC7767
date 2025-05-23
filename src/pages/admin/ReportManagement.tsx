@@ -73,6 +73,18 @@ interface MovieTableDataItem {
   revenue: number;
 }
 
+// Adding showtime table data interface
+interface ShowtimeTableDataItem {
+  key: string;
+  date: string;
+  time: string;
+  movieTitle: string;
+  roomName: string;
+  ticketCount: number;
+  revenue: number;
+  occupancyRate: number;
+}
+
 // Adding type definition for chart data
 interface GenreDataItem {
   genre: string;
@@ -82,6 +94,13 @@ interface GenreDataItem {
 interface TimeSlotDataItem {
   time: string;
   value: number;
+}
+
+// Add movie statistics chart data and config
+interface MovieStatChartItem {
+  title: string;
+  value: number;
+  type: string;
 }
 
 const ReportManagement: React.FC = () => {
@@ -277,6 +296,195 @@ const ReportManagement: React.FC = () => {
       revenue: item.revenue,
     })) || [];
 
+  // Dummy data for showtimes
+  const showtimeTableData: ShowtimeTableDataItem[] = [
+    {
+      key: "1",
+      date: "15/08/2023",
+      time: "10:00 - 12:00",
+      movieTitle: "Avengers: Endgame",
+      roomName: "Phòng chiếu 1",
+      ticketCount: 45,
+      revenue: 4500000,
+      occupancyRate: 75,
+    },
+    {
+      key: "2",
+      date: "15/08/2023",
+      time: "13:00 - 15:00",
+      movieTitle: "Spider-Man: No Way Home",
+      roomName: "Phòng chiếu 2",
+      ticketCount: 38,
+      revenue: 3800000,
+      occupancyRate: 63,
+    },
+    {
+      key: "3",
+      date: "15/08/2023",
+      time: "16:00 - 18:00",
+      movieTitle: "Black Panther: Wakanda Forever",
+      roomName: "Phòng chiếu 3",
+      ticketCount: 52,
+      revenue: 5200000,
+      occupancyRate: 87,
+    },
+    {
+      key: "4",
+      date: "16/08/2023",
+      time: "10:00 - 12:00",
+      movieTitle: "Doctor Strange in the Multiverse of Madness",
+      roomName: "Phòng chiếu 1",
+      ticketCount: 30,
+      revenue: 3000000,
+      occupancyRate: 50,
+    },
+    {
+      key: "5",
+      date: "16/08/2023",
+      time: "13:00 - 15:00",
+      movieTitle: "Thor: Love and Thunder",
+      roomName: "Phòng chiếu 2",
+      ticketCount: 42,
+      revenue: 4200000,
+      occupancyRate: 70,
+    },
+    {
+      key: "6",
+      date: "16/08/2023",
+      time: "16:00 - 18:00",
+      movieTitle: "Ant-Man and the Wasp: Quantumania",
+      roomName: "Phòng chiếu 3",
+      ticketCount: 35,
+      revenue: 3500000,
+      occupancyRate: 58,
+    },
+    {
+      key: "7",
+      date: "17/08/2023",
+      time: "10:00 - 12:00",
+      movieTitle: "The Marvels",
+      roomName: "Phòng chiếu 1",
+      ticketCount: 48,
+      revenue: 4800000,
+      occupancyRate: 80,
+    },
+    {
+      key: "8",
+      date: "17/08/2023",
+      time: "13:00 - 15:00",
+      movieTitle: "Guardians of the Galaxy Vol. 3",
+      roomName: "Phòng chiếu 2",
+      ticketCount: 55,
+      revenue: 5500000,
+      occupancyRate: 92,
+    },
+    {
+      key: "9",
+      date: "17/08/2023",
+      time: "16:00 - 18:00",
+      movieTitle: "Shang-Chi and the Legend of the Ten Rings",
+      roomName: "Phòng chiếu 3",
+      ticketCount: 40,
+      revenue: 4000000,
+      occupancyRate: 67,
+    },
+    {
+      key: "10",
+      date: "18/08/2023",
+      time: "10:00 - 12:00",
+      movieTitle: "Eternals",
+      roomName: "Phòng chiếu 1",
+      ticketCount: 32,
+      revenue: 3200000,
+      occupancyRate: 53,
+    },
+  ];
+
+  // Showtime table columns
+  const showtimeTableColumns = [
+    {
+      title: "Ngày",
+      dataIndex: "date",
+      key: "date",
+    },
+    {
+      title: "Giờ chiếu",
+      dataIndex: "time",
+      key: "time",
+    },
+    {
+      title: "Tên phim",
+      dataIndex: "movieTitle",
+      key: "movieTitle",
+    },
+    {
+      title: "Phòng chiếu",
+      dataIndex: "roomName",
+      key: "roomName",
+    },
+    {
+      title: "Số vé bán",
+      dataIndex: "ticketCount",
+      key: "ticketCount",
+      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
+        a.ticketCount - b.ticketCount,
+    },
+    {
+      title: "Doanh thu (VNĐ)",
+      dataIndex: "revenue",
+      key: "revenue",
+      render: (value: number) => value?.toLocaleString(),
+      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
+        a.revenue - b.revenue,
+    },
+    {
+      title: "Tỉ lệ lấp đầy (%)",
+      dataIndex: "occupancyRate",
+      key: "occupancyRate",
+      render: (value: number) => `${value}%`,
+      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
+        a.occupancyRate - b.occupancyRate,
+    },
+  ];
+
+  // Create movie chart data
+  const movieChartData: MovieStatChartItem[] = [];
+  movieStatistics?.forEach((item) => {
+    // Add revenue data
+    movieChartData.push({
+      title: item.movieTitle,
+      value: item.revenue,
+      type: "Doanh thu",
+    });
+
+    // Add ticket data
+    movieChartData.push({
+      title: item.movieTitle,
+      value: item.ticketsSold * 10000, // Scale up for better visibility
+      type: "Vé bán (x10,000)",
+    });
+  });
+
+  // Movie statistics chart config
+  const movieBarConfig = {
+    data: movieChartData,
+    xField: "value",
+    yField: "title",
+    seriesField: "type",
+    isStack: false,
+    isGroup: true,
+    legend: { position: "top-right" },
+    label: {
+      position: "middle",
+      formatter: (item: MovieStatChartItem) => {
+        if (item.type === "Vé bán (x10,000)") {
+          return (item.value / 10000).toFixed(0);
+        }
+        return item.value.toLocaleString();
+      },
+    },
+  };
+
   // Handle date range change
   const handleDateRangeChange: RangePickerProps["onChange"] = (dates) => {
     if (dates && dates[0] && dates[1]) {
@@ -379,7 +587,7 @@ const ReportManagement: React.FC = () => {
           key="charts"
         >
           <Row gutter={[24, 24]}>
-            <Col xs={24} lg={16}>
+            <Col xs={24} lg={24}>
               <StyledCard
                 title={
                   reportType === "revenue"
@@ -395,16 +603,11 @@ const ReportManagement: React.FC = () => {
                 )}
               </StyledCard>
             </Col>
-            <Col xs={24} lg={8}>
-              <StyledCard title="Phân bố theo thể loại" loading={loading}>
-                <Pie {...pieConfig} height={300} />
-              </StyledCard>
-            </Col>
           </Row>
           <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
             <Col span={24}>
-              <StyledCard title="Phân bố theo khung giờ" loading={loading}>
-                <Bar {...barConfig} height={300} />
+              <StyledCard title="Thống kê theo phim" loading={loading}>
+                <Bar {...movieBarConfig} height={400} />
               </StyledCard>
             </Col>
           </Row>
@@ -434,6 +637,18 @@ const ReportManagement: React.FC = () => {
             <Table
               columns={movieTableColumns}
               dataSource={movieTableData}
+              pagination={{ pageSize: 5 }}
+            />
+          </StyledCard>
+
+          <StyledCard
+            title="Dữ liệu theo xuất chiếu"
+            loading={loading}
+            style={{ marginTop: 24 }}
+          >
+            <Table
+              columns={showtimeTableColumns}
+              dataSource={showtimeTableData}
               pagination={{ pageSize: 5 }}
             />
           </StyledCard>

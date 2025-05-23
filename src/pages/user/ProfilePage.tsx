@@ -9,6 +9,7 @@ import PasswordChange from "../../components/profile/PasswordChange";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import ProfilePageSkeleton from "../../components/profile/ProfilePageSkeleton";
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -143,7 +144,9 @@ const ProfilePage: React.FC = () => {
   useDocumentTitle("Thông tin cá nhân");
 
   const dispatch = useDispatch();
-  const { activeTab, user } = useSelector((state: RootState) => state.auth);
+  const { activeTab, user, loading } = useSelector(
+    (state: RootState) => state.auth
+  );
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 576);
 
   useEffect(() => {
@@ -175,6 +178,10 @@ const ProfilePage: React.FC = () => {
       },
     },
   };
+
+  if (loading) {
+    return <ProfilePageSkeleton />;
+  }
 
   return (
     <ProfilePageContainer>

@@ -9,6 +9,7 @@ import { createTicketRequest } from "../../redux/slices/ticketSlice";
 import { RootState } from "../../redux/store";
 import { Spin, Result, Button, Card, Typography, Divider, message } from "antd";
 import styled from "styled-components";
+import PaymentCallbackSkeleton from "../../components/payment/PaymentCallbackSkeleton";
 
 const { Title, Text } = Typography;
 
@@ -471,53 +472,8 @@ const PaymentCallback: React.FC = () => {
     localStorage.removeItem("bookingData");
   };
 
-  if (loading || createTicket.loading) {
-    return (
-      <Container>
-        <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <Spin size="large" />
-          <p style={{ marginTop: 20, fontSize: 16 }}>
-            {loading
-              ? "Đang xử lý kết quả thanh toán..."
-              : "Đang tạo vé của bạn..."}
-          </p>
-          <p style={{ fontSize: "12px", color: "#666", marginTop: 10 }}>
-            Giao dịch đã được xác nhận. Vui lòng đợi trong vài giây...
-          </p>
-
-          {/* Nếu xử lý quá lâu, cho phép người dùng thử lại */}
-          {retryCountRef.current >= 2 && (
-            <div style={{ marginTop: 15 }}>
-              <p style={{ color: "#ff4d4f", marginBottom: 10 }}>
-                Quá trình tạo vé đang mất nhiều thời gian hơn dự kiến.
-              </p>
-              <Button
-                type="primary"
-                danger
-                onClick={() => {
-                  // Reset các trạng thái
-                  retryCountRef.current = 0;
-                  if (retryTimerRef.current) {
-                    clearTimeout(retryTimerRef.current);
-                  }
-
-                  // Kích hoạt lại quá trình xử lý
-                  const params = Object.fromEntries(
-                    new URLSearchParams(location.search)
-                  );
-                  if (Object.keys(params).length > 0) {
-                    dispatch(handlePaymentReturnRequest(params));
-                    message.info("Đang thử lại...");
-                  }
-                }}
-              >
-                Thử lại ngay
-              </Button>
-            </div>
-          )}
-        </div>
-      </Container>
-    );
+  if (loading) {
+    return <PaymentCallbackSkeleton />;
   }
 
   // Kiểm tra kết quả thanh toán

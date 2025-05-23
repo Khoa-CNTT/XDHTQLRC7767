@@ -120,7 +120,7 @@ interface GetShowTimesAction {
 // Get user info saga
 function* getMovieListSaga(): Generator<any, void, any> {
   try {
-    const response = yield axiosInstance.get("/api/movies");
+    const response = yield axiosInstance.get("/api/movies/admin/getList");
     yield put(getMovieListSuccess(response.data));
   } catch (error: any) {
     yield put(
@@ -183,10 +183,6 @@ export function* getNowShowingMoviesSaga(): Generator<any, void, any> {
           "Không thể lấy danh sách phim đang chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách phim đang chiếu",
-    });
   }
 }
 
@@ -202,10 +198,6 @@ export function* getUpcomingMoviesSaga(): Generator<any, void, any> {
           "Không thể lấy danh sách phim sắp chiếu"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách phim sắp chiếu",
-    });
   }
 }
 
@@ -226,10 +218,6 @@ export function* getCommentsSaga(
         error.response?.data?.message || "Không thể lấy bình luận"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy bình luận cho bộ phim này",
-    });
   }
 }
 
@@ -254,10 +242,6 @@ export function* addCommentSaga(
         error.response?.data?.message || "Không thể thêm bình luận"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể gửi bình luận. Vui lòng thử lại sau.",
-    });
   }
 }
 
@@ -267,7 +251,7 @@ export function* getAdminMovieListSaga(
 ): Generator<any, void, any> {
   try {
     const filterParams = action.payload;
-    let url = "/api/movies";
+    let url = "/api/movies/admin/getList";
 
     if (filterParams) {
       const params = new URLSearchParams();
@@ -286,41 +270,16 @@ export function* getAdminMovieListSaga(
     }
 
     const response = yield call(axiosInstance.get, url);
+    console.log(response.data);
 
-    // Transform backend data to match frontend Movie interface
-    const movies = response.data.map((movie: any) => ({
-      id: movie.id,
-      title: movie.name,
-      director: movie.director || "",
-      releaseDate:
-        movie.releaseDate ||
-        (movie.releaseYear ? `${movie.releaseYear}-01-01` : undefined),
-      duration: movie.duration || 0,
-      genre: movie.movieGenres?.map((g: any) => g.name) || [],
-      status: movie.status || 1,
-      poster: movie.imageUrl || "https://via.placeholder.com/150x225",
-      backdrop: movie.backdrop || "",
-      description: movie.description || "",
-      rating: movie.rating || 0,
-      actor: movie.actor || "",
-      country: movie.country || "",
-      language: movie.language || "",
-      subtitle: movie.subtitle || "",
-      ageLimit: movie.ageLimit || 0,
-      content: movie.content || "",
-    }));
-
-    yield put(getAdminMovieListSuccess(movies));
+    // Trả về dữ liệu nguyên bản từ API mà không biến đổi
+    yield put(getAdminMovieListSuccess(response.data));
   } catch (error: any) {
     yield put(
       getAdminMovieListFailure(
         error.response?.data?.message || "Không thể lấy danh sách phim"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy danh sách phim",
-    });
   }
 }
 
@@ -330,19 +289,6 @@ export function* addMovieSaga(
 ): Generator<any, void, any> {
   try {
     const movie = action.payload;
-
-    // Get genres mapping from the API
-    const genresResponse = yield call(axiosInstance.get, "/api/genres");
-    const genresMapping = genresResponse.data.reduce((acc: any, genre: any) => {
-      acc[genre.name] = genre.id;
-      return acc;
-    }, {});
-
-    // Map genre names to IDs
-    const genreIds =
-      movie.genre
-        ?.map((genreName) => genresMapping[genreName] || null)
-        .filter((id) => id !== null) || [];
 
     // Extract year from releaseDate, or use the full date if available
     const releaseYear = movie.releaseDate
@@ -366,7 +312,7 @@ export function* addMovieSaga(
       subtitle: movie.subtitle || "",
       ageLimit: movie.ageLimit || 0,
       content: movie.content || "",
-      genreIds: genreIds,
+      genreIds: movie.genreIds || [],
       status: movie.status || 1,
     };
 
@@ -413,10 +359,6 @@ export function* addMovieSaga(
         error.response?.data?.message || "Không thể thêm phim mới"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể thêm phim mới",
-    });
   }
 }
 
@@ -430,20 +372,6 @@ export function* updateMovieSaga(
     // Get existing movie data
     const movieResponse = yield call(axiosInstance.get, `/api/movies/${id}`);
     const existingMovie = movieResponse.data;
-
-    // Get genres mapping from the API
-    const genresResponse = yield call(axiosInstance.get, "/api/genres");
-    const genresMapping = genresResponse.data.reduce((acc: any, genre: any) => {
-      acc[genre.name] = genre.id;
-      return acc;
-    }, {});
-
-    // Map genre names to IDs if genre is provided in update data
-    const genreIds = data.genre
-      ? data.genre
-          .map((genreName) => genresMapping[genreName] || null)
-          .filter((id) => id !== null)
-      : existingMovie.movieGenres?.map((g: any) => g.id) || [];
 
     // Extract year from releaseDate
     const releaseYear = data.releaseDate
@@ -468,7 +396,8 @@ export function* updateMovieSaga(
       subtitle: data.subtitle || existingMovie.subtitle || "",
       ageLimit: data.ageLimit || existingMovie.ageLimit || 0,
       content: data.content || existingMovie.content || "",
-      genreIds: genreIds,
+      genreIds:
+        data.genreIds || existingMovie.movieGenres?.map((g: any) => g.id) || [],
       status: data.status || existingMovie.status || 1,
     };
 
@@ -516,10 +445,6 @@ export function* updateMovieSaga(
         error.response?.data?.message || "Không thể cập nhật phim"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể cập nhật phim",
-    });
   }
 }
 
@@ -539,10 +464,6 @@ export function* deleteMovieSaga(
     yield put(
       deleteMovieFailure(error.response?.data?.message || "Không thể xóa phim")
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa phim",
-    });
   }
 }
 
@@ -565,10 +486,6 @@ export function* bulkDeleteMoviesSaga(
         error.response?.data?.message || "Không thể xóa phim hàng loạt"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa phim hàng loạt",
-    });
   }
 }
 
@@ -608,10 +525,6 @@ export function* bulkUpdateStatusSaga(
           "Không thể cập nhật trạng thái phim hàng loạt"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể cập nhật trạng thái phim hàng loạt",
-    });
   }
 }
 
@@ -644,10 +557,6 @@ export function* getShowTimesSaga(
         error.response?.data?.message || "Không thể lấy lịch chiếu phim"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy lịch chiếu phim cho ngày đã chọn",
-    });
   }
 }
 
@@ -662,10 +571,6 @@ export function* getMovieStatisticsSaga(): Generator<any, void, any> {
         error.response?.data?.message || "Không thể lấy thống kê phim"
       )
     );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể lấy thống kê phim theo doanh thu",
-    });
   }
 }
 

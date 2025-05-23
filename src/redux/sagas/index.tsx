@@ -4,7 +4,6 @@ import movieSaga from "./movieSaga";
 import cinemaSaga from "./cinemaSaga";
 import roomSaga from "./room.Saga";
 import showtimeSaga from "./showtimeSaga";
-import promotionSaga from "./promotionSaga";
 import paymentSaga from "./paymentSaga";
 import ticketSaga from "./ticketSaga";
 import customerSaga from "./customerSaga";
@@ -21,7 +20,6 @@ export default function* rootSaga() {
       fork(cinemaSaga),
       fork(roomSaga),
       fork(showtimeSaga),
-      fork(promotionSaga),
       fork(paymentSaga),
       fork(ticketSaga),
       fork(customerSaga),

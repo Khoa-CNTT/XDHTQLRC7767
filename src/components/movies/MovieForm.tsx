@@ -27,9 +27,11 @@ interface Genre {
   name: string;
 }
 
-// Extended Movie interface to include genreIds
+// Extended Movie interface to include genreIds and API fields
 interface ExtendedMovie extends Movie {
   genreIds?: number[];
+  name?: string; // API field
+  imageUrl?: string; // API field
 }
 
 interface MovieFormProps {
@@ -105,10 +107,8 @@ const MovieForm: React.FC<MovieFormProps> = ({
           ? restValues.releaseDate.year()
           : new Date(String(restValues.releaseDate)).getFullYear()
         : undefined,
-      // Convert genre names to genre IDs
-      genreIds: genre
-        ? genres.filter((g) => genre.includes(g.name)).map((g) => g.id)
-        : [],
+      // Use genre IDs directly instead of mapping from names
+      genreIds: (genre || []) as number[],
       // Map poster to imageUrl (needed for API compatibility)
       imageUrl: restValues.poster,
       // Map backdrop to backdropUrl (needed for API compatibility)
@@ -118,16 +118,24 @@ const MovieForm: React.FC<MovieFormProps> = ({
     onFinish(formattedValues as ExtendedMovie);
   };
 
-  // Map initial genreIds to genre names for form display
+  // Map initial genreIds to genre IDs for form display
   useEffect(() => {
-    if (initialValues?.genreIds && genres.length > 0) {
-      const genreNames = initialValues.genreIds
-        .map((id: number) => genres.find((g) => g.id === id)?.name)
-        .filter(Boolean) as string[];
+    // Xử lý cả genreIds và movieGenres/genres từ API
+    if (initialValues) {
+      // Sử dụng type assertion để tránh lỗi TypeScript
+      const genreIds =
+        initialValues.genreIds ||
+        initialValues.movieGenres?.map((g) => g.id) ||
+        (initialValues.genres?.map((g) => Number(g.id)) as
+          | number[]
+          | undefined) ||
+        [];
 
-      form.setFieldsValue({ genre: genreNames });
+      if (genreIds.length > 0 && genres.length > 0) {
+        form.setFieldsValue({ genre: genreIds });
+      }
     }
-  }, [initialValues?.genreIds, genres, form]);
+  }, [initialValues, genres, form]);
 
   return (
     <Form
@@ -135,12 +143,19 @@ const MovieForm: React.FC<MovieFormProps> = ({
       layout="vertical"
       onFinish={handleFormSubmit}
       initialValues={{
-        status: "Sắp chiếu",
+        status: 0, // Sắp chiếu mặc định
         genre: [],
-        ...initialValues,
-        releaseDate: initialValues?.releaseDate
-          ? dayjs(initialValues.releaseDate)
-          : null,
+        ...(initialValues
+          ? {
+              ...initialValues,
+              // Xử lý các trường name/title từ API
+              title: initialValues.title || initialValues.name,
+              poster: initialValues.poster || initialValues.imageUrl,
+              releaseDate: initialValues.releaseDate
+                ? dayjs(initialValues.releaseDate)
+                : null,
+            }
+          : {}),
       }}
     >
       <FormSection>
@@ -214,9 +229,9 @@ const MovieForm: React.FC<MovieFormProps> = ({
               rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
             >
               <Select placeholder="Chọn trạng thái">
+                <Option value={0}>Sắp chiếu</Option>
                 <Option value={1}>Đang chiếu</Option>
-                <Option value={2}>Sắp chiếu</Option>
-                <Option value={3}>Đã chiếu</Option>
+                <Option value={2}>Đã chiếu</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -286,7 +301,7 @@ const MovieForm: React.FC<MovieFormProps> = ({
             loading={genresLoading}
           >
             {genres.map((genre) => (
-              <Option key={genre.id} value={genre.name}>
+              <Option key={genre.id} value={genre.id}>
                 {genre.name}
               </Option>
             ))}

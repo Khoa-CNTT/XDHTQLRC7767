@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Tabs, Row, Col, Button, Modal, Spin, Pagination, Empty } from "antd";
+import { Tabs, Row, Col, Button, Spin, Pagination, Empty } from "antd";
 import { motion } from "framer-motion";
 import {
   EnvironmentOutlined,
@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getCinemasByLocationRequest } from "../../redux/slices/cinemaSlice";
 import { RootState } from "../../redux/store";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { useNavigate } from "react-router-dom";
 
 const { TabPane } = Tabs;
 
@@ -274,104 +275,6 @@ const ViewButton = styled(Button)`
   }
 `;
 
-const StyledModal = styled(Modal)`
-  .ant-modal-content {
-    background: #1a1a2e;
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .ant-modal-header {
-    background: transparent;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 16px 24px;
-  }
-
-  .ant-modal-title {
-    color: white;
-    font-size: 20px;
-    font-weight: 600;
-  }
-
-  .ant-modal-body {
-    color: rgba(255, 255, 255, 0.8);
-    padding: 20px 24px;
-  }
-
-  .ant-modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 16px 24px;
-  }
-
-  .ant-btn-primary {
-    background: linear-gradient(135deg, #00bfff, #0070ff);
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
-  }
-
-  @media (max-width: 576px) {
-    .ant-modal-title {
-      font-size: 18px;
-    }
-
-    .ant-modal-body {
-      padding: 16px 20px;
-    }
-  }
-`;
-
-const ModalImage = styled.img`
-  width: 100%;
-  height: 250px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 20px;
-
-  @media (max-width: 576px) {
-    height: 200px;
-    margin-bottom: 16px;
-  }
-`;
-
-const ModalInfoItem = styled.div`
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 15px;
-  font-size: 15px;
-
-  svg {
-    color: #00bfff;
-    margin-right: 10px;
-    margin-top: 4px;
-  }
-
-  @media (max-width: 576px) {
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-`;
-
-const FacilitiesList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-`;
-
-const FacilityTag = styled.div`
-  background: rgba(0, 191, 255, 0.1);
-  color: #00bfff;
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 13px;
-
-  @media (max-width: 576px) {
-    font-size: 12px;
-    padding: 4px 10px;
-  }
-`;
-
 const PaginationContainer = styled.div`
   margin-top: 40px;
   display: flex;
@@ -436,6 +339,7 @@ const CinemaPage: React.FC = () => {
   useDocumentTitle("Hệ thống rạp chiếu");
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     data: cinemas,
     loading,
@@ -446,8 +350,6 @@ const CinemaPage: React.FC = () => {
   // Debug state to show raw data
   const [showRawData, setShowRawData] = useState(false);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCinema, setSelectedCinema] = useState<Cinema | null>(null);
   const [activeTab, setActiveTab] = useState<string>("danang");
 
   useEffect(() => {
@@ -458,9 +360,8 @@ const CinemaPage: React.FC = () => {
     dispatch(getCinemasByLocationRequest({ location, page }));
   };
 
-  const handleCinemaClick = (cinema: Cinema) => {
-    setSelectedCinema(cinema);
-    setModalVisible(true);
+  const handleCinemaClick = () => {
+    navigate(`/movies`);
   };
 
   const handleTabChange = (key: string) => {
@@ -511,7 +412,7 @@ const CinemaPage: React.FC = () => {
               className="modern-card"
             >
               <CinemaImageContainer>
-                <CinemaImage src={cinema.image} alt={cinema.name} />
+                <CinemaImage src={cinema.imageUrl} alt={cinema.name} />
               </CinemaImageContainer>
               <CinemaContent>
                 <CinemaName>{cinema.name}</CinemaName>
@@ -528,7 +429,7 @@ const CinemaPage: React.FC = () => {
                   {cinema.screens} phòng chiếu
                 </CinemaInfo>
                 <ViewButton onClick={() => handleCinemaClick(cinema)}>
-                  Xem chi tiết
+                  Đặt vé ngay
                 </ViewButton>
               </CinemaContent>
             </CinemaCard>
@@ -582,43 +483,6 @@ const CinemaPage: React.FC = () => {
           )}
         </motion.div>
       </ContentWrapper>
-
-      <StyledModal
-        title={selectedCinema?.name}
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setModalVisible(false)}>
-            Đóng
-          </Button>,
-        ]}
-      >
-        {selectedCinema && (
-          <>
-            <ModalImage src={selectedCinema.image} alt={selectedCinema.name} />
-            <ModalInfoItem>
-              <EnvironmentOutlined />
-              <div>{selectedCinema.address}</div>
-            </ModalInfoItem>
-            <ModalInfoItem>
-              <PhoneOutlined />
-              <div>{selectedCinema.phone}</div>
-            </ModalInfoItem>
-            <ModalInfoItem>
-              <ProjectOutlined />
-              <div>{selectedCinema.screens} phòng chiếu</div>
-            </ModalInfoItem>
-            <h4 style={{ color: "white", marginTop: 20, marginBottom: 10 }}>
-              Tiện ích
-            </h4>
-            <FacilitiesList>
-              {selectedCinema.facilities.map((facility, index) => (
-                <FacilityTag key={index}>{facility}</FacilityTag>
-              ))}
-            </FacilitiesList>
-          </>
-        )}
-      </StyledModal>
     </PageContainer>
   );
 };
