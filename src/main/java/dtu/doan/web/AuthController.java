@@ -7,12 +7,14 @@ import dtu.doan.dto.RegisterRequest;
 import dtu.doan.dto.SaveNewPasswordRequest;
 import dtu.doan.model.Account;
 import dtu.doan.model.Customer;
+import dtu.doan.model.Employee;
 import dtu.doan.model.VerificationToken;
 import dtu.doan.repository.AccountRepository;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.VerificationTokenRepository;
 import dtu.doan.service.AccountService;
 import dtu.doan.service.CustomerService;
+import dtu.doan.service.EmployeeService;
 import dtu.doan.service.impl.AuthService;
 import dtu.doan.service.impl.MailService;
 import dtu.doan.service.impl.VerificationService;
@@ -31,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -73,16 +76,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private EmployeeService employeeService;
 
-
-    @PostMapping("/login-admin")
-    public ResponseEntity<?> loginAdmin(@RequestBody AuthRequest authRequest) {
-        try {
-            return null;
-        } catch (Exception e) {
-            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
-        }
-    }
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
@@ -134,6 +130,10 @@ public class AuthController {
             return new ResponseEntity<>("Account is deleted", HttpStatus.FORBIDDEN);
         }
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
+        String role = userDetails.getAuthorities().stream().findFirst().orElse(null).getAuthority();
+        if("ROLE_USER".equals(role)){
+            return new ResponseEntity<>("USER KHONG CO QUYEN DANG NHAP", HttpStatus.NOT_FOUND);
+        }
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
         return new ResponseEntity<>(jwt, HttpStatus.OK);
     }
@@ -146,7 +146,6 @@ public class AuthController {
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
                 String username = userDetails.getUsername();
                 String role = userDetails.getAuthorities().stream().findFirst().orElse(null).getAuthority();
-                System.out.println(role);
                 if("ROLE_USER".equals(role)){
                     Customer customer = customerService.getCustomerByEmail(username);
                     if (customer == null) {
@@ -154,6 +153,31 @@ public class AuthController {
                     }
                     return new ResponseEntity<>(customer, HttpStatus.OK);
                 }
+                Employee employee = employeeService.getEmployeeByUsername(username).orElse(null);
+                if (employee == null) {
+                    return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+                }
+                Map<String, Object> responseEmployee = new HashMap<>();
+                responseEmployee.put("id", employee.getId());
+                responseEmployee.put("fullName", employee.getFullName());
+                responseEmployee.put("image", employee.getImage());
+                responseEmployee.put("gender", employee.getGender());
+                responseEmployee.put("birthday", employee.getBirthday());
+                responseEmployee.put("email", employee.getEmail());
+                responseEmployee.put("isActivated", employee.getIsActivated());
+                responseEmployee.put("phoneNumber", employee.getPhoneNumber());
+                responseEmployee.put("address", employee.getAddress());
+                responseEmployee.put("cardId", employee.getCardId());
+                responseEmployee.put("position", employee.getPosition());
+                responseEmployee.put("isDelete", employee.getIsDelete());
+                responseEmployee.put("department", employee.getDepartment());
+
+                if (employee.getUsername() != null) {
+                    responseEmployee.put("role", employee.getUsername().getRole());
+                }
+                return new ResponseEntity<>(responseEmployee, HttpStatus.OK);
+
+
 
             }
             return new ResponseEntity<>(null, HttpStatus.OK);

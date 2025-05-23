@@ -10,4 +10,7 @@ public interface EmployeeService  {
     public List<Employee> getAllEmployees(String fullName, String email, String phoneNumber);
     Optional<Employee> getEmployeeById(Long id);
     Employee saveEmployee(Employee employee);
+
+    Optional<Employee> getEmployeeByUsername(String username);
 }
+

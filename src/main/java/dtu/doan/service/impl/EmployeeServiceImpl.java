@@ -35,5 +35,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return repository.save(employee);
     }
 
+    @Override
+    public Optional<Employee> getEmployeeByUsername(String username) {
+        return repository.findEmployeeByUsername(username);
+    }
+
 
 }
