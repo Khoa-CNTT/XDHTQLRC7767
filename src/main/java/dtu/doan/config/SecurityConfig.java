@@ -75,7 +75,10 @@ public class SecurityConfig {
                                 "/auth/google",
                                 "/api/tickets/mobile/**",
                                 "/api/promotion",
-                                "/api/positions"
+                                "/api/positions",
+                                "/api/comments/commentByMovieAndUser",
+                                "/api/showtime/{movieId}/times",
+                                "/api/chat"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
