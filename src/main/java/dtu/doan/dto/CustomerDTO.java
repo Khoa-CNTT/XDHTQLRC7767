@@ -17,4 +17,5 @@ public class CustomerDTO {
     private Boolean isDelete;
     private Boolean isEnable;
     private LocalDate birthday;
+    private Boolean isNonePassword;
 }

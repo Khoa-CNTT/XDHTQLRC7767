@@ -18,9 +18,11 @@ public interface CommentRepository  extends JpaRepository<Comment, Long> {
             "WHERE c.isDeleted = false " +
             "AND c.movie.id = :movieId " +
             "AND (c.isApproved = true OR c.user.id = :currentUserId) " +
+            "AND c.isDeleted = false " +
             "ORDER BY c.createdAt DESC")
     List<Comment> findAllVisibleComments(@Param("currentUserId") Long currentUserId,@Param("movieId") Long movieId);
 
-    List<Comment> findByMovieId(Long movieId);
+    List<Comment> findByMovieIdAndIsDeletedFalse
+            (Long movieId);
 
 }

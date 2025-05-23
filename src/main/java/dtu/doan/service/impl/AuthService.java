@@ -68,6 +68,7 @@ public class AuthService {
                 account.setRole("USER");
                 account.setLoginType("GOOGLE");
                 account.setPassword(passwordEncoder.encode("-19992003"));
+                account.setIsNonePassword(true);
                 accountRepository.save(account);
                 Customer customer = new Customer();
                 customer.setAccount(account);
@@ -75,6 +76,9 @@ public class AuthService {
                 customer.setFullName(name);
                 customer.setIsDelete(false);
                 customerRepository.save(customer);
+            }
+            if(account.getIsEnable() == false){
+                return null;
             }
             return jwtUtils.generateToken(email);
         } else {

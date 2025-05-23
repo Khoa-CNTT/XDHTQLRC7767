@@ -90,6 +90,4 @@ public class CommentController {
         Map<String, Integer> sentimentStats = service.getSentimentStatisticsByMovie(movieId);
         return ResponseEntity.ok(sentimentStats);
     }
-
-
 }

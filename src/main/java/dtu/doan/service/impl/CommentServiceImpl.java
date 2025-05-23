@@ -76,12 +76,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<Comment> getCommentsByMovie(Long movieId) {
-        return repository.findByMovieId(movieId);
+        return repository.findByMovieIdAndIsDeletedFalse
+                (movieId);
     }
 
     @Override
     public Map<String, Integer> getSentimentStatisticsByMovie(Long movieId) {
-        List<Comment> comments = repository.findByMovieId(movieId);
+        List<Comment> comments = repository.findByMovieIdAndIsDeletedFalse
+                (movieId);
 
         long positiveCount = comments.stream().filter(c -> c.getScore() > 0.5).count();
         long neutralCount = comments.stream().filter(c -> c.getScore() >= 0.0 && c.getScore() <= 0.5).count();

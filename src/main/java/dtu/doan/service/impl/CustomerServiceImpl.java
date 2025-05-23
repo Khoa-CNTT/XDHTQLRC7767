@@ -107,6 +107,7 @@ public class CustomerServiceImpl implements CustomerService {
         dto.setUsername(customer.getAccount().getUsername());
         dto.setIsDelete(customer.getIsDelete());
         dto.setIsEnable(customer.getAccount().getIsEnable());
+        dto.setIsNonePassword(customer.getAccount().getIsNonePassword() == true ? true : false);
         return dto;
     }
 }

@@ -412,6 +412,9 @@ public class AuthController {
         String idTokenString = body.get("credential");
         try {
             String jwt = authService.authenticateWithGoogle(idTokenString);
+            if(jwt == null){
+                return new ResponseEntity<>("Account is disabled", HttpStatus.FORBIDDEN);
+            }
             return new ResponseEntity<>(jwt,HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");

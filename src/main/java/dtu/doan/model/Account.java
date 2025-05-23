@@ -21,4 +21,5 @@ public class Account {
     private String role;
     private Boolean isVerify;
     private String loginType;
+    private Boolean isNonePassword = false;
 }

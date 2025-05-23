@@ -16,15 +16,19 @@ public class AccountServiceImpl implements AccountService {
     private PasswordEncoder passwordEncoder;
     @Override
     public void changePassword(String username, String oldPassword, String newPassword, String confirmPassword) {
-        Account account = accountRepository.findByUsername(username);
-        if (!passwordEncoder.matches(oldPassword, account.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
-        }
-
         if (!newPassword.equals(confirmPassword)) {
             throw new RuntimeException("New password and confirmation do not match");
         }
-
+        Account account = accountRepository.findByUsername(username);
+        if (account.getIsNonePassword() == true) {
+            account.setPassword(passwordEncoder.encode(newPassword));
+            account.setIsNonePassword(false);
+            accountRepository.save(account);
+            return;
+        }
+        if (!passwordEncoder.matches(oldPassword, account.getPassword())) {
+            throw new RuntimeException("Old password is incorrect");
+        }
         // Update the password
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
