@@ -1,9 +1,6 @@
 package dtu.doan.web;
 
-import dtu.doan.dto.ShowListCreatedResponeDTO;
-import dtu.doan.dto.ShowListDTO;
-import dtu.doan.dto.ShowTimeListByLocation;
-import dtu.doan.dto.ShowTimeWithChairsDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.Chair;
 import dtu.doan.model.ShowTime;
 import dtu.doan.service.ShowTimeService;
@@ -82,6 +79,11 @@ public class ShowTimeController {
 
        List<ShowTimeListByLocation> showTimes = showTimeService.findShowTimesByMovieIdAndDate(movieId, date);
         return ResponseEntity.ok(showTimes);
+    }
+    @GetMapping("/statistics")
+    public ResponseEntity<List<ShowtimeStatisticsDTO>> getShowtimeStatistics() {
+        List<ShowtimeStatisticsDTO> statistics = showTimeService.getShowtimeStatistics();
+        return ResponseEntity.ok(statistics);
     }
 
     }

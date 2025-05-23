@@ -168,7 +168,19 @@ public class ShowTimeServiceImpl implements ShowTimeService {
         return new ArrayList<>(cinemaMap.values());
     }
 
-
+    @Override
+    public List<ShowtimeStatisticsDTO> getShowtimeStatistics() {
+        List<Object[]> results = showTimeRepository.getAllShowtimeStatistics();
+        List<ShowtimeStatisticsDTO> statistics = new ArrayList<>();
+        for (Object[] result : results) {
+            statistics.add(new ShowtimeStatisticsDTO(
+                    (Long) result[0], // showtimeId
+                    ((Number) result[1]).longValue(), // ticketsSold
+                    ((Number) result[2]).doubleValue() // totalRevenue
+            ));
+        }
+        return statistics;
+    }
 
 
 }

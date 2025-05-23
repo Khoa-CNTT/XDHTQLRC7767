@@ -1,9 +1,6 @@
 package dtu.doan.service;
 
-import dtu.doan.dto.ShowListCreatedResponeDTO;
-import dtu.doan.dto.ShowListDTO;
-import dtu.doan.dto.ShowTimeListByLocation;
-import dtu.doan.dto.ShowTimeWithChairsDTO;
+import dtu.doan.dto.*;
 import dtu.doan.model.ShowTime;
 import org.springframework.stereotype.Service;
 
@@ -24,4 +21,5 @@ public interface ShowTimeService {
 //    ShowListCreatedResponeDTO update(Long id, ShowListDTO showListDTO);
     List<LocalDate> findDistinctDatesByMovieId(Long movieId);
     List<ShowTimeListByLocation> findShowTimesByMovieIdAndDate(Long movieId, LocalDate date);
+    List<ShowtimeStatisticsDTO> getShowtimeStatistics();
 }

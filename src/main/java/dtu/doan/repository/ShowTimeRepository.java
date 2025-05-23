@@ -76,4 +76,16 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
 
     @Query("SELECT s FROM ShowTime s WHERE s.movie.id = :movieId AND s.date = :date AND s.status = 'ACTIVE'")
     List<ShowTime> findShowTimesByMovieIdAndDate(@Param("movieId") Long movieId, @Param("date") LocalDate date);
+
+    @Query(value = """
+    SELECT s.id AS showtimeId,
+           COUNT(t.id) AS ticketsSold,
+           COALESCE(SUM(p.amount), 0) AS totalRevenue
+    FROM show_time s
+    LEFT JOIN ticket t ON t.show_time_id = s.id
+    LEFT JOIN payment p ON p.id = t.payment_id
+    WHERE p.status = 'success'
+    GROUP BY s.id
+""", nativeQuery = true)
+    List<Object[]> getAllShowtimeStatistics();
 }
