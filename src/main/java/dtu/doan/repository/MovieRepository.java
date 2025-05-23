@@ -2,7 +2,6 @@ package dtu.doan.repository;
 
 import dtu.doan.dto.IMovieBookingDTO;
 import dtu.doan.dto.IMovieDetailDTO;
-import dtu.doan.dto.MovieStatisticsDTO;
 import dtu.doan.model.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +13,10 @@ import java.util.List;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    @Query("SELECT m FROM Movie m JOIN m.movieGenres mg JOIN mg.genre g " +
+    @Query("SELECT m " +
+            "FROM Movie m " +
+            "JOIN m.movieGenres mg " +
+            "JOIN mg.genre g " +
             "WHERE (:name IS NULL OR m.name LIKE %:name%) " +
             "AND (:director IS NULL OR m.director LIKE %:director%) " +
             "AND (:actor IS NULL OR m.actor LIKE %:actor%) " +
@@ -24,12 +26,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
                              @Param("actor") String actor,
                              @Param("genreName") String genreName);
 
-    @Query(value = "select " +
-            "mv.id" +
+    @Query(value = "SELECT mv.id" +
             ",mv.description" +
             ",mv.name" +
             ",mv.image_url as imageUrl" +
-            ",mv.director"  +
+            ",mv.director" +
             ",mv.actor" +
             ",mv.duration" +
             ",mv.release_year as releaseYear" +
@@ -39,8 +40,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             ",mv.language" +
             ",mv.subtitle" +
             ",mv.age_limit as ageLimit" +
-            ",mv.content" +
-            " from movie as mv " +
+            ",mv.content " +
+            "FROM movie as mv " +
             "LEFT JOIN movie_genre matype ON mv.id = matype.movie_id " +
             "LEFT JOIN genre as mtype ON matype.genre_id = mtype.id " +
             "WHERE mv.id = ?1 and mv.is_delete = 0 " +
@@ -48,18 +49,23 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     IMovieDetailDTO getMovieById(Long movieId);
 
 
-    @Query("SELECT mv.id, mv.name AS name, mv.description AS description, mv.imageUrl AS imageUrl, " +
-            "mv.duration AS duration, mv.releaseYear AS releaseYear, mv.rating AS rating " +
+    @Query("SELECT " +
+            "mv.id" +
+            ", mv.name AS name" +
+            ", mv.description AS description" +
+            ", mv.imageUrl AS imageUrl" +
+            ", mv.duration AS duration" +
+            ", mv.releaseYear AS releaseYear" +
+            ", mv.rating AS rating " +
             "FROM Movie mv WHERE mv.id = :id AND mv.isDelete = false")
     IMovieBookingDTO getMovieToBookTicket(@Param("id") Long id);
 
-    List<Movie> findByReleaseDateBeforeAndIsDeleteFalse(LocalDate currentDate);
-    List<Movie> findByReleaseDateAfterAndIsDeleteFalse(LocalDate currentDate);
 
     List<Movie> findByStatusAndIsDeleteFalse(int status);
 
 
-    @Query("SELECT DISTINCT m FROM Movie m " +
+    @Query("SELECT DISTINCT m " +
+            "FROM Movie m " +
             "LEFT JOIN m.movieGenres mg " +
             "LEFT JOIN mg.genre g " +
             "WHERE (:title IS NULL OR LOWER(m.name) LIKE LOWER(CONCAT('%', :title, '%'))) " +
@@ -68,7 +74,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             "AND (:director IS NULL OR LOWER(m.director) LIKE LOWER(CONCAT('%', :director, '%'))) " +
             "AND (:actor IS NULL OR LOWER(m.actor) LIKE LOWER(CONCAT('%', :actor, '%'))) " +
             "AND (:startDate IS NULL OR m.releaseDate >= :startDate) " +
-            "AND (:endDate IS NULL OR m.releaseDate <= :endDate)")
+            "AND (:endDate IS NULL OR m.releaseDate <= :endDate)" +
+            "AND m.isDelete = false ")
     List<Movie> findMoviesWithFilters(
             @Param("title") String title,
             @Param("status") Integer status,
@@ -80,15 +87,15 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     );
 
     @Query(value = """
-    SELECT m.name AS movieTitle,
-           COUNT(DISTINCT s.id) AS showtimesCount,
-           COUNT(c.id) AS ticketsSold,
-           COALESCE(SUM(s.price_per_show_time), 0) AS revenue
-    FROM movie m
-    LEFT JOIN show_time s ON s.movie_id = m.id
-    LEFT JOIN chair c ON c.show_time_id = s.id AND c.status = 'BOOKED'
-    GROUP BY m.id, m.name
-""", nativeQuery = true)
+                SELECT m.name AS movieTitle,
+                       COUNT(DISTINCT s.id) AS showtimesCount,
+                       COUNT(c.id) AS ticketsSold,
+                       COALESCE(SUM(s.price_per_show_time), 0) AS revenue
+                FROM movie m
+                LEFT JOIN show_time s ON s.movie_id = m.id
+                LEFT JOIN chair c ON c.show_time_id = s.id AND c.status = 'BOOKED'
+                GROUP BY m.id, m.name
+            """, nativeQuery = true)
     List<Object[]> getMovieStatistics();
 
 }
