@@ -15,7 +15,7 @@ const LoginSuccessPage = () => {
       message.success("Đăng nhập thành công!");
       navigate("/"); // Chuyển về trang chính
     } else {
-      message.error("Đăng nhập thất bại!");
+      message.error("Tài khoản hoặc mật khẩu không đúng");
       navigate("/login");
     }
   }, [navigate]);

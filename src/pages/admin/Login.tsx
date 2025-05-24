@@ -191,7 +191,7 @@ const AdminLogin: React.FC = () => {
         }
       } catch (error) {
         console.error("Lỗi đăng nhập:", error);
-        message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+        message.error("Tài khoản hoặc mật khẩu không đúng");
         setLoading(false);
       }
     };

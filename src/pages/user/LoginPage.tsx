@@ -186,9 +186,11 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Get the auth state from Redux
-  const { user, isAuthenticated, loading, error } = useSelector(
+  const { user, isAuthenticated, login } = useSelector(
     (state: RootState) => state.auth
   );
+  const loading = login.loading;
+  const error = login.error;
 
   const onFinish = (values: { email: string; password: string }) => {
     dispatch(
@@ -218,13 +220,9 @@ const LoginPage: React.FC = () => {
       dispatch(getUserInfoRequest());
       navigate("/");
     } catch {
-      message.error("Đăng nhập thất bại. Vui lòng thử lại!");
+      message.error("Tài khoản hoặc mật khẩu không đúng");
     }
   };
-
-  if (loading) {
-    return <AuthPageSkeleton />;
-  }
 
   return (
     <FullPageContainer>

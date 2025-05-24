@@ -113,12 +113,13 @@ function* loginSaga(
     }
   } catch (error: any) {
     localStorage.removeItem("token");
-    const errorMessage = error.response?.data || "Đăng nhập thất bại";
+    let errorMessage = "Tài khoản hoặc mật khẩu không đúng";
+
     // Kiểm tra nếu tài khoản chưa verify
-    if (errorMessage === "Account is not verified") {
+    if (error.response?.data === "Account is not verified") {
       // Lưu email vào localStorage để hiển thị trên trang verify
       localStorage.setItem("pendingVerificationEmail", action.payload.username);
-      yield put(loginFailure(errorMessage));
+      yield put(loginFailure("Account is not verified"));
       // Chuyển hướng đến trang verify email
       window.location.href = "/verify-email";
       return;
