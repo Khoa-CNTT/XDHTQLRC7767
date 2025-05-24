@@ -231,7 +231,7 @@ const AdminLayout: React.FC = () => {
             {
               key: "/admin/showtimes",
               icon: <ClockCircleOutlined />,
-              label: <Link to="/admin/showtimes">Quản lý suất chiếu</Link>,
+              label: <Link to="/admin/showtimes">Quản lý lịch chiếu</Link>,
             },
             {
               key: "/admin/customers",
@@ -258,7 +258,7 @@ const AdminLayout: React.FC = () => {
             {
               key: "/admin/reports",
               icon: <BarChartOutlined />,
-              label: <Link to="/admin/reports">Báo cáo & Thống kê</Link>,
+              label: <Link to="/admin/reports">Thống kê & Báo cáo</Link>,
             },
             {
               key: "/admin/cinema-rooms",
