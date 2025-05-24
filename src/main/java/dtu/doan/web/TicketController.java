@@ -51,12 +51,12 @@ public class TicketController {
             ticketHistoryDTO.setStartTime(String.valueOf(ticket.getShowTime().getStartTime()));
             ticketHistoryDTO.setCinemaName(ticket.getShowTime().getRoom().getCinema().getName());
             ticketHistoryDTO.setMovieName(ticket.getShowTime().getMovie().getName());
-            ticketsRespone.add(ticketHistoryDTO);
             if (ticket.getUsed()) {
                 ticketHistoryDTO.setStatus("Đã sử dụng");
 
             }
             ticketHistoryDTO.setStatus("Chưa sử dụng");
+            ticketsRespone.add(ticketHistoryDTO);
 
 
         }

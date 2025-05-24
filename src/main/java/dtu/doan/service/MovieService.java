@@ -24,6 +24,6 @@ public interface MovieService {
 
     List<MovieAdminResponseDTO> getListMovieAdmin(MovieFilterDTO filter);
     List<MovieStatisticsDTO> getMovieStatistics();
-
+    List<MovieResponseDTO> findAll();
 
 }

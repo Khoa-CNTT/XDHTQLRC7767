@@ -199,6 +199,40 @@ public class MovieServiceImpl implements MovieService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MovieResponseDTO> findAll() {
+        List<Movie> movies = repository.findAll();
+        return movies.stream()
+                .map(this::mapToDTODataTrain)
+                .collect(Collectors.toList());
+    }
+    private MovieResponseDTO mapToDTODataTrain(Movie movie) {
+        MovieResponseDTO dto = new MovieResponseDTO();
+        dto.setId(movie.getId());
+        dto.setName(movie.getName());
+        dto.setDescription(movie.getDescription());
+        dto.setDirector(movie.getDirector());
+        dto.setActor(movie.getActor());
+        dto.setReleaseYear(movie.getReleaseYear());
+        dto.setDuration(movie.getDuration());
+        dto.setRating(movie.getRating());
+        dto.setImageUrl(movie.getImageUrl());
+        dto.setCountry(movie.getCountry());
+        dto.setLanguage(movie.getLanguage());
+        dto.setSubtitle(movie.getSubtitle());
+        dto.setAgeLimit(movie.getAgeLimit());
+        dto.setContent(movie.getContent());
+        dto.setBackdrop(movie.getBackdrop());
+        dto.setReleaseDate(movie.getReleaseDate());
+        dto.setStatus(movie.getStatus());
+
+        // Lấy danh sách thể loại của phim
+        List<Genre> genres = genreRepository.getGenreByMovieId(movie.getId());
+        dto.setMovieGenres(genres);
+
+        return dto;
+    }
+
     private MovieHomeResponseDTO mapToDTO(Movie movie) {
         MovieHomeResponseDTO dto = new MovieHomeResponseDTO();
         dto.setId(movie.getId());

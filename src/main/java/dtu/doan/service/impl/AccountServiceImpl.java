@@ -34,4 +34,13 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(account);
 
     }
+
+    @Override
+    public Long getCustomerIdByUsername(String username) {
+        Long customerId = accountRepository.findCustomerIdByUsername(username);
+        if (customerId == null) {
+            throw new RuntimeException("Customer not found");
+        }
+        return customerId;
+    }
 }
