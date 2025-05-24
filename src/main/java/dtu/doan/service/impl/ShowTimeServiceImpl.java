@@ -151,7 +151,7 @@ public class ShowTimeServiceImpl implements ShowTimeService {
             Cinema cinema = showTime.getRoom().getCinema();
             Long cinemaId = cinema.getId();
 
-            // Nếu cinema chưa có trong map, thêm vào
+            // If cinema is not in the map, add it
             if (!cinemaMap.containsKey(cinemaId)) {
                 ShowTimeListByLocation dto = new ShowTimeListByLocation();
                 dto.setName(cinema.getName());
@@ -160,9 +160,11 @@ public class ShowTimeServiceImpl implements ShowTimeService {
                 cinemaMap.put(cinemaId, dto);
             }
 
-            // Thêm giờ chiếu vào DTO
-            String time = showTime.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm"));
-            cinemaMap.get(cinemaId).getShowtimes().add(time);
+            // Add showtime info (id and time) to the DTO
+            ShowTimeInfo showTimeInfo = new ShowTimeInfo();
+            showTimeInfo.setId(showTime.getId());
+            showTimeInfo.setTime(showTime.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            cinemaMap.get(cinemaId).getShowtimes().add(showTimeInfo);
         }
 
         return new ArrayList<>(cinemaMap.values());

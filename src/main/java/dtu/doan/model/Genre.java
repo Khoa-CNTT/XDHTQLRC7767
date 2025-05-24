@@ -21,4 +21,5 @@ public class Genre {
     @OneToMany(mappedBy = "genre")
     @JsonIgnore
     private Set<MovieGenre> movieGenres;
+
 }

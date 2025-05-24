@@ -78,7 +78,7 @@ public class ChatController {
         String movieData = formatMovieData(movieList);
         String showTimeData = formatShowTimeData(showTimes);
         String instructions = getBookingInstructions();
-        String suggestedMovies = suggestMovies(tickets, movieList);
+//        String suggestedMovies = suggestMovies(tickets, movieList);
         String upcomingShowTimes = suggestFutureShowTimes(showTimes);
 
         String prompt = String.format("""
@@ -95,15 +95,14 @@ public class ChatController {
                 DANH SÁCH SUẤT CHIẾU:
                 %s
                 
-                LỊCH SỬ MUA VÉ CỦA NGƯỜI DÙNG:
+                LỊCH SỬ MUA VÉ CỦA NGƯỜI DÙNG Đang Hỏi:
                 %s
                 
-                %s
                 %s
                 
                 CÂU HỎI NGƯỜI DÙNG:
                 %s
-                """, movieData, showTimeData + instructions, ticketHistoryData, suggestedMovies, upcomingShowTimes, userQuestion);
+                """, movieData, showTimeData + instructions, ticketHistoryData, upcomingShowTimes, userQuestion);
 
         String answer = openAiService.ask(prompt, apiKey);
         return ResponseEntity.ok(answer);
@@ -198,31 +197,43 @@ public class ChatController {
         }).collect(Collectors.joining("\n"));
     }
 
-    private String suggestMovies(List<Ticket> tickets, List<MovieResponseDTO> allMovies) {
-        Set<String> watchedGenres = tickets.stream()
-                .flatMap(ticket -> ticket.getShowTime().getMovie().getMovieGenres().stream())
-                .map(g -> g.getGenre().getName())
-                .collect(Collectors.toSet());
+//    private String suggestMovies(List<Ticket> tickets, List<MovieResponseDTO> allMovies) {
+//        Set<String> watchedGenres = tickets.stream()
+//                .map(Ticket::getShowTime)
+//                .filter(st -> st != null && st.getMovie() != null)
+//                .map(st -> st.getMovie().getMovieGenres())
+//                .filter(genres -> genres != null)
+//                .flatMap(genres -> new ArrayList<>(genres).stream()) // bản sao an toàn
+//                .map(g -> g.getGenre())
+//                .filter(genre -> genre != null && genre.getName() != null)
+//                .map(genre -> genre.getName())
+//                .collect(Collectors.toSet());
+//
+//        Set<Long> watchedMovieIds = tickets.stream()
+//                .map(Ticket::getShowTime)
+//                .filter(st -> st != null && st.getMovie() != null)
+//                .map(st -> st.getMovie().getId())
+//                .collect(Collectors.toSet());
+//
+//        List<MovieResponseDTO> recommended = allMovies.stream()
+//                .filter(movie -> movie.getStatus() == 1) // Only movies currently showing
+//                .filter(movie -> !watchedMovieIds.contains(movie.getId())) // Exclude watched movies
+//                .filter(movie -> movie.getMovieGenres() != null && movie.getMovieGenres().stream()
+//                        .map(genre -> genre.getName()) // Assuming movie.getMovieGenres() contains GenreDTO
+//                        .anyMatch(watchedGenres::contains)) // Match genres with watched genres
+//                .limit(10) // Limit to 10 recommendations
+//                .collect(Collectors.toList());
+//
+//        if (recommended.isEmpty())
+//            return "Hiện tại chưa có phim nào phù hợp để gợi ý.";
+//
+//        String content = recommended.stream()
+//                .map(m -> String.format("- %s (%s)", m.getName(), m.getReleaseDate()))
+//                .collect(Collectors.joining("\n"));
+//
+//        return "\n\n👉 DỰA TRÊN PHIM BẠN ĐÃ XEM, BẠN CÓ THỂ THÍCH:\n" + content;
+//    }
 
-        Set<Long> watchedMovieIds = tickets.stream()
-                .map(ticket -> ticket.getShowTime().getMovie().getId())
-                .collect(Collectors.toSet());
-
-        List<MovieResponseDTO> recommended = allMovies.stream()
-                .filter(movie -> !watchedMovieIds.contains(movie.getId()))
-                .filter(movie -> movie.getMovieGenres().stream()
-                        .anyMatch(g -> watchedGenres.contains(g.getName())))
-                .limit(10)
-                .collect(Collectors.toList());
-
-        if (recommended.isEmpty()) return "";
-
-        String content = recommended.stream()
-                .map(m -> String.format("- %s (%s)", m.getName(), m.getReleaseDate()))
-                .collect(Collectors.joining("\n"));
-
-        return "\n\n👉 DỰA TRÊN PHIM BẠN ĐÃ XEM, BẠN CÓ THỂ THÍCH:\n" + content;
-    }
 
     private String suggestFutureShowTimes(List<ShowTime> showTimes) {
         LocalDateTime now = LocalDateTime.now();

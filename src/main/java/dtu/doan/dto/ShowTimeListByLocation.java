@@ -9,5 +9,5 @@ import java.util.List;
 public class ShowTimeListByLocation {
     private String name;
     private String address;
-    private List<String> showtimes;
+    private List<ShowTimeInfo> showtimes;
 }
