@@ -161,7 +161,10 @@ const AdminLogin: React.FC = () => {
 
         // Kiểm tra xem user có role Admin không
         // Role nằm trong account.role
-        if (userInfo && userInfo.role === "ADMIN") {
+        if (
+          userInfo &&
+          (userInfo.role === "ADMIN" || userInfo.role === "EMPLOYEE")
+        ) {
           // Nếu là Admin, cho phép đăng nhập
           dispatch(
             loginSuccess({

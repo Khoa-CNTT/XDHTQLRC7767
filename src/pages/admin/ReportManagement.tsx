@@ -30,6 +30,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPaymentStatisticsRequest } from "../../redux/slices/paymentSlice";
 import { getCustomerCountRequest } from "../../redux/slices/customerSlice";
 import { getMovieStatisticsRequest } from "../../redux/slices/movieSlice";
+import { getShowtimeStatisticsRequest } from "../../redux/slices/showtimeSlice";
 import { RootState } from "../../redux/store";
 import type { AppDispatch } from "../../redux/store";
 
@@ -73,17 +74,8 @@ interface MovieTableDataItem {
   revenue: number;
 }
 
-// Adding showtime table data interface
-interface ShowtimeTableDataItem {
-  key: string;
-  date: string;
-  time: string;
-  movieTitle: string;
-  roomName: string;
-  ticketCount: number;
-  revenue: number;
-  occupancyRate: number;
-}
+// Using ShowtimeStatisticsDTO instead of ShowtimeTableDataItem
+import { ShowtimeStatisticsDTO } from "../../redux/slices/showtimeSlice";
 
 // Adding type definition for chart data
 interface GenreDataItem {
@@ -125,6 +117,10 @@ const ReportManagement: React.FC = () => {
   const { data: movieStatistics, loading: movieStatisticsLoading } =
     useSelector((state: RootState) => state.movie.movieStatistics);
 
+  // Get showtime statistics data
+  const { data: showtimeStatistics, loading: showtimeStatisticsLoading } =
+    useSelector((state: RootState) => state.showtime.showtimeStatistics);
+
   // Fetch statistics when component mounts or date range changes
   useEffect(() => {
     const startDate = dateRange[0].format("YYYY-MM-DD");
@@ -132,6 +128,7 @@ const ReportManagement: React.FC = () => {
     dispatch(getPaymentStatisticsRequest({ startDate, endDate }));
     dispatch(getCustomerCountRequest());
     dispatch(getMovieStatisticsRequest());
+    dispatch(getShowtimeStatisticsRequest());
   }, [dispatch, dateRange]);
 
   // Transform payment statistics into the format needed for charts and tables
@@ -296,111 +293,7 @@ const ReportManagement: React.FC = () => {
       revenue: item.revenue,
     })) || [];
 
-  // Dummy data for showtimes
-  const showtimeTableData: ShowtimeTableDataItem[] = [
-    {
-      key: "1",
-      date: "15/08/2023",
-      time: "10:00 - 12:00",
-      movieTitle: "Avengers: Endgame",
-      roomName: "Phòng chiếu 1",
-      ticketCount: 45,
-      revenue: 4500000,
-      occupancyRate: 75,
-    },
-    {
-      key: "2",
-      date: "15/08/2023",
-      time: "13:00 - 15:00",
-      movieTitle: "Spider-Man: No Way Home",
-      roomName: "Phòng chiếu 2",
-      ticketCount: 38,
-      revenue: 3800000,
-      occupancyRate: 63,
-    },
-    {
-      key: "3",
-      date: "15/08/2023",
-      time: "16:00 - 18:00",
-      movieTitle: "Black Panther: Wakanda Forever",
-      roomName: "Phòng chiếu 3",
-      ticketCount: 52,
-      revenue: 5200000,
-      occupancyRate: 87,
-    },
-    {
-      key: "4",
-      date: "16/08/2023",
-      time: "10:00 - 12:00",
-      movieTitle: "Doctor Strange in the Multiverse of Madness",
-      roomName: "Phòng chiếu 1",
-      ticketCount: 30,
-      revenue: 3000000,
-      occupancyRate: 50,
-    },
-    {
-      key: "5",
-      date: "16/08/2023",
-      time: "13:00 - 15:00",
-      movieTitle: "Thor: Love and Thunder",
-      roomName: "Phòng chiếu 2",
-      ticketCount: 42,
-      revenue: 4200000,
-      occupancyRate: 70,
-    },
-    {
-      key: "6",
-      date: "16/08/2023",
-      time: "16:00 - 18:00",
-      movieTitle: "Ant-Man and the Wasp: Quantumania",
-      roomName: "Phòng chiếu 3",
-      ticketCount: 35,
-      revenue: 3500000,
-      occupancyRate: 58,
-    },
-    {
-      key: "7",
-      date: "17/08/2023",
-      time: "10:00 - 12:00",
-      movieTitle: "The Marvels",
-      roomName: "Phòng chiếu 1",
-      ticketCount: 48,
-      revenue: 4800000,
-      occupancyRate: 80,
-    },
-    {
-      key: "8",
-      date: "17/08/2023",
-      time: "13:00 - 15:00",
-      movieTitle: "Guardians of the Galaxy Vol. 3",
-      roomName: "Phòng chiếu 2",
-      ticketCount: 55,
-      revenue: 5500000,
-      occupancyRate: 92,
-    },
-    {
-      key: "9",
-      date: "17/08/2023",
-      time: "16:00 - 18:00",
-      movieTitle: "Shang-Chi and the Legend of the Ten Rings",
-      roomName: "Phòng chiếu 3",
-      ticketCount: 40,
-      revenue: 4000000,
-      occupancyRate: 67,
-    },
-    {
-      key: "10",
-      date: "18/08/2023",
-      time: "10:00 - 12:00",
-      movieTitle: "Eternals",
-      roomName: "Phòng chiếu 1",
-      ticketCount: 32,
-      revenue: 3200000,
-      occupancyRate: 53,
-    },
-  ];
-
-  // Showtime table columns
+  // Showtime table columns - removed occupancyRate
   const showtimeTableColumns = [
     {
       title: "Ngày",
@@ -424,26 +317,18 @@ const ReportManagement: React.FC = () => {
     },
     {
       title: "Số vé bán",
-      dataIndex: "ticketCount",
-      key: "ticketCount",
-      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
-        a.ticketCount - b.ticketCount,
+      dataIndex: "ticketsSold",
+      key: "ticketsSold",
+      sorter: (a: ShowtimeStatisticsDTO, b: ShowtimeStatisticsDTO) =>
+        a.ticketsSold - b.ticketsSold,
     },
     {
       title: "Doanh thu (VNĐ)",
-      dataIndex: "revenue",
-      key: "revenue",
+      dataIndex: "totalRevenue",
+      key: "totalRevenue",
       render: (value: number) => value?.toLocaleString(),
-      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
-        a.revenue - b.revenue,
-    },
-    {
-      title: "Tỉ lệ lấp đầy (%)",
-      dataIndex: "occupancyRate",
-      key: "occupancyRate",
-      render: (value: number) => `${value}%`,
-      sorter: (a: ShowtimeTableDataItem, b: ShowtimeTableDataItem) =>
-        a.occupancyRate - b.occupancyRate,
+      sorter: (a: ShowtimeStatisticsDTO, b: ShowtimeStatisticsDTO) =>
+        a.totalRevenue - b.totalRevenue,
     },
   ];
 
@@ -501,6 +386,7 @@ const ReportManagement: React.FC = () => {
     const endDate = dateRange[1].format("YYYY-MM-DD");
     dispatch(getPaymentStatisticsRequest({ startDate, endDate }));
     dispatch(getMovieStatisticsRequest());
+    dispatch(getShowtimeStatisticsRequest());
   };
 
   const handleExport = () => {
@@ -508,7 +394,11 @@ const ReportManagement: React.FC = () => {
   };
 
   // Combined loading state
-  const loading = paymentLoading || customerLoading || movieStatisticsLoading;
+  const loading =
+    paymentLoading ||
+    customerLoading ||
+    movieStatisticsLoading ||
+    showtimeStatisticsLoading;
 
   return (
     <div>
@@ -648,7 +538,10 @@ const ReportManagement: React.FC = () => {
           >
             <Table
               columns={showtimeTableColumns}
-              dataSource={showtimeTableData}
+              dataSource={showtimeStatistics.map((item, index) => ({
+                ...item,
+                key: index.toString(),
+              }))}
               pagination={{ pageSize: 5 }}
             />
           </StyledCard>

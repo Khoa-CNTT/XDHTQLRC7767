@@ -157,12 +157,12 @@ const AdminLayout: React.FC = () => {
   console.log("AdminLayout rendered - user:", user);
 
   useEffect(() => {
-    // Kiểm tra nếu user không có quyền admin, chuyển hướng về trang login
-    if (!user || user.role !== "ADMIN") {
+    // Kiểm tra nếu user không có quyền admin hoặc employee, chuyển hướng về trang login
+    if (!user || (user.role !== "ADMIN" && user.role !== "EMPLOYEE")) {
       dispatch(logout());
       navigate("/admin/login");
     } else {
-      console.log("AdminLayout - User có quyền admin:", user?.account?.role);
+      console.log("AdminLayout - User có quyền truy cập:", user.role);
     }
   }, [user, dispatch, navigate]);
 

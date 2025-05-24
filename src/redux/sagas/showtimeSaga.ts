@@ -1,4 +1,4 @@
-import { takeEvery, put, call } from "redux-saga/effects";
+import { takeEvery, put, call, all } from "redux-saga/effects";
 import {
   getShowtimeListRequest,
   getShowtimeListSuccess,
@@ -14,6 +14,10 @@ import {
   searchShowtimesSuccess,
   searchShowtimesFailure,
   ShowtimeParams,
+  getShowtimeStatisticsRequest,
+  getShowtimeStatisticsSuccess,
+  getShowtimeStatisticsFailure,
+  ShowtimeStatisticsDTO,
 } from "../slices/showtimeSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axiosConfig";
@@ -28,10 +32,18 @@ interface AxiosError {
   message?: string;
 }
 
+interface AxiosResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  config: any;
+}
+
 // Lấy danh sách lịch chiếu
 function* getShowtimeListSaga(
   action?: PayloadAction<ShowtimeParams>
-): Generator<unknown, void, unknown> {
+): Generator<unknown, void, AxiosResponse> {
   try {
     const params = action?.payload || {};
     let url = "/api/showtime";
@@ -64,7 +76,7 @@ function* getShowtimeListSaga(
 // Lấy showtime với danh sách ghế
 function* getShowtimeWithChairsSaga(
   action: PayloadAction<{ id: number }>
-): Generator<unknown, void, unknown> {
+): Generator<unknown, void, AxiosResponse> {
   try {
     const { id } = action.payload;
     const response = yield call(
@@ -85,7 +97,7 @@ function* getShowtimeWithChairsSaga(
 // Tạo lịch chiếu mới
 function* createShowtimeSaga(
   action: PayloadAction<ShowListDTO>
-): Generator<unknown, void, unknown> {
+): Generator<unknown, void, AxiosResponse> {
   try {
     const response = yield call(
       axiosInstance.post,
@@ -110,7 +122,7 @@ function* createShowtimeSaga(
 // Tìm kiếm lịch chiếu
 function* searchShowtimeSaga(
   action?: PayloadAction<ShowtimeParams>
-): Generator<unknown, void, unknown> {
+): Generator<unknown, void, AxiosResponse> {
   try {
     const params = action?.payload || {};
 
@@ -139,9 +151,67 @@ function* searchShowtimeSaga(
   }
 }
 
+// Lấy thống kê lịch chiếu
+function* getShowtimeStatisticsSaga(): Generator<unknown, void, any> {
+  try {
+    // Fetch the statistics data
+    const statisticsResponse = yield call(
+      axiosInstance.get,
+      "/api/showtime/statistics"
+    );
+    const statistics: ShowtimeStatisticsDTO[] = statisticsResponse.data;
+
+    // Enhance each statistic with additional details
+    const enhancedStatistics = yield all(
+      statistics.map(function* (stat) {
+        try {
+          // Fetch showtime details for each statistic
+          const showtimeResponse = yield call(
+            axiosInstance.get,
+            `/api/showtime/${stat.showtimeId}`
+          );
+          const showtime = showtimeResponse.data;
+
+          // Return enhanced statistics with showtime details
+          return {
+            ...stat,
+            date: showtime.date,
+            time: `${showtime.startTime} - ${showtime.endTime}`,
+            movieTitle: showtime.movie?.name || "Unknown Movie",
+            roomName: showtime.room?.name || "Unknown Room",
+          };
+        } catch (error) {
+          // Return original statistics if fetching details fails
+          console.error(
+            `Failed to fetch details for showtime ${stat.showtimeId}`,
+            error
+          );
+          return {
+            ...stat,
+            date: "Unknown",
+            time: "Unknown",
+            movieTitle: "Unknown",
+            roomName: "Unknown",
+          };
+        }
+      })
+    );
+
+    yield put(getShowtimeStatisticsSuccess(enhancedStatistics));
+  } catch (error) {
+    const err = error as AxiosError;
+    yield put(
+      getShowtimeStatisticsFailure(
+        err.response?.data?.message || "Không thể lấy thống kê lịch chiếu"
+      )
+    );
+  }
+}
+
 export default function* showtimeSaga() {
   yield takeEvery(getShowtimeListRequest.type, getShowtimeListSaga);
   yield takeEvery(createShowtimeRequest.type, createShowtimeSaga);
   yield takeEvery(getShowtimeWithChairsRequest.type, getShowtimeWithChairsSaga);
   yield takeEvery(searchShowtimesRequest.type, searchShowtimeSaga);
+  yield takeEvery(getShowtimeStatisticsRequest.type, getShowtimeStatisticsSaga);
 }

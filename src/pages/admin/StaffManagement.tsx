@@ -13,8 +13,7 @@ import {
   Avatar,
   DatePicker,
   Radio,
-  Text,
-  Paragraph,
+  notification,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
@@ -41,6 +40,7 @@ import {
 } from "../../redux/slices/staffSlice";
 import { RootState } from "../../redux/store";
 import CloudinaryUpload from "../../components/common/CloudinaryUpload";
+import { notificationUtils } from "../../utils/notificationConfig";
 
 const { Option } = Select;
 
@@ -72,7 +72,7 @@ const AvatarPreview = styled(Avatar)`
 
 // Định nghĩa interface Position để phù hợp với backend model
 interface Position {
-  id?: string;
+  id?: string | number;
   name?: string;
 }
 
@@ -81,15 +81,24 @@ const StaffManagement: React.FC = () => {
   const { data: employees, loading } = useSelector(
     (state: RootState) => state.staff.employeeList
   );
-  const { success: addSuccess, loading: addLoading } = useSelector(
-    (state: RootState) => state.staff.addEmployee
-  );
-  const { success: updateSuccess, loading: updateLoading } = useSelector(
-    (state: RootState) => state.staff.updateEmployee
-  );
+  const {
+    success: addSuccess,
+    loading: addLoading,
+    error: addError,
+  } = useSelector((state: RootState) => state.staff.addEmployee);
+  const {
+    success: updateSuccess,
+    loading: updateLoading,
+    error: updateError,
+  } = useSelector((state: RootState) => state.staff.updateEmployee);
   const { success: deleteSuccess } = useSelector(
     (state: RootState) => state.staff.deleteEmployee
   );
+
+  // Get the current user's role from auth state
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isEmployee =
+    user?.role === "EMPLOYEE" || user?.account?.role === "EMPLOYEE";
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -111,7 +120,57 @@ const StaffManagement: React.FC = () => {
     }
   }, [addSuccess, updateSuccess, deleteSuccess, dispatch, form]);
 
+  // Handle errors
+  useEffect(() => {
+    if (addError) {
+      // Check if error is about duplicate information
+      if (
+        addError.includes("Conflict") ||
+        addError.includes("already exists") ||
+        addError.includes("duplicate")
+      ) {
+        notificationUtils.error({
+          message: "Thông tin bị trùng",
+          description: "Thông tin nhân viên đã tồn tại trong hệ thống",
+        });
+      } else {
+        notificationUtils.error({
+          message: "Thêm nhân viên thất bại",
+          description: addError,
+        });
+      }
+    }
+
+    if (updateError) {
+      // Check if error is about duplicate information
+      if (
+        updateError.includes("Conflict") ||
+        updateError.includes("already exists") ||
+        updateError.includes("duplicate")
+      ) {
+        notificationUtils.error({
+          message: "Thông tin bị trùng",
+          description: "Thông tin nhân viên đã tồn tại trong hệ thống",
+        });
+      } else {
+        notificationUtils.error({
+          message: "Cập nhật nhân viên thất bại",
+          description: updateError,
+        });
+      }
+    }
+  }, [addError, updateError]);
+
   const handleAdd = () => {
+    // Don't allow employees to add new staff
+    if (isEmployee) {
+      notificationUtils.error({
+        message: "Không có quyền",
+        description: "Bạn không có quyền thêm nhân viên mới",
+      });
+      return;
+    }
+
     form.resetFields();
     setEditingId(null);
     setAvatarUrl("");
@@ -127,10 +186,11 @@ const StaffManagement: React.FC = () => {
       birthday: record.birthday ? moment(record.birthday) : null,
       address: record.address,
       cardId: record.cardId,
-      position: record.position,
+      positionId: 1,
       department: record.department,
       username: record.username,
-      image: record.image,
+      password: "",
+      role: record.role || "EMPLOYEE",
     });
     setEditingId(record.id || null);
     setAvatarUrl(record.image || "");
@@ -147,56 +207,43 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleModalOk = () => {
-    form.validateFields().then((values) => {
-      // Format position theo DTO và đảm bảo birthday đúng định dạng
-      const positionObj: Position = {
-        id: values.positionId || values.position,
-        name: values.position,
-      };
-
-      // Xử lý birthday, đảm bảo trả về Date object
-      let birthdayValue = undefined;
-      if (values.birthday) {
-        if (typeof values.birthday.toDate === "function") {
-          // Nếu là object moment
-          birthdayValue = values.birthday.toDate();
-        } else if (values.birthday instanceof Date) {
-          // Nếu đã là Date
-          birthdayValue = values.birthday;
-        } else {
-          // Trường hợp khác, chuyển string thành Date
-          birthdayValue = new Date(values.birthday);
-        }
-      }
-
-      const formattedValues = {
-        ...values,
-        birthday: birthdayValue,
-        image: avatarUrl,
-        position: positionObj,
-        positionId: values.positionId || values.position,
-      };
-
-      if (editingId) {
-        // Update existing employee with correct parameter structure based on the updated slice
-        dispatch(
-          updateEmployeeRequest(
-            editingId,
-            formattedValues as RegisterEmployeeRequest
-          )
-        );
-      } else {
-        // Add new employee - set required fields for registration
-        const newEmployeeData: RegisterEmployeeRequest = {
-          ...formattedValues,
-          role: formattedValues.role || "EMPLOYEE", // Default role
-          password: formattedValues.password || "password123", // Default password (should be changed by user)
-          username: formattedValues.username || formattedValues.email, // Use email as username if not provided
+    form
+      .validateFields()
+      .then((values) => {
+        // Create employee data with the required format
+        const employeeData = {
+          username: values.username,
+          password: values.password,
+          fullName: values.fullName,
+          gender: values.gender,
+          image: avatarUrl,
+          birthday: values.birthday
+            ? values.birthday.format("YYYY-MM-DD")
+            : undefined,
+          email: values.email,
+          phoneNumber: values.phoneNumber,
+          address: values.address,
+          cardId: values.cardId,
+          role: values.role,
+          department: values.department,
+          position: {
+            id: values.positionId,
+          },
         };
 
-        dispatch(addEmployeeRequest(newEmployeeData));
-      }
-    });
+        if (editingId) {
+          dispatch(updateEmployeeRequest(editingId, employeeData));
+        } else {
+          dispatch(addEmployeeRequest(employeeData));
+        }
+      })
+      .catch((errorInfo) => {
+        console.log("Validate Failed:", errorInfo);
+        notificationUtils.error({
+          message: "Vui lòng điền đầy đủ thông tin",
+          description: "Hãy kiểm tra lại các trường thông tin bắt buộc",
+        });
+      });
   };
 
   const handleModalCancel = () => {
@@ -252,40 +299,37 @@ const StaffManagement: React.FC = () => {
       key: "position",
       render: (position: any) => {
         // Handle when position is an object
-        let positionValue = position;
+        let positionId = position?.id;
+        let positionName = "";
 
-        // If position is an object with name property, use that
-        if (position && typeof position === "object" && "name" in position) {
-          positionValue = position.name;
+        if (positionId === 1) {
+          positionName = "Quản lý";
+        } else if (positionId === 2) {
+          positionName = "Giám sát";
+        } else if (positionId === 3) {
+          positionName = "Nhân viên";
+        } else {
+          positionName = "Nhân viên";
         }
 
-        let text = positionValue || "Nhân viên";
-        let color = "blue";
-
-        if (positionValue === "manager" || positionValue === "MANAGER") {
-          text = "Quản lý";
-          color = "gold";
-        } else if (
-          positionValue === "supervisor" ||
-          positionValue === "SUPERVISOR"
-        ) {
-          text = "Giám sát";
-          color = "green";
-        }
-
-        return <Tag color={color}>{text}</Tag>;
+        return (
+          <Tag
+            color={
+              positionId === 1 ? "gold" : positionId === 2 ? "green" : "blue"
+            }
+          >
+            {positionName}
+          </Tag>
+        );
       },
       filters: [
-        { text: "Quản lý", value: "MANAGER" },
-        { text: "Giám sát", value: "SUPERVISOR" },
-        { text: "Nhân viên", value: "EMPLOYEE" },
+        { text: "Quản lý", value: 1 },
+        { text: "Giám sát", value: 2 },
+        { text: "Nhân viên", value: 3 },
       ],
       onFilter: (value, record) => {
-        const positionValue =
-          typeof record.position === "object"
-            ? record.position.name
-            : record.position;
-        return positionValue === value;
+        const positionId = record.position?.id;
+        return positionId === value;
       },
     },
     {
@@ -376,7 +420,12 @@ const StaffManagement: React.FC = () => {
           onChange={(e) => handleSearch(e.target.value)}
           style={{ width: 300 }}
         />
-        <Button type="primary" icon={<UserAddOutlined />} onClick={handleAdd}>
+        <Button
+          type="primary"
+          icon={<UserAddOutlined />}
+          onClick={handleAdd}
+          disabled={isEmployee}
+        >
           Thêm nhân viên
         </Button>
       </Space>
@@ -454,7 +503,7 @@ const StaffManagement: React.FC = () => {
             </Radio.Group>
           </Form.Item>
           <Form.Item name="birthday" label="Ngày sinh">
-            <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+            <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="address" label="Địa chỉ">
             <Input />
@@ -462,53 +511,36 @@ const StaffManagement: React.FC = () => {
           <Form.Item name="cardId" label="CMND/CCCD">
             <Input />
           </Form.Item>
-          <Form.Item name="position" label="Chức vụ" initialValue="EMPLOYEE">
+          <Form.Item name="positionId" label="Chức vụ" initialValue={1}>
             <Select>
-              <Option value="MANAGER">Quản lý</Option>
-              <Option value="SUPERVISOR">Giám sát</Option>
-              <Option value="EMPLOYEE">Nhân viên</Option>
+              <Option value={1}>Quản lý</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="positionId" hidden>
+          <Form.Item name="department" label="Phòng ban" initialValue="Đà Nẵng">
+            <Select>
+              <Option value="Đà Nẵng">Đà Nẵng</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="username"
+            label="Tên đăng nhập"
+            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item
-            name="department"
-            label="Phòng ban"
-            initialValue="OPERATIONS"
+            name="password"
+            label="Mật khẩu"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
           >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item name="role" label="Vai trò" initialValue="EMPLOYEE">
             <Select>
-              <Option value="OPERATIONS">Vận hành</Option>
-              <Option value="CUSTOMER_SERVICE">CSKH</Option>
-              <Option value="TECHNICAL">Kỹ thuật</Option>
+              <Option value="ADMIN">Admin</Option>
+              <Option value="EMPLOYEE">Nhân viên</Option>
             </Select>
           </Form.Item>
-          {!editingId && (
-            <>
-              <Form.Item
-                name="username"
-                label="Tên đăng nhập"
-                rules={[
-                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="password"
-                label="Mật khẩu"
-                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-              >
-                <Input.Password />
-              </Form.Item>
-              <Form.Item name="role" label="Vai trò" initialValue="EMPLOYEE">
-                <Select>
-                  <Option value="ADMIN">Admin</Option>
-                  <Option value="EMPLOYEE">Nhân viên</Option>
-                </Select>
-              </Form.Item>
-            </>
-          )}
         </Form>
       </Modal>
     </div>

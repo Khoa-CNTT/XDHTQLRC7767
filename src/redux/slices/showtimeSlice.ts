@@ -133,6 +133,18 @@ export interface ShowtimeParams {
   roomName?: string;
 }
 
+// Add ShowtimeStatisticsDTO interface
+export interface ShowtimeStatisticsDTO {
+  showtimeId: number;
+  ticketsSold: number;
+  totalRevenue: number;
+  // These will be populated in the saga
+  date?: string;
+  time?: string;
+  movieTitle?: string;
+  roomName?: string;
+}
+
 // Định nghĩa kiểu trạng thái
 interface ShowtimeState {
   showtimeList: {
@@ -147,6 +159,11 @@ interface ShowtimeState {
   };
   showtimeWithChairs: {
     data: ShowTimeWithChairsDTO | null;
+    loading: boolean;
+    error: string | null;
+  };
+  showtimeStatistics: {
+    data: ShowtimeStatisticsDTO[];
     loading: boolean;
     error: string | null;
   };
@@ -166,6 +183,11 @@ const initialState: ShowtimeState = {
   },
   showtimeWithChairs: {
     data: null,
+    loading: false,
+    error: null,
+  },
+  showtimeStatistics: {
+    data: [],
     loading: false,
     error: null,
   },
@@ -256,6 +278,23 @@ const showtimeSlice = createSlice({
       state.showtimeList.loading = false;
       state.showtimeList.error = action.payload;
     },
+
+    // Get showtime statistics
+    getShowtimeStatisticsRequest: (state) => {
+      state.showtimeStatistics.loading = true;
+      state.showtimeStatistics.error = null;
+    },
+    getShowtimeStatisticsSuccess: (
+      state,
+      action: PayloadAction<ShowtimeStatisticsDTO[]>
+    ) => {
+      state.showtimeStatistics.loading = false;
+      state.showtimeStatistics.data = action.payload;
+    },
+    getShowtimeStatisticsFailure: (state, action: PayloadAction<string>) => {
+      state.showtimeStatistics.loading = false;
+      state.showtimeStatistics.error = action.payload;
+    },
   },
 });
 
@@ -274,6 +313,9 @@ export const {
   searchShowtimesRequest,
   searchShowtimesSuccess,
   searchShowtimesFailure,
+  getShowtimeStatisticsRequest,
+  getShowtimeStatisticsSuccess,
+  getShowtimeStatisticsFailure,
 } = showtimeSlice.actions;
 
 // Export reducer

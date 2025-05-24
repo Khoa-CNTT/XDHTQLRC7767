@@ -23,6 +23,7 @@ export interface Employee {
   isDelete?: boolean;
   isActivated?: boolean;
   username?: string;
+  role?: string;
 }
 
 // Define the RegisterEmployeeRequest interface to match RegisterEmployeeRq DTO
