@@ -68,7 +68,6 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
       genres: [],
       dateRange: null,
       director: undefined,
-      actor: undefined,
     });
   };
 
@@ -85,16 +84,16 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
         onFinish={handleFinish}
       >
         <Row gutter={[16, 0]}>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item name="status" label="Trạng thái">
               <Select placeholder="Chọn trạng thái" allowClear>
-                <Option value="Đang chiếu">Đang chiếu</Option>
-                <Option value="Sắp chiếu">Sắp chiếu</Option>
-                <Option value="Đã chiếu">Đã chiếu</Option>
+                <Option value={0}>Sắp chiếu</Option>
+                <Option value={1}>Đang chiếu</Option>
+                <Option value={2}>Đã chiếu</Option>
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item name="genres" label="Thể loại">
               <Select
                 mode="multiple"
@@ -110,14 +109,9 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={6}>
+          <Col xs={24} sm={12} md={8}>
             <Form.Item name="director" label="Đạo diễn">
               <Input placeholder="Tìm theo đạo diễn" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Form.Item name="actor" label="Diễn viên">
-              <Input placeholder="Tìm theo diễn viên" />
             </Form.Item>
           </Col>
         </Row>
@@ -127,16 +121,21 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
               <RangePicker style={{ width: "100%" }} />
             </Form.Item>
           </Col>
+          <Col
+            xs={24}
+            sm={12}
+            style={{ textAlign: "right", alignSelf: "flex-end" }}
+          >
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Áp dụng bộ lọc
+              </Button>
+              <Button style={{ marginLeft: 8 }} onClick={handleReset}>
+                Xóa bộ lọc
+              </Button>
+            </Form.Item>
+          </Col>
         </Row>
-        <Divider style={{ margin: "12px 0" }} />
-        <div style={{ textAlign: "right" }}>
-          <Button onClick={handleReset} style={{ marginRight: 8 }}>
-            Đặt lại bộ lọc
-          </Button>
-          <Button type="primary" htmlType="submit">
-            Áp dụng
-          </Button>
-        </div>
       </Form>
     </FilterContainer>
   );

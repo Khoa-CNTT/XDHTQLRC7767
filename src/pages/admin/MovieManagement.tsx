@@ -59,11 +59,10 @@ export interface Movie extends Omit<ReduxMovie, "genres"> {
 }
 
 export interface FilterValues {
-  status: string | null;
+  status: number | null;
   genres: string[];
   dateRange: [Dayjs | null, Dayjs | null] | null;
   director?: string;
-  actor?: string;
 }
 
 const MovieManagement: React.FC = () => {
@@ -111,7 +110,6 @@ const MovieManagement: React.FC = () => {
     genres: [],
     dateRange: null,
     director: undefined,
-    actor: undefined,
   });
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [bulkActionVisible, setBulkActionVisible] = useState<boolean>(false);
@@ -134,26 +132,30 @@ const MovieManagement: React.FC = () => {
   }, [addSuccess, updateSuccess, deleteSuccess, bulkActionSuccess]);
 
   const loadMovies = () => {
-    // Create filter params for API
+    // Only load all movies without any filters
     const filterParams: MovieFilterParams = {};
-
-    if (searchText) filterParams.name = searchText;
-    if (filters.director) filterParams.director = filters.director;
-    if (filters.actor) filterParams.actor = filters.actor;
-    if (filters.genres?.length > 0) filterParams.genreName = filters.genres[0];
-
     dispatch(getAdminMovieListRequest(filterParams));
   };
 
   // Handlers
   const handleSearch = (value: string) => {
     setSearchText(value);
-    loadMovies();
+    // Don't reload movies, just update the search text for client-side filtering
   };
 
   const handleFilterChange = (values: FilterValues) => {
     setFilters(values);
-    loadMovies();
+    // Don't reload movies, just update the filters for client-side filtering
+  };
+
+  const handleReset = () => {
+    form.resetFields();
+    setFilters({
+      status: null,
+      genres: [],
+      dateRange: null,
+      director: undefined,
+    });
   };
 
   const showModal = (movie: Movie | null = null) => {
@@ -170,10 +172,9 @@ const MovieManagement: React.FC = () => {
         releaseDate: movie.releaseDate ? dayjs(movie.releaseDate) : null,
         duration: movie.duration,
         status: movie.status,
-        poster: movie.poster || movie.imageUrl,
+        poster: movie.poster || (movie as any).imageUrl, // Fix for imageUrl property
         backdrop: movie.backdrop,
         rating: movie.rating,
-        actor: movie.actor,
         country: movie.country,
         language: movie.language,
         subtitle: movie.subtitle,
@@ -260,9 +261,42 @@ const MovieManagement: React.FC = () => {
   const filteredMovies = movies.filter((movie: ReduxMovie) => {
     let matchesFilters = true;
 
+    // Search text filter - client side
+    if (searchText) {
+      matchesFilters =
+        matchesFilters &&
+        (movie.title?.toLowerCase().includes(searchText.toLowerCase()) ||
+          movie.name?.toLowerCase().includes(searchText.toLowerCase()));
+    }
+
+    // Director filter - client side
+    if (filters.director) {
+      matchesFilters =
+        matchesFilters &&
+        movie.director?.toLowerCase().includes(filters.director.toLowerCase());
+    }
+
+    // Genre filter - client side
+    if (filters.genres && filters.genres.length > 0) {
+      const movieGenres = movie.movieGenres || movie.genres || [];
+      matchesFilters =
+        matchesFilters &&
+        filters.genres.some((genre) =>
+          movieGenres.some(
+            (mg) => mg.name.toLowerCase() === genre.toLowerCase()
+          )
+        );
+    }
+
     // Status filter - client side
-    if (filters.status) {
-      matchesFilters = matchesFilters && movie.status === filters.status;
+    if (filters.status !== null) {
+      // Convert both to numbers for comparison
+      const movieStatus =
+        typeof movie.status === "string"
+          ? parseInt(movie.status)
+          : Number(movie.status);
+
+      matchesFilters = matchesFilters && movieStatus === filters.status;
     }
 
     // Date range filter - client side

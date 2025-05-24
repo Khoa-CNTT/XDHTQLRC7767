@@ -557,7 +557,7 @@ const ReportManagement: React.FC = () => {
         <Col xs={24} sm={12} lg={8}>
           <StyledCard loading={loading}>
             <Statistic
-              title="Tổng số vé bán"
+              title="Tổng số đơn hàng"
               value={totalTickets}
               prefix={<ShoppingCartOutlined />}
               valueStyle={{ color: "#1890ff" }}

@@ -157,10 +157,11 @@ const AdminLogin: React.FC = () => {
 
         // Sau khi có token, lấy thông tin user từ backend
         const userInfo = await authService.getInfoUser();
+        console.log("userInfo", userInfo);
 
         // Kiểm tra xem user có role Admin không
         // Role nằm trong account.role
-        if (userInfo && userInfo.account && userInfo.account.role === "ADMIN") {
+        if (userInfo && userInfo.role === "ADMIN") {
           // Nếu là Admin, cho phép đăng nhập
           dispatch(
             loginSuccess({
