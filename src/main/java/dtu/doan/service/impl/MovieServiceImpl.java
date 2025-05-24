@@ -140,6 +140,10 @@ public class MovieServiceImpl implements MovieService {
             movieResponseDTO.setMovieGenres(genres);
             movieResponseDTO.setReleaseDate(movie.getReleaseDate());
             movieResponseDTO.setStatus(movie.getStatus());
+            String[] actors = movie.getActor() != null ?
+                    movie.getActor().split(",\\s*") : new String[0];
+            movieResponseDTO.setActors(List.of(actors));
+
             return movieResponseDTO;
         }
         return null;

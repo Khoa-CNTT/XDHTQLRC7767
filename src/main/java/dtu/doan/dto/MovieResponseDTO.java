@@ -25,5 +25,6 @@ public class MovieResponseDTO {
     private String backdrop;
     private LocalDate releaseDate;
     private int status;
+    private List<String> actors;
 
 }
