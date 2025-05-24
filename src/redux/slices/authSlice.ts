@@ -17,6 +17,7 @@ export interface User {
     username?: string;
     isVerify?: boolean;
     loginType?: string;
+    isNonePassword?: boolean;
   };
 }
 
@@ -104,7 +105,7 @@ export interface RegisterPayload {
 }
 
 export interface ChangePasswordPayload {
-  oldPassword: string;
+  oldPassword?: string;
   newPassword: string;
   confirmPassword: string;
 }

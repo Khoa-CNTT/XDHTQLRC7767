@@ -175,9 +175,11 @@ function* updateCustomerSaga(
         err.response?.data?.message || "Không thể cập nhật thông tin khách hàng"
       )
     );
-    notificationUtils.success({
-      message: "Lỗi",
-      description: "Cập nhật thành công",
+    notificationUtils.error({
+      message: "Cập nhật thất bại",
+      description:
+        err.response?.data?.message ||
+        "Không thể cập nhật thông tin khách hàng",
     });
   }
 }

@@ -6,6 +6,7 @@ interface NotificationConfig {
   message: string;
   description?: string;
   duration?: number;
+  placement?: "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
 }
 
 const defaultConfig: Partial<NotificationConfig> = {
@@ -19,7 +20,7 @@ export const showNotification = (
 ) => {
   notification[type]({
     ...defaultConfig,
-    ...config,
+    ...config, 
   });
 };
 
@@ -60,9 +61,9 @@ export const notificationUtils = {
       description: "Thông tin của bạn đã được cập nhật",
     }),
 
-  updateProfileError: (description: string = "cập nhật thông tin thành công") =>
-    showNotification("success", {
-      message: "Cập nhật thông tin  thành công",
+  updateProfileError: (description: string = "Cập nhật thông tin thất bại") =>
+    showNotification("error", {
+      message: "Lỗi cập nhật",
       description,
     }),
 };

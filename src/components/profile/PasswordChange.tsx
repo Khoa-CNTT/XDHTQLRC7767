@@ -67,10 +67,15 @@ const PasswordChange: React.FC = () => {
   const { loading, error, isSuccess } = useSelector(
     (state: RootState) => state.auth.changePassword
   );
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
   const { loading: userInfoLoading } = useSelector(
     (state: RootState) => state.auth.userInfo
   );
+
+  // Check if the user account has isNonePassword flag
+  const isNonePassword = user?.account?.isNonePassword || false;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -109,13 +114,23 @@ const PasswordChange: React.FC = () => {
       return;
     }
 
-    dispatch(
-      changePasswordStart({
-        oldPassword: values.oldPassword,
-        newPassword: values.newPassword,
-        confirmPassword: values.confirmPassword,
-      })
-    );
+    // If isNonePassword is true, we don't need the old password
+    if (isNonePassword) {
+      dispatch(
+        changePasswordStart({
+          newPassword: values.newPassword,
+          confirmPassword: values.confirmPassword,
+        })
+      );
+    } else {
+      dispatch(
+        changePasswordStart({
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
+          confirmPassword: values.confirmPassword,
+        })
+      );
+    }
   };
 
   const containerVariants = {
@@ -165,20 +180,23 @@ const PasswordChange: React.FC = () => {
       </motion.div>
 
       <PasswordForm form={form} layout="vertical" onFinish={onFinish}>
-        <motion.div variants={itemVariants}>
-          <Form.Item
-            name="oldPassword"
-            label="Mật khẩu hiện tại"
-            rules={[
-              { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
-            ]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Nhập mật khẩu hiện tại"
-            />
-          </Form.Item>
-        </motion.div>
+        {/* Only show old password field if not using social login (isNonePassword is false) */}
+        {!isNonePassword && (
+          <motion.div variants={itemVariants}>
+            <Form.Item
+              name="oldPassword"
+              label="Mật khẩu hiện tại"
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Nhập mật khẩu hiện tại"
+              />
+            </Form.Item>
+          </motion.div>
+        )}
 
         <motion.div variants={itemVariants}>
           <Form.Item

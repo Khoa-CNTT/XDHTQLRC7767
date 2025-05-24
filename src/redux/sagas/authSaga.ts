@@ -46,6 +46,10 @@ const api = {
       token: data.token,
       newPassword: data.newPassword,
     }),
+  changePasswordForSocialLogin: (data: {
+    newPassword: string;
+    confirmPassword: string;
+  }) => axiosInstance.post("/change-password-for-social-login", data),
 };
 
 // Get user info saga
@@ -152,7 +156,20 @@ function* changePasswordSaga(
   action: PayloadAction<ChangePasswordPayload>
 ): Generator<any, void, any> {
   try {
-    yield call(api.changePassword, action.payload);
+    // Check if oldPassword is missing, which indicates a social login user (isNonePassword=true)
+    const payload = action.payload;
+    const isNonePasswordUser = !payload.oldPassword;
+
+    // Use a different API endpoint for social login users
+    if (isNonePasswordUser) {
+      yield call(api.changePasswordForSocialLogin, {
+        newPassword: payload.newPassword,
+        confirmPassword: payload.confirmPassword,
+      });
+    } else {
+      yield call(api.changePassword, payload);
+    }
+
     yield put(changePasswordSuccess());
     notificationUtils.successMessage("Thành công", "Mật khẩu đã được thay đổi");
   } catch (error: any) {
