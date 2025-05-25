@@ -2,6 +2,8 @@ package dtu.doan.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class TicketHistoryDTO {
     private Long id;
@@ -9,5 +11,6 @@ public class TicketHistoryDTO {
     private String date;
     private String cinemaName;
     private String startTime;
-    private String status;
+    private List<String> ChairName;
+    private Double totalPrice;
 }

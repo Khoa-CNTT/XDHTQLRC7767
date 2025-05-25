@@ -3,6 +3,7 @@ package dtu.doan.web;
 import dtu.doan.dto.TicketHistoryDTO;
 import dtu.doan.dto.TicketRequestDTO;
 import dtu.doan.dto.TicketResponeDTO;
+import dtu.doan.model.Payment;
 import dtu.doan.model.Ticket;
 import dtu.doan.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,25 +42,31 @@ public class TicketController {
     }
     @GetMapping("/customer/{id}")
     public ResponseEntity<List<TicketHistoryDTO>> getTicketByCustomerId(@PathVariable Long id) {
-        List<Ticket> tickets1 = ticketService.getTicketByCustomer(id);
+        List<Payment> tickets1 = ticketService.getTicketByCustomer(id);
         List<TicketHistoryDTO> ticketsRespone = new ArrayList<>();
 
-        for (Ticket ticket : tickets1) {
+        for (Payment ticket : tickets1) {
+            int i = 0;
             TicketHistoryDTO ticketHistoryDTO = new TicketHistoryDTO();
             ticketHistoryDTO.setId(ticket.getId());
-            ticketHistoryDTO.setDate(String.valueOf(ticket.getShowTime().getDate()));
-            ticketHistoryDTO.setStartTime(String.valueOf(ticket.getShowTime().getStartTime()));
-            ticketHistoryDTO.setCinemaName(ticket.getShowTime().getRoom().getCinema().getName());
-            ticketHistoryDTO.setMovieName(ticket.getShowTime().getMovie().getName());
-            if (ticket.getUsed()) {
-                ticketHistoryDTO.setStatus("Đã sử dụng");
+            ticketHistoryDTO.setDate(String.valueOf(ticket.getTickets().get(i).getShowTime().getDate()));
+            ticketHistoryDTO.setStartTime(String.valueOf(ticket.getTickets().get(i).getShowTime().getStartTime()));
+            ticketHistoryDTO.setCinemaName(ticket.getTickets().get(i).getShowTime().getRoom().getCinema().getName());
+            ticketHistoryDTO.setMovieName(ticket.getTickets().get(i).getShowTime().getMovie().getName());
+            ticketHistoryDTO.setTotalPrice(ticket.getAmount());
 
+            // Tạo mới danh sách ghế cho mỗi vé
+            List<String> chairNames = new ArrayList<>();
+            for (Ticket t : ticket.getTickets()) {
+                chairNames.add(t.getChairs().getName());
             }
-            ticketHistoryDTO.setStatus("Chưa sử dụng");
+            ticketHistoryDTO.setChairName(chairNames);
+
             ticketsRespone.add(ticketHistoryDTO);
-
-
+            i++;
         }
+
         return ResponseEntity.ok(ticketsRespone);
     }
+
 }

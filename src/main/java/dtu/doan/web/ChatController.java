@@ -1,11 +1,13 @@
 package dtu.doan.web;
 
 import dtu.doan.dto.MovieResponseDTO;
+import dtu.doan.model.Cinema;
 import dtu.doan.model.Movie;
 import dtu.doan.model.ShowTime;
 import dtu.doan.model.Ticket;
 import dtu.doan.repository.ShowTimeRepository;
 import dtu.doan.service.AccountService;
+import dtu.doan.service.CinemaService;
 import dtu.doan.service.MovieService;
 import dtu.doan.service.TicketService;
 import dtu.doan.service.impl.OpenAiService;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +44,9 @@ public class ChatController {
     private OpenAiService openAiService;
     @Autowired
     private TicketService ticketService;
+
+    @Autowired
+    private CinemaService cinemaService;
 
     @Value("${openai.api.key}")
     private String apiKey;
@@ -65,15 +71,16 @@ public class ChatController {
             return ResponseEntity.badRequest().body("Câu hỏi không được để trống.");
         }
         Long idCustomer = accountService.getCustomerIdByUsername(username);
-        List<Ticket> tickets = new ArrayList<>(ticketService.getTicketByCustomer(idCustomer));
+        List<Ticket> tickets = new ArrayList<>(ticketService.getTicketByCustomerId(idCustomer));
 
         List<MovieResponseDTO> movieList = movieService.findAll();
 
-
+        List<Cinema> cinemas = cinemaService.cinemas();
         List<ShowTime> showTimes = showTimeRepository.findAll()
                 .stream()
                 .limit(30) // Giới hạn 30 suất chiếu
                 .toList();
+        String cinemaData = formatCinemaData(cinemas);
         String ticketHistoryData = formatTicketHistory(tickets);
         String movieData = formatMovieData(movieList);
         String showTimeData = formatShowTimeData(showTimes);
@@ -82,27 +89,24 @@ public class ChatController {
         String upcomingShowTimes = suggestFutureShowTimes(showTimes);
 
         String prompt = String.format("""
-                Bạn là một nhân viên bán vé tại rạp phim. Nhiệm vụ của bạn là:
-                - Giới thiệu các suất chiếu phim, thời gian, giá vé, phòng chiếu
-                - Giúp khách chọn suất chiếu và ghế ngồi
-                - Trả lời các thắc mắc liên quan đến phim, giờ chiếu, rạp
-                - KHÔNG trả lời các câu hỏi không liên quan đến rạp phim
-                - Có thể đề xuất lại phim khách đã xem hoặc gợi ý phim mới phù hợp
-                
-                THÔNG TIN PHIM:
-                %s
-                
-                DANH SÁCH SUẤT CHIẾU:
-                %s
-                
-                LỊCH SỬ MUA VÉ CỦA NGƯỜI DÙNG Đang Hỏi:
-                %s
-                
-                %s
-                
-                CÂU HỎI NGƯỜI DÙNG:
-                %s
-                """, movieData, showTimeData + instructions, ticketHistoryData, upcomingShowTimes, userQuestion);
+                    Bạn là một nhân viên bán vé tại rạp phim. Nhiệm vụ của bạn là:
+                    - Giới thiệu các suất chiếu phim, thời gian, giá vé, phòng chiếu
+                    - Giúp khách chọn suất chiếu và ghế ngồi
+                    - Trả lời các thắc mắc liên quan đến phim, giờ chiếu, rạp
+                    - KHÔNG trả lời các câu hỏi không liên quan đến rạp phim
+                    - Có thể đề xuất lại phim khách đã xem hoặc gợi ý phim mới phù hợp
+                    THÔNG TIN PHIM:
+                    %s
+                    DANH SÁCH SUẤT CHIẾU:
+                    %s
+                    LỊCH SỬ MUA VÉ CỦA NGƯỜI DÙNG Đang Hỏi:
+                    %s
+                    DANH SÁCH CỤM RẠP Phim Của Hệ Thống Tôi:
+                    %s
+                    %s
+                    CÂU HỎI NGƯỜI DÙNG:
+                    %s
+                """, movieData, showTimeData + instructions, ticketHistoryData, cinemaData, upcomingShowTimes, userQuestion);
 
         String answer = openAiService.ask(prompt, apiKey);
         return ResponseEntity.ok(answer);
@@ -113,8 +117,9 @@ public class ChatController {
             if (ticket == null || ticket.getShowTime() == null || ticket.getShowTime().getMovie() == null) {
                 return "- Thông tin vé không đầy đủ.";
             }
+
             return String.format(
-                    "- Mã vé: %d\n  Tên phim: %s\n  Ngày xem: %s\n  Giờ bắt đầu: %s\n  Rạp: %s\n  Trạng thái: %s",
+                    "- Mã vé: %d\n  Tên phim: %s\n Ngày xem: %s\n  Giờ bắt đầu: %s\n  Rạp: %s\n  Trạng thái: %s",
                     ticket.getId(),
                     ticket.getShowTime().getMovie().getName(),
                     ticket.getShowTime().getDate(),
@@ -125,6 +130,22 @@ public class ChatController {
                     ticket.getUsed() ? "Đã sử dụng" : "Chưa sử dụng"
             );
         }).collect(Collectors.joining("\n\n"));
+    }
+
+    private String formatCinemaData(List<Cinema> cinemas) {
+        return cinemas.stream().map(cinema -> {
+            if (cinema == null) {
+                return "- Thông tin rạp không đầy đủ.";
+            }
+            return String.format("""
+                            - Tên rạp: %s
+                              Địa chỉ: %s
+                              Số điện thoại: %s
+                            """,
+                    cinema.getName(),
+                    cinema.getAddress(),
+                    cinema.getPhone() != null ? cinema.getPhone() : "Không xác định");
+        }).collect(Collectors.joining("\n"));
     }
 
     private String formatMovieData(List<MovieResponseDTO> movies) {
@@ -245,6 +266,7 @@ public class ChatController {
 
         return "\n\n👉 CÁC GIỜ CHIẾU SẮP TỚI CÒN CHỖ:\n" + content;
     }
+
 
     private String getBookingInstructions() {
         return """

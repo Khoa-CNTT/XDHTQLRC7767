@@ -103,7 +103,12 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public List<Ticket> getTicketByCustomer(Long id) {
+    public List<Payment> getTicketByCustomer(Long id) {
+        return paymentRepository.findAllByCustomerId(id);
+    }
+
+    @Override
+    public List<Ticket> getTicketByCustomerId(Long id) {
         return ticketRepository.findAllByCustomerId(id);
     }
 //    @Scheduled(fixedRate = 60000) // chạy mỗi 60 giây

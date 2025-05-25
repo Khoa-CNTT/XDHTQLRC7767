@@ -50,4 +50,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             """)
     List<Object[]> findPaymentStatistics(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+    @Query("""
+            SELECT  p
+            FROM Payment p
+            JOIN Ticket t ON p.id = t.payment.id
+            WHERE t.customer.id = :customerId
+            """)
+    List<Payment> findAllByCustomerId(@Param(value = "customerId") Long id);
 }

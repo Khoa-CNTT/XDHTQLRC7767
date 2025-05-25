@@ -36,7 +36,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
             "WHERE (:movieName IS NULL OR LOWER(s.movie.name) LIKE LOWER(CONCAT('%', :movieName, '%'))) " +
             "AND (:roomName IS NULL OR LOWER(s.room.name) LIKE LOWER(CONCAT('%', :roomName, '%'))) " +
             "AND (:date IS NULL OR s.date = :date) " +
-            "AND (FUNCTION('TIMESTAMP', s.date, s.startTime) >= CURRENT_TIMESTAMP)")
+            "AND s.status = 'ACTIVE'")
     List<ShowTime> searchShowTimes(@Param("movieName") String movieName,
                                    @Param("roomName") String roomName,
                                    @Param("date") LocalDate date);
