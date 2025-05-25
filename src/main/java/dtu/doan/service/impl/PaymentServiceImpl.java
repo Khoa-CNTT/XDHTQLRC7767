@@ -70,6 +70,8 @@ public class PaymentServiceImpl implements PaymentService {
             paymentTicketDTO.setShowDate(payment.getTickets().get(0).getShowTime().getDate());
             paymentTicketDTO.setShowTime(payment.getTickets().get(0).getShowTime().getStartTime());
             paymentTicketDTO.setCustomerName(payment.getTickets().get(0).getCustomer().getFullName());
+            paymentTicketDTO.setCustomerEmail(payment.getTickets().get(0).getCustomer().getEmail());
+            paymentTicketDTO.setCustomerPhoneNumber(payment.getTickets().get(0).getCustomer().getPhoneNumber());
             List<String> ticketNames = new ArrayList<>();
             for (int i = 0; i < payment.getTickets().size(); i++) {
                 ticketNames.add(payment.getTickets().get(i).getChairs().getName());

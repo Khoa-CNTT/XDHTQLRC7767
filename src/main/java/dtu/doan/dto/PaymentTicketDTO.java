@@ -23,4 +23,6 @@ public class PaymentTicketDTO {
     private LocalTime showTime;
     private String movieName;
     private String customerName;
+    private String customerEmail;
+    private String customerPhoneNumber;
 }
