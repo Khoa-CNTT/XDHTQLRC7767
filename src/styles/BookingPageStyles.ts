@@ -253,7 +253,7 @@ export const StyledDatePicker = styled(DatePicker)`
   }
 `;
 
-export const CinemaList = styled(Radio.Group)`
+export const CinemaList = styled.div`
   width: 100%;
   margin-bottom: 24px;
   display: flex;
@@ -266,16 +266,20 @@ export const CinemaList = styled(Radio.Group)`
   }
 `;
 
-export const CinemaCard = styled(Radio)`
+export const CinemaCard = styled.div<{ $selected?: boolean }>`
   height: auto;
   padding: 12px 16px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid ${(props) => (props.$selected ? "#fd6b0a" : "#d9d9d9")};
   border-radius: 8px;
   transition: all 0.3s ease;
+  cursor: pointer;
+  background-color: ${(props) =>
+    props.$selected ? "rgba(253, 107, 10, 0.05)" : "white"};
+  margin-bottom: 16px;
 
-  &.ant-radio-wrapper-checked {
+  &:hover {
     border-color: #fd6b0a;
-    background-color: rgba(253, 107, 10, 0.05);
+    background-color: rgba(253, 107, 10, 0.02);
   }
 
   .ant-radio {

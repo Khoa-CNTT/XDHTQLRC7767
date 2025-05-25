@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Row,
   Col,
@@ -177,6 +177,7 @@ const MovieCard = styled(motion.div)`
   border: 1px solid rgba(0, 191, 255, 0.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-8px) scale(1.02);
@@ -617,6 +618,7 @@ const MoviesPage: React.FC = () => {
                     whileHover={{ scale: 1.03 }}
                     transition={{ type: "spring", stiffness: 300 }}
                     className="modern-card"
+                    onClick={() => handleViewDetail(movie.id)}
                   >
                     <Card
                       hoverable
@@ -663,21 +665,30 @@ const MoviesPage: React.FC = () => {
                             <ButtonContainer>
                               <DetailButton
                                 icon={<InfoCircleOutlined />}
-                                onClick={() => handleViewDetail(movie.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewDetail(movie.id);
+                                }}
                               >
                                 Chi tiết
                               </DetailButton>
                               {activeTab === "now-showing" ? (
                                 <BookingButton
                                   type="primary"
-                                  onClick={() => handleBooking(movie.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBooking(movie.id);
+                                  }}
                                 >
                                   Đặt vé
                                 </BookingButton>
                               ) : (
                                 <BookingButton
                                   type="primary"
-                                  onClick={() => handleBooking(movie.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBooking(movie.id);
+                                  }}
                                 >
                                   Đặt trước
                                 </BookingButton>

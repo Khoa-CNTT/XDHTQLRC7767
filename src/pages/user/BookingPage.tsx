@@ -1055,37 +1055,43 @@ const BookingPage: React.FC = () => {
                   <SectionTitle>Chọn rạp chiếu</SectionTitle>
                   <CinemaList>
                     {cinemaList?.data?.map((cinema: any) => (
-                      <Radio
+                      <CinemaCard
                         key={cinema?.id}
-                        value={cinema.id}
-                        checked={selectedCinema === cinema.id}
-                        onChange={() => {
-                          handleCinemaSelect(cinema.id);
-                        }}
-                        style={{ display: "block", marginBottom: "16px" }}
+                        onClick={() => handleCinemaSelect(cinema.id)}
+                        $selected={selectedCinema === cinema.id}
                       >
-                        <CinemaCard>
-                          <CinemaName>{cinema.name}</CinemaName>
-                          <CinemaAddress>
-                            <EnvironmentOutlined /> {cinema.address}
-                          </CinemaAddress>
-                          {selectedCinema === cinema.id && (
-                            <div
-                              style={{
-                                marginTop: "8px",
-                                color: "#1890ff",
-                                fontWeight: "bold",
-                                fontSize: "12px",
-                                backgroundColor: "rgba(24, 144, 255, 0.1)",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              Đã chọn (ID: {cinema.id})
-                            </div>
-                          )}
-                        </CinemaCard>
-                      </Radio>
+                        <div
+                          style={{ display: "flex", alignItems: "flex-start" }}
+                        >
+                          <Radio
+                            value={cinema.id}
+                            checked={selectedCinema === cinema.id}
+                            onChange={() => handleCinemaSelect(cinema.id)}
+                            style={{ marginRight: "10px" }}
+                          />
+                          <div>
+                            <CinemaName>{cinema.name}</CinemaName>
+                            <CinemaAddress>
+                              <EnvironmentOutlined /> {cinema.address}
+                            </CinemaAddress>
+                            {selectedCinema === cinema.id && (
+                              <div
+                                style={{
+                                  marginTop: "8px",
+                                  color: "#1890ff",
+                                  fontWeight: "bold",
+                                  fontSize: "12px",
+                                  backgroundColor: "rgba(24, 144, 255, 0.1)",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                }}
+                              >
+                                Đã chọn (ID: {cinema.id})
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CinemaCard>
                     ))}
                   </CinemaList>
 

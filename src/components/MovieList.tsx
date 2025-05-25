@@ -96,6 +96,7 @@ const MovieCard = styled.div`
   display: flex;
   flex-direction: column;
   background-color: transparent;
+  cursor: pointer;
 `;
 
 const MoviePoster = styled.div`
@@ -407,33 +408,43 @@ const MovieList: React.FC = () => {
               }}
             >
               <MovieCard>
-                <MoviePoster>
-                  <PosterImage src={movie?.image} alt={movie.title} />
-                  <PosterOverlay className="overlay">
-                    <Link to={`/movie/${movie.id}`}>
-                      <DetailButton icon={<InfoCircleOutlined />}>
-                        CHI TIẾT
-                      </DetailButton>
-                    </Link>
-                  </PosterOverlay>
-                </MoviePoster>
-                <MovieTitle>{movie.title}</MovieTitle>
-                <MovieInfo>{movie.duration}</MovieInfo>
-                <MovieInfo>
-                  {activeTab === "now-showing"
-                    ? "ĐANG CHIẾU"
-                    : `KHỞI CHIẾU: ${new Date(
-                        movie.releaseDate
-                      ).toLocaleDateString("vi-VN")}`}
-                </MovieInfo>
+                <Link to={`/movie/${movie.id}`} style={{ display: "contents" }}>
+                  <MoviePoster>
+                    <PosterImage src={movie?.image} alt={movie.title} />
+                    <PosterOverlay className="overlay">
+                      <Link to={`/movie/${movie.id}`}>
+                        <DetailButton
+                          icon={<InfoCircleOutlined />}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          CHI TIẾT
+                        </DetailButton>
+                      </Link>
+                    </PosterOverlay>
+                  </MoviePoster>
+                  <MovieTitle>{movie.title}</MovieTitle>
+                  <MovieInfo>{movie.duration}</MovieInfo>
+                  <MovieInfo>
+                    {activeTab === "now-showing"
+                      ? "ĐANG CHIẾU"
+                      : `KHỞI CHIẾU: ${new Date(
+                          movie.releaseDate
+                        ).toLocaleDateString("vi-VN")}`}
+                  </MovieInfo>
+                </Link>
                 <ButtonsContainer>
                   <Link to={`/movie/${movie.id}`}>
-                    <DetailButton icon={<InfoCircleOutlined />}>
+                    <DetailButton
+                      icon={<InfoCircleOutlined />}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       CHI TIẾT
                     </DetailButton>
                   </Link>
                   <Link to={`/booking/${movie.id}`}>
-                    <ActionButton>ĐẶT VÉ</ActionButton>
+                    <ActionButton onClick={(e) => e.stopPropagation()}>
+                      ĐẶT VÉ
+                    </ActionButton>
                   </Link>
                 </ButtonsContainer>
               </MovieCard>

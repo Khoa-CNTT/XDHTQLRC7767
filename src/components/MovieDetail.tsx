@@ -572,6 +572,18 @@ const DateItem = styled(Button)<{ $active?: boolean }>`
       props.$active ? "transparent" : "inherit"};
   }
 
+  &:hover .date-day {
+    color: #ffff00;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  }
+
+  &:hover .date-date {
+    background: linear-gradient(to bottom, #ffff00, #ffa500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+  }
+
   &:hover {
     background: ${(props) =>
       props.$active
