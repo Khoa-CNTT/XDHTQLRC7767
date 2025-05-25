@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
@@ -41,6 +41,7 @@ import {
   getShowTimesRequest,
 } from "../redux/slices/movieSlice";
 import { RootState } from "../redux/store";
+import dayjs from "dayjs";
 
 const { TabPane } = Tabs;
 const { TextArea } = Input;
@@ -150,6 +151,41 @@ interface Comment {
   createdAt: string;
   score?: number;
   sentiment?: string;
+}
+
+// Interface for ShowTime
+interface ShowTime {
+  id: number;
+  time: string;
+  startTime?: string;
+  endTime?: string;
+  roomName?: string;
+  pricePerShowTime?: number;
+}
+
+// Interface for CinemaLocation
+interface CinemaLocation {
+  name: string;
+  address: string;
+  showtimes?: ShowTime[];
+  showTimes?: ShowTime[];
+  cinema?: {
+    name: string;
+    address: string;
+  };
+}
+
+// Interface for API response ShowTimeListByLocation
+interface ShowTimeListByLocation {
+  id?: number;
+  name?: string;
+  address?: string;
+  showtimes?: ShowTime[];
+  showTimes?: ShowTime[];
+  cinema?: {
+    name: string;
+    address: string;
+  };
 }
 
 // Styled Components
@@ -959,6 +995,46 @@ const MovieDetail: React.FC = () => {
     dispatch(getShowTimesRequest({ movieId, date }));
   };
 
+  // Xử lý dữ liệu API để hiển thị đúng định dạng
+  const formatShowTimeData = useMemo(() => {
+    if (!showTimesByLocation || !Array.isArray(showTimesByLocation)) {
+      return [];
+    }
+
+    // Format dữ liệu để phù hợp với định dạng hiển thị
+    return showTimesByLocation.map((location) => {
+      const formattedLocation = {
+        name: location.name || location.cinema?.name || "",
+        address: location.address || location.cinema?.address || "",
+        showtimes: [] as Array<{ id: number; time: string }>,
+      };
+
+      // Xử lý showtimes
+      if (location.showtimes && Array.isArray(location.showtimes)) {
+        // Đảm bảo mỗi showtime có đúng định dạng {id, time}
+        formattedLocation.showtimes = location.showtimes.map((st) => {
+          if (typeof st === "string") {
+            return { id: 0, time: st }; // Fallback nếu là string
+          } else if (typeof st === "object") {
+            return {
+              id: st.id || 0,
+              time:
+                st.time || (st.startTime ? st.startTime.substring(0, 5) : ""),
+            };
+          }
+          return { id: 0, time: "" };
+        });
+      } else if (location.showTimes && Array.isArray(location.showTimes)) {
+        formattedLocation.showtimes = location.showTimes.map((st) => ({
+          id: st.id || 0,
+          time: st.startTime ? st.startTime.substring(0, 5) : st.time || "",
+        }));
+      }
+
+      return formattedLocation;
+    });
+  }, [showTimesByLocation]);
+
   useEffect(() => {
     // Dispatch action to fetch movie details using the ID from URL
     if (id) {
@@ -1026,21 +1102,57 @@ const MovieDetail: React.FC = () => {
     }
   };
 
-  const handleShowtimeSelect = (showtimeId: number) => {
+  const handleShowtimeSelect = (
+    showtimeId: number,
+    cinema: any,
+    showtime: any
+  ) => {
     // Check if user is logged in
     if (!currentUser) {
       message.warning("Vui lòng đăng nhập để đặt vé");
-      // You could redirect to login page here
       return;
     }
 
-    // Navigate to booking page with the showtime ID and movie ID
-    if (showtimeId) {
-      navigate(`/booking/${id}`);
-    } else {
-      // Fallback to direct movie booking if no showtime ID
-      navigate(`/booking/${id}`);
-    }
+    // Create booking data to store in localStorage specifically for direct showtime booking
+    const showtimeBookingData = {
+      movie: {
+        id: id || "",
+        name: movie?.name || movie?.title || "Unknown Movie",
+        image: movie?.imageUrl || movie?.poster || "",
+        duration: movie?.duration || "N/A",
+        description: movie?.description || "",
+        rating: movie?.rating || 0,
+      },
+      cinema: {
+        name: cinema.name || cinema.cinema?.name || "",
+        address: cinema.address || cinema.cinema?.address || "",
+      },
+      showtime: {
+        id: showtimeId,
+        date: selectedDate || dayjs().format("YYYY-MM-DD"),
+        time:
+          typeof showtime.time === "string"
+            ? showtime.time
+            : showtime.startTime
+            ? showtime.startTime.substring(0, 5)
+            : "",
+      },
+      fromShowtime: true, // Special flag to identify this came from showtime selection
+      step: 1, // Skip to seat selection step
+    };
+
+    // Use a completely different key for showtime bookings to avoid any overlap
+    localStorage.setItem(
+      "showtime_booking_data",
+      JSON.stringify(showtimeBookingData)
+    );
+
+    // Clear any other booking data to avoid conflicts
+    localStorage.removeItem("bookingData");
+    localStorage.removeItem("direct_booking_data");
+
+    // Navigate to booking page and directly to seat selection step
+    navigate(`/booking/${id}?showtimeId=${showtimeId}&step=1&from=showtime`);
   };
 
   const handleCommentSubmit = () => {
@@ -1570,8 +1682,8 @@ const MovieDetail: React.FC = () => {
                               Thử lại
                             </Button>
                           </ErrorMessage>
-                        ) : showTimesByLocation.length > 0 ? (
-                          showTimesByLocation.map((locationData, idx) => (
+                        ) : formatShowTimeData.length > 0 ? (
+                          formatShowTimeData.map((locationData, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, y: 20 }}
@@ -1586,16 +1698,14 @@ const MovieDetail: React.FC = () => {
                                       color: "#00bfff",
                                     }}
                                   />
-                                  {locationData.cinema?.name ||
-                                    locationData.name}
+                                  {locationData.name}
                                 </CinemaName>
                                 <CinemaAddress>
-                                  {locationData.cinema?.address ||
-                                    locationData.address}
+                                  {locationData.address}
                                 </CinemaAddress>
                                 <ShowtimeList>
-                                  {locationData.showTimes &&
-                                    locationData.showTimes.map(
+                                  {locationData.showtimes &&
+                                    locationData.showtimes.map(
                                       (showtime, index) => (
                                         <motion.div
                                           key={`st-${index}`}
@@ -1609,15 +1719,14 @@ const MovieDetail: React.FC = () => {
                                           <ShowtimeItem
                                             onClick={() =>
                                               handleShowtimeSelect(
-                                                showtime.id || 0
+                                                showtime.id,
+                                                locationData,
+                                                showtime
                                               )
                                             }
                                           >
                                             <div className="time">
-                                              {showtime.startTime.substring(
-                                                0,
-                                                5
-                                              )}
+                                              {showtime.time}
                                             </div>
                                             <div className="room">
                                               <ProjectOutlined
@@ -1627,38 +1736,8 @@ const MovieDetail: React.FC = () => {
                                                   color: "#00bfff",
                                                 }}
                                               />
-                                              {showtime.roomName ||
-                                                "Phòng chiếu"}
+                                              Phòng chiếu
                                             </div>
-                                            {showtime.pricePerShowTime && (
-                                              <div className="price">
-                                                {showtime.pricePerShowTime.toLocaleString()}{" "}
-                                                VND
-                                              </div>
-                                            )}
-                                          </ShowtimeItem>
-                                        </motion.div>
-                                      )
-                                    )}
-
-                                  {locationData.showtimes &&
-                                    locationData.showtimes.map(
-                                      (time, index) => (
-                                        <motion.div
-                                          key={`st-${index}`}
-                                          initial={{ opacity: 0, scale: 0.9 }}
-                                          animate={{ opacity: 1, scale: 1 }}
-                                          transition={{
-                                            delay: 0.05 * index,
-                                            duration: 0.3,
-                                          }}
-                                        >
-                                          <ShowtimeItem
-                                            onClick={() =>
-                                              handleShowtimeSelect(index)
-                                            }
-                                          >
-                                            <div className="time">{time}</div>
                                           </ShowtimeItem>
                                         </motion.div>
                                       )

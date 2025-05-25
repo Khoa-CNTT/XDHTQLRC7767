@@ -19,7 +19,7 @@ import {
   EnvironmentOutlined,
   StarOutlined,
 } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -104,9 +104,17 @@ interface FormattedShowtime {
 const BookingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  // Get step from URL query params
+  const queryParams = new URLSearchParams(location.search);
+  const stepFromQuery = queryParams.get("step");
+  const showtimeIdFromQuery = queryParams.get("showtimeId");
+
+  const [currentStep, setCurrentStep] = useState(
+    stepFromQuery ? parseInt(stepFromQuery) : 0
+  );
   const [movie, setMovie] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
@@ -144,15 +152,321 @@ const BookingPage: React.FC = () => {
 
   const [apiError, setApiError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      dispatch(getBookingRequest({ id }));
-      dispatch(getCinemaListRequest());
-      setLoading(true);
-    }
-  }, [id, dispatch]);
+  // Add states for both booking types
+  const [isShowtimeBooking, setIsShowtimeBooking] = useState<boolean>(false);
+  const [isDirectBooking, setIsDirectBooking] = useState<boolean>(false);
 
-  // Thêm useEffect riêng để xử lý khi có dữ liệu
+  // Add flag to prevent multiple API calls
+  const [dataInitialized, setDataInitialized] = useState(false);
+
+  useEffect(() => {
+    // Don't re-run this effect if data is already initialized
+    if (dataInitialized) {
+      return;
+    }
+
+    // Check the URL for the from=showtime parameter
+    const fromShowtime = queryParams.get("from");
+    if (fromShowtime === "showtime") {
+      setIsShowtimeBooking(true);
+      console.log("This is a showtime booking from URL parameter");
+    }
+
+    // Check if we have showtime booking data in localStorage (from clicking a showtime in MovieDetail)
+    const storedShowtimeData = localStorage.getItem("showtime_booking_data");
+
+    if (storedShowtimeData) {
+      try {
+        console.log(
+          "Found showtime_booking_data in localStorage:",
+          storedShowtimeData
+        );
+        const showtimeData = JSON.parse(storedShowtimeData);
+
+        // Set movie data and immediately set loading to false
+        if (showtimeData.movie) {
+          setMovie(showtimeData.movie);
+          setLoading(false);
+        }
+
+        // Set selected date
+        if (showtimeData.showtime?.date) {
+          setSelectedDate(dayjs(showtimeData.showtime.date));
+        }
+
+        // Set selected cinema
+        if (showtimeData.cinema?.name) {
+          console.log(
+            `Setting cinema from showtime data: ${showtimeData.cinema.name}`
+          );
+          const cinemaName = showtimeData.cinema.name;
+          setSelectedCinema(cinemaName);
+        }
+
+        // Set selected showtime
+        if (showtimeData.showtime) {
+          setSelectedShowtime({
+            id: showtimeData.showtime.id,
+            time: showtimeData.showtime.time,
+          });
+
+          // Fetch seat information for the showtime
+          if (showtimeData.showtime.id) {
+            console.log(
+              `Fetching seats for showtime ID: ${showtimeData.showtime.id}`
+            );
+            dispatch(
+              getShowtimeWithChairsRequest({ id: showtimeData.showtime.id })
+            );
+            setCurrentStep(1); // Set to seat selection step
+          }
+        }
+
+        // Set the showtime booking flag
+        setIsShowtimeBooking(true);
+
+        // Store the flag in localStorage for persistence across refreshes
+        localStorage.setItem("isShowtimeBooking", "true");
+
+        // Ensure loading is set to false after processing the data
+        setLoading(false);
+        setDataInitialized(true);
+
+        // Always fetch cinema list, but only once
+        dispatch(getCinemaListRequest());
+        return;
+      } catch (error) {
+        console.error(
+          "Error parsing showtime booking data from localStorage:",
+          error
+        );
+        // If there's an error, set loading to false to avoid infinite loading
+        setLoading(false);
+      }
+    }
+
+    // Check if we have direct booking data in localStorage
+    const storedDirectBookingData = localStorage.getItem("direct_booking_data");
+
+    if (storedDirectBookingData) {
+      try {
+        const directBookingData = JSON.parse(storedDirectBookingData);
+
+        // Set movie data if available
+        if (directBookingData.movie) {
+          setMovie(directBookingData.movie);
+          setLoading(false);
+        }
+
+        // Set selected date if available
+        if (directBookingData.showtime?.date) {
+          setSelectedDate(dayjs(directBookingData.showtime.date));
+        }
+
+        // Set selected cinema if available
+        if (directBookingData.cinema?.name) {
+          const cinemaName = directBookingData.cinema.name;
+          setSelectedCinema(cinemaName);
+        }
+
+        // Set selected showtime if available
+        if (directBookingData.showtime) {
+          setSelectedShowtime({
+            id: directBookingData.showtime.id,
+            time: directBookingData.showtime.time,
+          });
+
+          // If we have a showtime ID, fetch seat information and go directly to seat selection
+          if (directBookingData.showtime.id) {
+            dispatch(
+              getShowtimeWithChairsRequest({
+                id: directBookingData.showtime.id,
+              })
+            );
+            setCurrentStep(1); // Set to seat selection step
+          }
+        }
+
+        // Remove the direct booking data from localStorage after using it
+        localStorage.removeItem("direct_booking_data");
+
+        // Store a flag to indicate this is a direct booking
+        localStorage.setItem("isDirectBooking", "true");
+
+        // Ensure loading is set to false
+        setLoading(false);
+        setDataInitialized(true);
+
+        // Always fetch cinema list, but only once
+        dispatch(getCinemaListRequest());
+        return;
+      } catch (error) {
+        console.error(
+          "Error parsing direct booking data from localStorage:",
+          error
+        );
+        // If there's an error, set loading to false
+        setLoading(false);
+      }
+    }
+
+    // Check if we have regular booking data in localStorage
+    const storedBookingData = localStorage.getItem("bookingData");
+
+    if (storedBookingData) {
+      try {
+        const bookingData = JSON.parse(storedBookingData);
+
+        // Set movie data if available
+        if (bookingData.movie) {
+          setMovie(bookingData.movie);
+          setLoading(false);
+        }
+
+        // Set selected date if available
+        if (bookingData.showtime?.date) {
+          setSelectedDate(dayjs(bookingData.showtime.date));
+        }
+
+        // Set selected cinema if available
+        if (bookingData.cinema?.name) {
+          // We'll need to find the cinema ID based on the name when cinema list loads
+          const cinemaName = bookingData.cinema.name;
+          setSelectedCinema(cinemaName);
+        }
+
+        // Set selected showtime if available
+        if (bookingData.showtime) {
+          setSelectedShowtime({
+            id: bookingData.showtime.id,
+            time: bookingData.showtime.time,
+          });
+
+          // If we have a showtime ID and step is 1, fetch seat information and go directly to seat selection
+          if (bookingData.showtime.id && bookingData.step === 1) {
+            dispatch(
+              getShowtimeWithChairsRequest({ id: bookingData.showtime.id })
+            );
+            setCurrentStep(1); // Set to seat selection step
+          }
+        }
+
+        // Ensure loading is set to false after processing
+        setLoading(false);
+        setDataInitialized(true);
+
+        // Always fetch cinema list, but only once
+        dispatch(getCinemaListRequest());
+        return;
+      } catch (error) {
+        console.error("Error parsing booking data from localStorage:", error);
+        // If there's an error, set loading to false
+        setLoading(false);
+      }
+    }
+
+    // Regular initialization if no localStorage data or if we still need to fetch movie details
+    if (
+      id &&
+      !storedBookingData &&
+      !storedShowtimeData &&
+      !storedDirectBookingData
+    ) {
+      dispatch(getBookingRequest({ id }));
+      setLoading(true);
+
+      // Always fetch cinema list, but only once
+      dispatch(getCinemaListRequest());
+      setDataInitialized(true);
+    } else if (
+      !storedBookingData &&
+      !storedShowtimeData &&
+      !storedDirectBookingData
+    ) {
+      // If no data at all, set loading to false
+      setLoading(false);
+
+      // Mark as initialized to prevent multiple calls
+      setDataInitialized(true);
+
+      // Always fetch cinema list, but only once
+      dispatch(getCinemaListRequest());
+    }
+  }, [id, dispatch, queryParams, dataInitialized]);
+
+  // Update cinema ID when cinema list loads
+  useEffect(() => {
+    // Only process this if we have cinema list data and the current cinema needs to be resolved
+    if (
+      cinemaList?.data &&
+      selectedCinema &&
+      typeof selectedCinema === "string" &&
+      !selectedCinema.match(/^\d+$/) &&
+      !dataInitialized
+    ) {
+      console.log(`Trying to resolve cinema by name: ${selectedCinema}`);
+      // If selectedCinema is not a numeric ID, try to find the ID by name
+      const cinema = cinemaList.data.find(
+        (c: any) => c.name === selectedCinema
+      );
+      if (cinema) {
+        console.log(`Resolved cinema: ${JSON.stringify(cinema)}`);
+        setSelectedCinema(cinema.id);
+
+        // If we also have a date and movie ID, fetch showtimes
+        if (selectedDate && id) {
+          dispatch(
+            getMockShowtimeRequest({
+              date: selectedDate.format("DD-MM-YYYY"),
+              cinemaId: cinema.id,
+              movieId: id,
+            })
+          );
+        }
+      } else {
+        console.log(`Could not resolve cinema by name: ${selectedCinema}`);
+      }
+    }
+  }, [cinemaList, selectedCinema, selectedDate, id, dispatch, dataInitialized]);
+
+  // If we have a showtimeId from URL and mockShowtimes data, select the matching showtime
+  useEffect(() => {
+    if (
+      showtimeIdFromQuery &&
+      mockShowtimes?.data &&
+      Array.isArray(mockShowtimes.data) &&
+      !dataInitialized
+    ) {
+      const showtime = mockShowtimes.data.find(
+        (s: any) => s.id === parseInt(showtimeIdFromQuery)
+      );
+      if (showtime) {
+        setSelectedShowtime({
+          id: showtime.id,
+          time: formatShowtime(showtime.startTime, showtime.endTime),
+        });
+
+        // Fetch seat information for this showtime
+        dispatch(getShowtimeWithChairsRequest({ id: showtime.id }));
+
+        // Mark as initialized to prevent repeated calls
+        setDataInitialized(true);
+      }
+    }
+  }, [showtimeIdFromQuery, mockShowtimes, dispatch, dataInitialized]);
+
+  // Tự động chuyển sang bước chọn ghế khi có dữ liệu ghế
+  useEffect(() => {
+    if (
+      showtimeWithChairs?.data &&
+      currentStep === 0 &&
+      stepFromQuery === "1"
+    ) {
+      setCurrentStep(1);
+    }
+  }, [showtimeWithChairs, currentStep, stepFromQuery]);
+
+  // Add an extra useEffect to handle movieBooking loading state
   useEffect(() => {
     if (movieBooking?.data) {
       setMovie(movieBooking.data);
@@ -160,9 +474,16 @@ const BookingPage: React.FC = () => {
     } else if (movieBooking?.error) {
       setApiError("Không thể tải thông tin phim. Vui lòng thử lại sau.");
       setLoading(false);
-      message.error("Không thể tải thông tin phim");
     }
   }, [movieBooking]);
+
+  // Add an extra useEffect to handle showtime loading state
+  useEffect(() => {
+    if (showtimeWithChairs?.data) {
+      // If we've received seat data, make sure loading is false
+      setLoading(false);
+    }
+  }, [showtimeWithChairs]);
 
   // Sử dụng dữ liệu ghế từ API thay vì tạo dữ liệu giả
   useEffect(() => {
@@ -217,13 +538,35 @@ const BookingPage: React.FC = () => {
     }
   }, [mockShowtimes?.error]);
 
+  // Add useEffect to check for showtime booking flag
+  useEffect(() => {
+    const showtimeBookingFlag = localStorage.getItem("isShowtimeBooking");
+    if (showtimeBookingFlag === "true") {
+      setIsShowtimeBooking(true);
+    }
+  }, []);
+
+  // Add useEffect to check for direct booking flag
+  useEffect(() => {
+    const directBookingFlag = localStorage.getItem("isDirectBooking");
+    if (directBookingFlag === "true") {
+      setIsDirectBooking(true);
+    }
+  }, []);
+
   // Xử lý khi chọn rạp chiếu
   const handleCinemaSelect = (cinemaId: string) => {
+    console.log(`Cinema selected: ${cinemaId}`);
     setSelectedCinema(cinemaId);
     setSelectedShowtime(null);
 
     if (selectedDate && id) {
       try {
+        console.log(
+          `Fetching showtimes for cinema ${cinemaId}, date ${selectedDate.format(
+            "DD-MM-YYYY"
+          )}, movie ${id}`
+        );
         dispatch(
           getMockShowtimeRequest({
             date: selectedDate.format("DD-MM-YYYY"),
@@ -232,12 +575,23 @@ const BookingPage: React.FC = () => {
           })
         );
       } catch (error) {
+        console.error("Error fetching showtimes:", error);
         message.error("Không thể tải lịch chiếu. Vui lòng thử lại.");
       }
     } else {
+      console.log(
+        `Cannot fetch showtimes: selectedDate=${selectedDate}, id=${id}`
+      );
       message.warning("Vui lòng chọn ngày xem phim trước");
     }
   };
+
+  // Add effect to log when showtimes data changes
+  useEffect(() => {
+    if (mockShowtimes?.data) {
+      console.log("Showtimes data received:", mockShowtimes.data);
+    }
+  }, [mockShowtimes?.data]);
 
   // Xử lý khi chọn ghế
   const handleSeatClick = (seatId: string) => {
@@ -301,7 +655,7 @@ const BookingPage: React.FC = () => {
     );
   };
 
-  // Xử lý khi nhấn nút Tiếp tục
+  // Update handleNext to handle showtime booking
   const handleNext = () => {
     if (currentStep === 0) {
       if (!selectedDate) {
@@ -333,8 +687,20 @@ const BookingPage: React.FC = () => {
       }
     }
 
-    if (currentStep === 2) {
-      // Xử lý thanh toán
+    // If this is showtime booking and we're at the seat selection step
+    if (isShowtimeBooking && currentStep === 1) {
+      handlePayment();
+      return;
+    }
+
+    // If this is direct booking and we're at the seat selection step
+    if (isDirectBooking && currentStep === 1) {
+      handlePayment();
+      return;
+    }
+
+    // Regular flow: If we're at the payment step
+    if (!isShowtimeBooking && !isDirectBooking && currentStep === 2) {
       handlePayment();
       return;
     }
@@ -342,8 +708,20 @@ const BookingPage: React.FC = () => {
     setCurrentStep(currentStep + 1);
   };
 
-  // Xử lý khi nhấn nút Quay lại
+  // Update handleBack to handle showtime booking
   const handleBack = () => {
+    if (isShowtimeBooking && currentStep === 1) {
+      // For showtime booking, going back from seat selection should return to movie detail
+      navigate(-1);
+      return;
+    }
+
+    // Existing direct booking logic
+    if (isDirectBooking && currentStep === 1) {
+      navigate(-1);
+      return;
+    }
+
     setCurrentStep(currentStep - 1);
   };
 
@@ -382,6 +760,12 @@ const BookingPage: React.FC = () => {
       return;
     }
 
+    // Clean up booking flags when payment is processed
+    localStorage.removeItem("isShowtimeBooking");
+    localStorage.removeItem("showtime_booking_data");
+    localStorage.removeItem("isDirectBooking");
+    localStorage.removeItem("direct_booking_data");
+
     // Đảm bảo selectedDate là string nếu là Dayjs object
     const formattedDate = selectedDate ? selectedDate.format("DD/MM/YYYY") : "";
 
@@ -418,13 +802,10 @@ const BookingPage: React.FC = () => {
         image: movie?.image || movie?.imageUrl || "",
         duration: movie?.duration || "N/A",
       },
-      cinema: {
-        name:
-          findCinemaById(selectedCinema)?.name ||
-          "BSCMSAAPUE Vincom Plaza Ngô Quyền",
-        address:
-          findCinemaById(selectedCinema)?.address ||
-          "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
+      cinema: findCinemaById(selectedCinema) || {
+        id: "default",
+        name: "BSCMSAAPUE Vincom Plaza Ngô Quyền",
+        address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
       },
       showtime: {
         id: selectedShowtime?.id,
@@ -493,12 +874,91 @@ const BookingPage: React.FC = () => {
 
   // Helper function to find cinema by ID
   const findCinemaById = (id: string): Cinema | undefined => {
-    return cinemaList?.data && Array.isArray(cinemaList.data)
-      ? cinemaList.data.find((c: any) => c.id === id)
-      : undefined;
+    console.log(`Looking for cinema with ID/name: ${id}`);
+    console.log(`Current cinemaList:`, cinemaList?.data);
+
+    if (!cinemaList?.data || !Array.isArray(cinemaList.data)) {
+      console.log(`Cinema list is empty or not an array`);
+      return undefined;
+    }
+
+    // First try to find by ID
+    const byId = cinemaList.data.find((c: any) => c.id === id);
+    if (byId) {
+      console.log(`Found cinema by ID: ${JSON.stringify(byId)}`);
+      return byId;
+    }
+
+    // If not found by ID, try to find by name
+    const byName = cinemaList.data.find((c: any) => c.name === id);
+    if (byName) {
+      console.log(`Found cinema by name: ${JSON.stringify(byName)}`);
+      return byName;
+    }
+
+    // If still not found, return a default value
+    if (id) {
+      console.log(`No match found, returning default cinema`);
+      return {
+        id: "default",
+        name: "BSCMSAAPUE Vincom Plaza Ngô Quyền",
+        address: "910A Ngô Quyền, Sơn Trà, Đà Nẵng",
+      };
+    }
+
+    console.log(`No ID provided, returning undefined`);
+    return undefined;
   };
 
-  if (loading || movieBooking?.loading || !movie) {
+  // Add useEffect to handle component unmount cleanup
+  useEffect(() => {
+    return () => {
+      // Clean up ALL booking flags and data when component unmounts
+      console.log("BookingPage unmounting - cleaning up all booking data");
+      localStorage.removeItem("isShowtimeBooking");
+      localStorage.removeItem("showtime_booking_data");
+      localStorage.removeItem("isDirectBooking");
+      localStorage.removeItem("direct_booking_data");
+      localStorage.removeItem("bookingData");
+    };
+  }, []);
+
+  // If we have a showtimeId from URL, immediately set is Showtime booking mode
+  useEffect(() => {
+    if (showtimeIdFromQuery && !dataInitialized) {
+      setIsShowtimeBooking(true);
+      // If we have direct information from URL, no need to wait for data loading
+      if (movie) {
+        setLoading(false);
+        setDataInitialized(true);
+      }
+    }
+  }, [showtimeIdFromQuery, movie, dataInitialized]);
+
+  // Add an effect to handle errors and cleanup
+  useEffect(() => {
+    if (apiError) {
+      // Clear all booking data on error
+      localStorage.removeItem("showtime_booking_data");
+      localStorage.removeItem("direct_booking_data");
+      localStorage.removeItem("isShowtimeBooking");
+      localStorage.removeItem("isDirectBooking");
+      setLoading(false);
+    }
+  }, [apiError]);
+
+  // Change the loading condition to better handle direct loading from showtime
+  if (
+    (loading || movieBooking?.loading) &&
+    !isShowtimeBooking &&
+    !isDirectBooking
+  ) {
+    return <BookingPageSkeleton />;
+  }
+
+  // If we have data but loading is stuck, force render the component
+  if (!movie && (isShowtimeBooking || isDirectBooking)) {
+    setLoading(false);
     return <BookingPageSkeleton />;
   }
 
@@ -531,9 +991,23 @@ const BookingPage: React.FC = () => {
           <PageTitle>Đặt vé xem phim</PageTitle>
 
           <StyledSteps current={currentStep}>
-            <Step title="Chọn suất chiếu" />
-            <Step title="Chọn ghế" />
-            <Step title="Thanh toán" />
+            {isShowtimeBooking ? (
+              <>
+                <Step title="Chọn ghế" />
+                <Step title="Thanh toán" />
+              </>
+            ) : isDirectBooking ? (
+              <>
+                <Step title="Chọn ghế" />
+                <Step title="Thanh toán" />
+              </>
+            ) : (
+              <>
+                <Step title="Chọn suất chiếu" />
+                <Step title="Chọn ghế" />
+                <Step title="Thanh toán" />
+              </>
+            )}
           </StyledSteps>
 
           {currentStep === 0 && (
@@ -595,6 +1069,21 @@ const BookingPage: React.FC = () => {
                           <CinemaAddress>
                             <EnvironmentOutlined /> {cinema.address}
                           </CinemaAddress>
+                          {selectedCinema === cinema.id && (
+                            <div
+                              style={{
+                                marginTop: "8px",
+                                color: "#1890ff",
+                                fontWeight: "bold",
+                                fontSize: "12px",
+                                backgroundColor: "rgba(24, 144, 255, 0.1)",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              Đã chọn (ID: {cinema.id})
+                            </div>
+                          )}
                         </CinemaCard>
                       </Radio>
                     ))}
@@ -638,7 +1127,14 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {findCinemaById(selectedCinema)?.name || "Chưa chọn"}
+                        {selectedCinema
+                          ? findCinemaById(selectedCinema)?.name
+                          : "Chưa chọn"}
+                        {selectedCinema && (
+                          <div style={{ fontSize: "10px", color: "#999" }}>
+                            ID: {selectedCinema}
+                          </div>
+                        )}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
@@ -761,7 +1257,14 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {findCinemaById(selectedCinema)?.name || ""}
+                        {selectedCinema
+                          ? findCinemaById(selectedCinema)?.name
+                          : "Chưa chọn"}
+                        {selectedCinema && (
+                          <div style={{ fontSize: "10px", color: "#999" }}>
+                            ID: {selectedCinema}
+                          </div>
+                        )}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>
@@ -965,7 +1468,14 @@ const BookingPage: React.FC = () => {
                     <SummaryItem>
                       <SummaryLabel>Rạp chiếu:</SummaryLabel>
                       <SummaryValue>
-                        {findCinemaById(selectedCinema)?.name || ""}
+                        {selectedCinema
+                          ? findCinemaById(selectedCinema)?.name
+                          : "Chưa chọn"}
+                        {selectedCinema && (
+                          <div style={{ fontSize: "10px", color: "#999" }}>
+                            ID: {selectedCinema}
+                          </div>
+                        )}
                       </SummaryValue>
                     </SummaryItem>
                     <SummaryItem>

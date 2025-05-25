@@ -589,7 +589,7 @@ const ReviewManagement: React.FC = () => {
 
   return (
     <div>
-      <PageTitle>Quản lý đánh giá</PageTitle>
+      <PageTitle>Quản lý đánh giá và bình luận</PageTitle>
 
       {/* Movie list section */}
       <TableContainer>

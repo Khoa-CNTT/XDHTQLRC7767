@@ -231,7 +231,7 @@ const CustomerManagement: React.FC = () => {
 
   return (
     <div>
-      <PageTitle>Quản lý khách hàng</PageTitle>
+      <PageTitle>Quản lý người dùng</PageTitle>
 
       <Space style={{ marginBottom: 16 }}>
         <Input
