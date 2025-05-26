@@ -49,7 +49,7 @@ const api = {
   changePasswordForSocialLogin: (data: {
     newPassword: string;
     confirmPassword: string;
-  }) => axiosInstance.post("/change-password-for-social-login", data),
+  }) => axiosInstance.post("/change-password", data),
 };
 
 // Get user info saga
@@ -117,7 +117,7 @@ function* loginSaga(
     }
   } catch (error: any) {
     localStorage.removeItem("token");
-    let errorMessage = "Tài khoản hoặc mật khẩu không đúng";
+    const errorMessage = "Tài khoản hoặc mật khẩu không đúng";
 
     // Kiểm tra nếu tài khoản chưa verify
     if (error.response?.data === "Account is not verified") {
