@@ -459,13 +459,47 @@ const InvoicePage: React.FC = () => {
             receivedData.pricing.quantity = receivedData.seats?.length || 1;
           }
 
-          // Tính lại tổng tiền nếu cần, dựa trên giá từ BookingPage
-          if (
-            isNaN(receivedData.pricing.total) ||
-            receivedData.pricing.total <= 0
-          ) {
-            receivedData.pricing.total =
+          // Tính lại tổng tiền thủ công dựa trên loại ghế
+          if (receivedData.pricing.seatTypes) {
+            const seatTypes = receivedData.pricing.seatTypes;
+
+            // Tính từng loại ghế
+            const standardTotal =
+              (seatTypes.standard || 0) * (seatTypes.standardPrice || 0);
+            const vipTotal = (seatTypes.vip || 0) * (seatTypes.vipPrice || 0);
+            const coupleTotal =
+              (seatTypes.couple || 0) * (seatTypes.couplePrice || 0);
+
+            // Tổng tiền là tổng của tất cả các loại ghế
+            const totalAmount = standardTotal + vipTotal + coupleTotal;
+
+            console.log(`[INVOICE_PAGE] Tính lại giá vé:
+              - Ghế thường: ${seatTypes.standard || 0} x ${
+              seatTypes.standardPrice || 0
+            } = ${standardTotal}
+              - Ghế VIP: ${seatTypes.vip || 0} x ${
+              seatTypes.vipPrice || 0
+            } = ${vipTotal}
+              - Ghế couple: ${seatTypes.couple || 0} x ${
+              seatTypes.couplePrice || 0
+            } = ${coupleTotal}
+              - Tổng cộng: ${totalAmount}`);
+
+            // Cập nhật giá tiền
+            receivedData.pricing.subtotal = totalAmount;
+            receivedData.pricing.total = totalAmount;
+          } else {
+            // Nếu không có thông tin chi tiết về loại ghế, tính dựa trên số lượng ghế và giá vé
+            const totalAmount =
               receivedData.pricing.ticketPrice * receivedData.pricing.quantity;
+
+            console.log(`[INVOICE_PAGE] Tính lại giá vé:
+              - Giá vé: ${receivedData.pricing.ticketPrice}
+              - Số lượng: ${receivedData.pricing.quantity}
+              - Tổng cộng: ${totalAmount}`);
+
+            receivedData.pricing.subtotal = totalAmount;
+            receivedData.pricing.total = totalAmount;
           }
         }
 

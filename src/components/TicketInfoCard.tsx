@@ -51,6 +51,22 @@ const TicketInfoCard: React.FC<TicketInfoCardProps> = ({
   seatTypes,
   displayCard = true,
 }) => {
+  const calculateTotal = () => {
+    if (seatTypes) {
+      const standardTotal =
+        (seatTypes.standard || 0) * (seatTypes.standardPrice || 0);
+      const vipTotal = (seatTypes.vip || 0) * (seatTypes.vipPrice || 0);
+      const coupleTotal =
+        (seatTypes.couple || 0) * (seatTypes.couplePrice || 0);
+
+      return standardTotal + vipTotal + coupleTotal;
+    } else {
+      return ticketPrice * quantity;
+    }
+  };
+
+  const totalAmount = calculateTotal();
+
   const content = (
     <>
       {seatTypes ? (
@@ -93,14 +109,7 @@ const TicketInfoCard: React.FC<TicketInfoCardProps> = ({
 
           <TotalRow>
             <div>Tổng cộng</div>
-            <div>
-              {(
-                seatTypes.standard * seatTypes.standardPrice +
-                seatTypes.vip * seatTypes.vipPrice +
-                seatTypes.couple * seatTypes.couplePrice
-              ).toLocaleString("vi-VN")}{" "}
-              VNĐ
-            </div>
+            <div>{totalAmount.toLocaleString("vi-VN")} VNĐ</div>
           </TotalRow>
         </>
       ) : (
@@ -124,7 +133,7 @@ const TicketInfoCard: React.FC<TicketInfoCardProps> = ({
 
           <TotalRow>
             <div>Tổng cộng</div>
-            <div>{total.toLocaleString("vi-VN")} VNĐ</div>
+            <div>{totalAmount.toLocaleString("vi-VN")} VNĐ</div>
           </TotalRow>
         </>
       )}
