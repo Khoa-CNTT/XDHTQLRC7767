@@ -28,24 +28,64 @@ interface MovieDetailProps {
 }
 
 const MovieDetail: React.FC<MovieDetailProps> = ({ movie }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  // Chuyển đổi trạng thái từ số sang chuỗi
+  const getStatusText = (status: string | number | undefined) => {
+    if (status === undefined) return "Không xác định";
+
+    const statusNum = typeof status === "string" ? parseInt(status) : status;
+    switch (statusNum) {
+      case 0:
+        return "Sắp chiếu";
+      case 1:
+        return "Đang chiếu";
+      default:
+        return "Không xác định";
+    }
+  };
+
+  const getStatusColor = (status: string | number | undefined) => {
+    if (status === undefined) return "default";
+
+    const statusText = getStatusText(status);
+    switch (statusText) {
       case "Đang chiếu":
         return "green";
       case "Sắp chiếu":
         return "blue";
-      case "Đã chiếu":
-        return "gray";
       default:
         return "default";
     }
   };
 
+  // Tính toán danh sách thể loại từ nhiều nguồn dữ liệu có thể có
+  const getGenres = () => {
+    // Nếu có mảng genre (là chuỗi tên thể loại) thì dùng
+    if (movie.genre && movie.genre.length > 0) {
+      return movie.genre.map((g) => ({ name: g }));
+    }
+
+    // Nếu có mảng movieGenres (từ API) thì dùng
+    if (movie.movieGenres && movie.movieGenres.length > 0) {
+      return movie.movieGenres;
+    }
+
+    // Nếu có mảng genres (từ API) thì dùng
+    if (movie.genres && movie.genres.length > 0) {
+      return movie.genres;
+    }
+
+    // Nếu không có thể loại nào
+    return [];
+  };
+
+  const genres = getGenres();
+  const statusText = getStatusText(movie.status);
+
   return (
     <Row gutter={[24, 16]}>
       <Col span={8}>
         <Image
-          src={movie.imageUrl}
+          src={movie.poster || movie.imageUrl}
           alt={movie.title || movie.name}
           style={{ width: "100%", borderRadius: 8 }}
           fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3PTWBSGcbGzM6GCKqlIBRV0dHRJFarQ0eUT8LH4BnRU0NHR0UEFVdIlFRV7TzRksomPY8uykTk/zewQfKw/9znv4yvJynLv4uLiV2dBoDiBf4qP3/ARuCRABEFAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghgg"

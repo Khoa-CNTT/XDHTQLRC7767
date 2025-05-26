@@ -86,8 +86,6 @@ const MovieTable: React.FC<MovieTableProps> = ({
           return "blue"; // Sắp chiếu
         case 1:
           return "green"; // Đang chiếu
-        case 2:
-          return "gray"; // Đã chiếu
         default:
           return "default";
       }
@@ -101,8 +99,6 @@ const MovieTable: React.FC<MovieTableProps> = ({
           return "green";
         case "Sắp chiếu":
           return "blue";
-        case "Đã chiếu":
-          return "gray";
         default:
           return "default";
       }
@@ -116,8 +112,6 @@ const MovieTable: React.FC<MovieTableProps> = ({
           return "Sắp chiếu";
         case 1:
           return "Đang chiếu";
-        case 2:
-          return "Đã chiếu";
         default:
           return "Không xác định";
       }

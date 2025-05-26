@@ -86,7 +86,6 @@ const DatePicker = (props: any) => {
   return <StyledDatePicker {...props} />;
 };
 
-const VIP_PRICE = 120000; // 120k VND
 // Giá ghế couple được tính là giá ghế thường + 50,000 VND
 
 const formatShowtime = (startTime: string, endTime: string) => {
@@ -492,9 +491,7 @@ const BookingPage: React.FC = () => {
       const formattedSeats = showtimeWithChairs.data.chairs.map((chair) => {
         // Determine seat type
         let seatType = "standard";
-        if (chair.type?.toLowerCase() === "vip") {
-          seatType = "vip";
-        } else if (chair.type?.toLowerCase() === "couple") {
+        if (chair.type?.toLowerCase() === "couple") {
           seatType = "couple";
         }
 
@@ -644,11 +641,6 @@ const BookingPage: React.FC = () => {
         standardPrice +
       selectedSeats.filter((id) => {
         const seat = seats.find((s) => s.id === id);
-        return seat && seat.type === "vip";
-      }).length *
-        VIP_PRICE +
-      selectedSeats.filter((id) => {
-        const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "couple";
       }).length *
         couplePrice
@@ -779,19 +771,13 @@ const BookingPage: React.FC = () => {
         return seat && seat.type === "standard";
       }).length * standardPrice;
 
-    const vipTotal =
-      selectedSeats.filter((id) => {
-        const seat = seats.find((s) => s.id === id);
-        return seat && seat.type === "vip";
-      }).length * VIP_PRICE;
-
     const coupleTotal =
       selectedSeats.filter((id) => {
         const seat = seats.find((s) => s.id === id);
         return seat && seat.type === "couple";
       }).length * couplePrice;
 
-    const subtotal = standardTotal + vipTotal + coupleTotal;
+    const subtotal = standardTotal + coupleTotal;
     const totalAmount = subtotal;
 
     // Tạo dữ liệu booking để truyền sang trang hóa đơn
@@ -825,17 +811,12 @@ const BookingPage: React.FC = () => {
             const seat = seats.find((s) => s.id === id);
             return seat && seat.type === "standard";
           }).length,
-          vip: selectedSeats.filter((id) => {
-            const seat = seats.find((s) => s.id === id);
-            return seat && seat.type === "vip";
-          }).length,
           couple: selectedSeats.filter((id) => {
             const seat = seats.find((s) => s.id === id);
             return seat && seat.type === "couple";
           }).length,
           standardPrice: standardPrice,
           couplePrice: couplePrice,
-          vipPrice: VIP_PRICE,
         },
       },
       // Add customer information for ticket creation
@@ -1199,15 +1180,11 @@ const BookingPage: React.FC = () => {
 
                       <SeatLegend>
                         <LegendItem>
-                          <LegendColor $color="white" $borderColor="#d9d9d9" />
-                          Ghế thường
-                        </LegendItem>
-                        <LegendItem>
                           <LegendColor
-                            $color="#ffe082"
-                            $borderColor="#ffca28"
+                            $color="#3498db"
+                            $borderColor="#2980b9"
                           />
-                          Ghế VIP
+                          Ghế thường
                         </LegendItem>
                         <LegendItem>
                           <LegendColor
@@ -1240,7 +1217,7 @@ const BookingPage: React.FC = () => {
                         <p>
                           <strong>Lưu ý:</strong> Ghế Couple là ghế dành cho 2
                           người ngồi thoải mái và có giá cao hơn ghế thường
-                          50.000đ
+                          100.000đ
                         </p>
                       </div>
                     </SeatsContainer>
@@ -1304,27 +1281,6 @@ const BookingPage: React.FC = () => {
                             const seat = seats.find((s) => s.id === id);
                             return seat && seat.type === "standard";
                           }).length * showtimeWithChairs?.data?.pricePerShowTime
-                        )?.toLocaleString("vi-VN")}{" "}
-                        VNĐ
-                      </SummaryValue>
-                    </SummaryItem>
-                    <SummaryItem>
-                      <SummaryLabel>
-                        Ghế VIP (
-                        {
-                          selectedSeats.filter((id) => {
-                            const seat = seats.find((s) => s.id === id);
-                            return seat && seat.type === "vip";
-                          }).length
-                        }{" "}
-                        ghế):
-                      </SummaryLabel>
-                      <SummaryValue>
-                        {(
-                          selectedSeats.filter((id) => {
-                            const seat = seats.find((s) => s.id === id);
-                            return seat && seat.type === "vip";
-                          }).length * VIP_PRICE
                         )?.toLocaleString("vi-VN")}{" "}
                         VNĐ
                       </SummaryValue>
@@ -1513,27 +1469,6 @@ const BookingPage: React.FC = () => {
                             const seat = seats.find((s) => s.id === id);
                             return seat && seat.type === "standard";
                           }).length * showtimeWithChairs?.data?.pricePerShowTime
-                        )?.toLocaleString("vi-VN")}{" "}
-                        VNĐ
-                      </SummaryValue>
-                    </SummaryItem>
-                    <SummaryItem>
-                      <SummaryLabel>
-                        Ghế VIP (
-                        {
-                          selectedSeats.filter((id) => {
-                            const seat = seats.find((s) => s.id === id);
-                            return seat && seat.type === "vip";
-                          }).length
-                        }{" "}
-                        ghế):
-                      </SummaryLabel>
-                      <SummaryValue>
-                        {(
-                          selectedSeats.filter((id) => {
-                            const seat = seats.find((s) => s.id === id);
-                            return seat && seat.type === "vip";
-                          }).length * VIP_PRICE
                         )?.toLocaleString("vi-VN")}{" "}
                         VNĐ
                       </SummaryValue>

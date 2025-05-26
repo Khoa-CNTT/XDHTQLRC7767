@@ -221,7 +221,7 @@ const Dashboard: React.FC = () => {
           customer: payment.customerName || "Khách hàng",
           movie: "Vé phim",
           date: payment.date || "",
-          amount: `${payment.amount.toLocaleString()} VND`,
+          amount: `${payment.amount?.toLocaleString()} VND`,
           status: payment.status,
         }))
       : [

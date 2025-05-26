@@ -552,6 +552,7 @@ const MovieManagement: React.FC = () => {
         onCancel={handleCancel}
         footer={null}
         width={800}
+        destroyOnClose={true}
       >
         <MovieForm
           form={form}

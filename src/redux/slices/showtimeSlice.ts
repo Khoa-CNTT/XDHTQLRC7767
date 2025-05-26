@@ -120,6 +120,7 @@ export interface ShowTimeWithChairsDTO {
   startTime: string;
   endTime: string;
   price: number;
+  pricePerShowTime: number;
   status: string;
   chairs: Chair[];
 }

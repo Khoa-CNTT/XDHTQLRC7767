@@ -482,20 +482,20 @@ export const Seat = styled.div<{
     if (props.$selected) return "#fd6b0a";
     if (props.$status === "booked") return "#d9d9d9";
     if (props.$type === "couple") return "#ff66aa";
-    return props.$type === "vip" ? "#ffe082" : "#bbdefb";
+    return "#3498db";
   }};
   color: ${(props) => {
     if (props.$selected) return "white";
     if (props.$status === "booked") return "#999";
     if (props.$type === "couple") return "white";
-    return props.$type === "vip" ? "#f57c00" : "#1976d2";
+    return "white";
   }};
   border: 1px solid
-    ${(props) => {
+    ${(props) => {  
       if (props.$selected) return "#fd6b0a";
       if (props.$status === "booked") return "#d9d9d9";
       if (props.$type === "couple") return "#e6007e";
-      return props.$type === "vip" ? "#ffca28" : "#90caf9";
+      return "#2980b9";
     }};
   font-weight: 500;
   font-size: 14px;

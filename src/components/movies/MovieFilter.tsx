@@ -89,7 +89,6 @@ const MovieFilter: React.FC<MovieFilterProps> = ({
               <Select placeholder="Chọn trạng thái" allowClear>
                 <Option value={0}>Sắp chiếu</Option>
                 <Option value={1}>Đang chiếu</Option>
-                <Option value={2}>Đã chiếu</Option>
               </Select>
             </Form.Item>
           </Col>

@@ -351,7 +351,6 @@ const MovieForm: React.FC<MovieFormProps> = ({
               <Select placeholder="Chọn trạng thái">
                 <Option value={0}>Sắp chiếu</Option>
                 <Option value={1}>Đang chiếu</Option>
-                <Option value={2}>Đã chiếu</Option>
               </Select>
             </Form.Item>
           </Col>

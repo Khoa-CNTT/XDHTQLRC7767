@@ -31,12 +31,8 @@ const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
           label: "Đang chiếu",
         },
         {
-          key: "2",
+          key: "0",
           label: "Sắp chiếu",
-        },
-        {
-          key: "3",
-          label: "Đã chiếu",
         },
       ]}
     />
