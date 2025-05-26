@@ -47,7 +47,7 @@ const ticketSlice = createSlice({
   initialState,
   reducers: {
     // Create ticket actions
-    createTicketRequest: (state) => {
+    createTicketRequest: (state, action: PayloadAction<any>) => {
       state.createTicket.loading = true;
       state.createTicket.error = null;
       state.createTicket.success = false;

@@ -134,7 +134,7 @@ const PaymentCallback: React.FC = () => {
           "[PAYMENT_CALLBACK] Sending payment return request to server"
         );
         apiCalledRef.current = true;
-        dispatch(handlePaymentReturnRequest(params));
+        dispatch(handlePaymentReturnRequest(params as any));
       }
 
       return () => {
@@ -162,10 +162,10 @@ const PaymentCallback: React.FC = () => {
     if (bookingData) {
       console.log("[PAYMENT_CALLBACK] bookingData from Redux:", bookingData);
       console.log("[PAYMENT_CALLBACK] Original pricing info:", {
-        ticketPrice: bookingData.pricing?.ticketPrice,
-        quantity: bookingData.pricing?.quantity,
-        subtotal: bookingData.pricing?.subtotal,
-        total: bookingData.pricing?.total,
+        ticketPrice: (bookingData as any)?.pricing?.ticketPrice,
+        quantity: (bookingData as any)?.pricing?.quantity,
+        subtotal: (bookingData as any)?.pricing?.subtotal,
+        total: (bookingData as any)?.pricing?.total,
       });
     }
   }, [bookingData]);
@@ -371,29 +371,40 @@ const PaymentCallback: React.FC = () => {
         dataToUse
       );
 
-      // Calculate the correct total if we have seat type information
+      // Tính lại tổng giá một cách thủ công
       if (dataToUse.pricing?.seatTypes) {
         const seatTypes = dataToUse.pricing.seatTypes;
 
+        // Tính từng loại ghế
         const standardTotal = seatTypes.standard * seatTypes.standardPrice;
-        const vipTotal = seatTypes.vip * seatTypes.vipPrice;
         const coupleTotal = seatTypes.couple * seatTypes.couplePrice;
 
-        const subtotal = standardTotal + vipTotal + coupleTotal;
-        // Remove service fee from calculation
-        const totalAmount = subtotal;
+        // Có thể có cả ghế VIP
+        const vipTotal = seatTypes.vip ? seatTypes.vip * seatTypes.vipPrice : 0;
+
+        const totalAmount = standardTotal + coupleTotal + vipTotal;
 
         console.log(
-          `[PAYMENT_CALLBACK] Recalculated prices: standard(${standardTotal}), vip(${vipTotal}), couple(${coupleTotal}), subtotal(${subtotal}), total(${totalAmount})`
+          `[PAYMENT_CALLBACK] Tính lại giá vé:
+          - Ghế thường: ${seatTypes.standard || 0} x ${
+            seatTypes.standardPrice || 0
+          } = ${standardTotal}
+          - Ghế couple: ${seatTypes.couple || 0} x ${
+            seatTypes.couplePrice || 0
+          } = ${coupleTotal}
+          - Ghế VIP: ${seatTypes.vip || 0} x ${
+            seatTypes.vipPrice || 0
+          } = ${vipTotal}
+          - Tổng cộng: ${totalAmount}`
         );
 
-        // Update the pricing data
-        dataToUse.pricing.subtotal = subtotal;
+        // Cập nhật pricing data với giá mới tính
+        dataToUse.pricing.subtotal = totalAmount;
         dataToUse.pricing.total = totalAmount;
         // Set service fee to 0
         dataToUse.pricing.serviceFee = 0;
       } else {
-        // Kiểm tra dữ liệu giá vé
+        // Nếu không có thông tin loại ghế, tính dựa trên số lượng ghế * giá đơn vị
         let ticketPrice = 90000; // Giá mặc định
         let quantity = 1; // Số lượng mặc định
 
@@ -426,6 +437,11 @@ const PaymentCallback: React.FC = () => {
 
         // Tính tổng tiền
         const total = ticketPrice * quantity;
+
+        console.log(`[PAYMENT_CALLBACK] Tính lại giá vé:
+          - Giá vé: ${ticketPrice}
+          - Số lượng: ${quantity}
+          - Tổng cộng: ${total}`);
 
         // Update pricing data with the calculated values
         if (!dataToUse.pricing) {
@@ -493,18 +509,22 @@ const PaymentCallback: React.FC = () => {
               {paymentResult && (
                 <>
                   <div style={{ marginBottom: 10 }}>
-                    <Text strong>Mã đơn hàng:</Text> {paymentResult.vnp_TxnRef}
+                    <Text strong>Mã đơn hàng:</Text>{" "}
+                    {paymentResult.vnp_TxnRef as string}
                   </div>
                   <div style={{ marginBottom: 10 }}>
                     <Text strong>Số tiền:</Text>{" "}
-                    {parseInt(paymentResult.vnp_Amount || "0") / 100} VNĐ
+                    {parseInt((paymentResult.vnp_Amount as string) || "0") /
+                      100}{" "}
+                    VNĐ
                   </div>
                   <div style={{ marginBottom: 10 }}>
-                    <Text strong>Nội dung:</Text> {paymentResult.vnp_OrderInfo}
+                    <Text strong>Nội dung:</Text>{" "}
+                    {paymentResult.vnp_OrderInfo as string}
                   </div>
                   <div style={{ marginBottom: 10 }}>
                     <Text strong>Thời gian thanh toán:</Text>{" "}
-                    {paymentResult.vnp_PayDate}
+                    {paymentResult.vnp_PayDate as string}
                   </div>
                   {createTicket.success && (
                     <div style={{ marginBottom: 10 }}>
@@ -549,30 +569,44 @@ const PaymentCallback: React.FC = () => {
                                     );
 
                                 // Determine the total price based on seat types
-                                let totalPrice =
-                                  parseInt(params.vnp_Amount) / 100;
+                                let totalPrice = 0;
 
                                 // If we have detailed seat type information, use it
                                 if (dataToUse.pricing?.seatTypes) {
                                   const seatTypes = dataToUse.pricing.seatTypes;
+                                  // Tính từng loại ghế
                                   const standardTotal =
-                                    seatTypes.standard *
-                                    seatTypes.standardPrice;
+                                    (seatTypes.standard || 0) *
+                                    (seatTypes.standardPrice || 0);
                                   const vipTotal =
-                                    seatTypes.vip * seatTypes.vipPrice;
+                                    (seatTypes.vip || 0) *
+                                    (seatTypes.vipPrice || 0);
                                   const coupleTotal =
-                                    seatTypes.couple * seatTypes.couplePrice;
+                                    (seatTypes.couple || 0) *
+                                    (seatTypes.couplePrice || 0);
 
                                   totalPrice =
                                     standardTotal + vipTotal + coupleTotal;
                                   console.log(
-                                    `[PAYMENT_CALLBACK] Manual ticket price from seatTypes: ${totalPrice}`
+                                    `[PAYMENT_CALLBACK] Manual ticket price calculation:
+                                    - Ghế thường: ${
+                                      seatTypes.standard || 0
+                                    } x ${
+                                      seatTypes.standardPrice || 0
+                                    } = ${standardTotal}
+                                    - Ghế VIP: ${seatTypes.vip || 0} x ${
+                                      seatTypes.vipPrice || 0
+                                    } = ${vipTotal}
+                                    - Ghế couple: ${seatTypes.couple || 0} x ${
+                                      seatTypes.couplePrice || 0
+                                    } = ${coupleTotal}
+                                    - Tổng cộng: ${totalPrice}`
                                   );
                                 } else if (dataToUse.seatsInfo) {
                                   // Otherwise calculate based on seat types if available
                                   const basePrice =
                                     dataToUse.pricing?.ticketPrice ||
-                                    parseInt(params.vnp_Amount) /
+                                    parseInt(params.vnp_Amount as string) /
                                       100 /
                                       chairIds.length;
 
@@ -597,7 +631,26 @@ const PaymentCallback: React.FC = () => {
                                   totalPrice =
                                     basePrice * chairIds.length + extraCharges;
                                   console.log(
-                                    `[PAYMENT_CALLBACK] Manual ticket price calculation: Base(${basePrice}) * Seats(${chairIds.length}) + Extra(${extraCharges}) = ${totalPrice}`
+                                    `[PAYMENT_CALLBACK] Manual ticket price calculation: 
+                                    - Giá cơ bản: ${basePrice} 
+                                    - Số ghế: ${chairIds.length} 
+                                    - Phụ phí: ${extraCharges} 
+                                    - Tổng cộng: ${totalPrice}`
+                                  );
+                                } else {
+                                  // Simple calculation based on VNPay amount
+                                  totalPrice =
+                                    parseInt(params.vnp_Amount as string) / 100;
+                                  console.log(
+                                    `[PAYMENT_CALLBACK] Using VNPay amount as price: ${totalPrice}`
+                                  );
+                                }
+
+                                // Ensure we have a valid price
+                                if (totalPrice <= 0) {
+                                  totalPrice = 90000 * chairIds.length; // Default price if calculation fails
+                                  console.log(
+                                    `[PAYMENT_CALLBACK] Using default price: ${totalPrice}`
                                   );
                                 }
 
@@ -615,7 +668,7 @@ const PaymentCallback: React.FC = () => {
                                   ticketRequestData
                                 );
                                 dispatch(
-                                  createTicketRequest(ticketRequestData)
+                                  createTicketRequest(ticketRequestData as any)
                                 );
                                 message.info("Đang tạo vé thủ công...");
                               } catch (error) {

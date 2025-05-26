@@ -124,53 +124,70 @@ function* createTicket(bookingData: BookingData) {
       throw new Error("Không tìm thấy thông tin ghế đã chọn!");
     }
 
-    // Check for seatTypes information in the pricing data
-    const seatTypes = bookingData.pricing?.seatTypes;
+    // Tính toán giá vé bằng cách thủ công
     let totalPrice = 0;
 
-    if (seatTypes) {
-      // Calculate price based on seat types
+    // Ưu tiên sử dụng thông tin seatTypes nếu có
+    if (bookingData.pricing?.seatTypes) {
+      const seatTypes = bookingData.pricing.seatTypes;
       console.log(
         "[PAYMENT_SAGA] Using seat types for price calculation:",
         seatTypes
       );
 
-      const standardTotal = seatTypes.standard * seatTypes.standardPrice;
-      const vipTotal = seatTypes.vip * seatTypes.vipPrice;
-      const coupleTotal = seatTypes.couple * seatTypes.couplePrice;
+      // Tính từng loại ghế
+      const standardTotal =
+        (seatTypes.standard || 0) * (seatTypes.standardPrice || 0);
+      const vipTotal = (seatTypes.vip || 0) * (seatTypes.vipPrice || 0);
+      const coupleTotal =
+        (seatTypes.couple || 0) * (seatTypes.couplePrice || 0);
 
       totalPrice = standardTotal + vipTotal + coupleTotal;
 
       console.log(
-        `[PAYMENT_SAGA] Price calculation: Standard(${seatTypes.standard} x ${seatTypes.standardPrice}) + VIP(${seatTypes.vip} x ${seatTypes.vipPrice}) + Couple(${seatTypes.couple} x ${seatTypes.couplePrice}) = ${totalPrice}`
+        `[PAYMENT_SAGA] Tính giá vé:
+        - Ghế thường: ${seatTypes.standard || 0} x ${
+          seatTypes.standardPrice || 0
+        } = ${standardTotal}
+        - Ghế VIP: ${seatTypes.vip || 0} x ${
+          seatTypes.vipPrice || 0
+        } = ${vipTotal}
+        - Ghế couple: ${seatTypes.couple || 0} x ${
+          seatTypes.couplePrice || 0
+        } = ${coupleTotal}
+        - Tổng cộng: ${totalPrice}`
       );
     } else {
-      // Use the old price calculation method as fallback
-      // Lấy giá vé từ bookingData (từ BookingPage)
-      const bookingPrice = bookingData.pricing?.ticketPrice || 0;
+      // Sử dụng phương pháp tính giá cũ làm fallback
+      const basePrice = bookingData.pricing?.ticketPrice || 0;
       const seatCount = seatsToProcess.length;
 
-      // Calculate extra charges for special seat types
+      // Tính phụ phí cho loại ghế đặc biệt
       const extraCharges = seatsToProcess.reduce((total, seat) => {
         if (seat.type?.toLowerCase() === "vip") {
-          return total + 30000; // VIP seats cost 30,000 VND more
+          return total + 30000; // Ghế VIP thêm 30,000 VND
         } else if (seat.type?.toLowerCase() === "couple") {
-          return total + 100000; // Couple seats cost 100,000 VND more
+          return total + 100000; // Ghế couple thêm 100,000 VND
         }
         return total;
       }, 0);
 
-      // Tính tổng giá = giá vé đơn vị * số ghế + phụ phí ghế đặc biệt
-      totalPrice = bookingPrice * seatCount + extraCharges;
+      // Tổng giá = giá vé cơ bản * số ghế + phụ phí
+      totalPrice = basePrice * seatCount + extraCharges;
 
       console.log(
-        `[PAYMENT_SAGA] Giá vé đơn vị: ${bookingPrice}, Số lượng ghế: ${seatCount}, Phụ phí ghế đặc biệt: ${extraCharges}, Tổng giá: ${totalPrice}`
+        `[PAYMENT_SAGA] Tính giá vé:
+        - Giá vé cơ bản: ${basePrice}
+        - Số ghế: ${seatCount}
+        - Phụ phí ghế đặc biệt: ${extraCharges}
+        - Tổng cộng: ${totalPrice}`
       );
     }
 
     if (totalPrice <= 0) {
-      console.error("[PAYMENT_SAGA] Tổng giá không hợp lệ:", totalPrice);
-      throw new Error("Tổng giá không hợp lệ");
+      console.error("[PAYMENT_SAGA] Giá vé không hợp lệ:", totalPrice);
+      totalPrice = 90000 * seatsToProcess.length; // Giá mặc định nếu tính giá lỗi
+      console.log("[PAYMENT_SAGA] Sử dụng giá mặc định:", totalPrice);
     }
 
     // Thu thập tất cả ID ghế

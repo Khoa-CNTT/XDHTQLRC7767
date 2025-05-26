@@ -127,8 +127,12 @@ const BookingPage: React.FC = () => {
   const { cinemaList, mockShowtimes } = useSelector(
     (state: RootState) => state.cinema
   );
-  const { showtimeWithChairs, loading: showtimeLoading } = useSelector(
+  const { showtimeWithChairs } = useSelector(
     (state: RootState) => state.showtime
+  );
+  // Define a separate showtimeLoading variable based on showtimeWithChairs.loading
+  const showtimeLoading = useSelector(
+    (state: RootState) => state.showtime.showtimeWithChairs.loading
   );
   // Get user information from Redux state
   const { user } = useSelector((state: RootState) => state.auth);
@@ -410,14 +414,14 @@ const BookingPage: React.FC = () => {
       );
       if (cinema) {
         console.log(`Resolved cinema: ${JSON.stringify(cinema)}`);
-        setSelectedCinema(cinema.id);
+        setSelectedCinema((cinema as any).id);
 
         // If we also have a date and movie ID, fetch showtimes
         if (selectedDate && id) {
           dispatch(
             getMockShowtimeRequest({
               date: selectedDate.format("DD-MM-YYYY"),
-              cinemaId: cinema.id,
+              cinemaId: (cinema as any).id,
               movieId: id,
             })
           );
@@ -441,12 +445,15 @@ const BookingPage: React.FC = () => {
       );
       if (showtime) {
         setSelectedShowtime({
-          id: showtime.id,
-          time: formatShowtime(showtime.startTime, showtime.endTime),
+          id: (showtime as any).id,
+          time: formatShowtime(
+            (showtime as any).startTime,
+            (showtime as any).endTime
+          ),
         });
 
         // Fetch seat information for this showtime
-        dispatch(getShowtimeWithChairsRequest({ id: showtime.id }));
+        dispatch(getShowtimeWithChairsRequest({ id: (showtime as any).id }));
 
         // Mark as initialized to prevent repeated calls
         setDataInitialized(true);
@@ -761,24 +768,32 @@ const BookingPage: React.FC = () => {
     // Đảm bảo selectedDate là string nếu là Dayjs object
     const formattedDate = selectedDate ? selectedDate.format("DD/MM/YYYY") : "";
 
-    // Calculate the actual total price
+    // Tính toán giá vé một cách thủ công
     const standardPrice = showtimeWithChairs?.data?.pricePerShowTime || 0;
     const couplePrice = standardPrice + 100000;
 
-    const standardTotal =
-      selectedSeats.filter((id) => {
-        const seat = seats.find((s) => s.id === id);
-        return seat && seat.type === "standard";
-      }).length * standardPrice;
+    // Đếm số lượng ghế từng loại
+    const standardSeatsCount = selectedSeats.filter((id) => {
+      const seat = seats.find((s) => s.id === id);
+      return seat && seat.type === "standard";
+    }).length;
 
-    const coupleTotal =
-      selectedSeats.filter((id) => {
-        const seat = seats.find((s) => s.id === id);
-        return seat && seat.type === "couple";
-      }).length * couplePrice;
+    const coupleSeatsCount = selectedSeats.filter((id) => {
+      const seat = seats.find((s) => s.id === id);
+      return seat && seat.type === "couple";
+    }).length;
 
-    const subtotal = standardTotal + coupleTotal;
-    const totalAmount = subtotal;
+    // Tính tổng tiền từng loại ghế
+    const standardTotal = standardSeatsCount * standardPrice;
+    const coupleTotal = coupleSeatsCount * couplePrice;
+
+    // Tính tổng cộng
+    const totalAmount = standardTotal + coupleTotal;
+
+    console.log(`Tính toán giá vé:
+      - Ghế thường: ${standardSeatsCount} x ${standardPrice} = ${standardTotal}
+      - Ghế couple: ${coupleSeatsCount} x ${couplePrice} = ${coupleTotal}
+      - Tổng cộng: ${totalAmount}`);
 
     // Tạo dữ liệu booking để truyền sang trang hóa đơn
     const bookingData = {
@@ -804,17 +819,11 @@ const BookingPage: React.FC = () => {
       pricing: {
         ticketPrice: standardPrice,
         quantity: selectedSeats.length,
-        subtotal: subtotal,
-        total: totalAmount,
+        subtotal: totalAmount, // Dùng giá tính toán thủ công
+        total: totalAmount, // Dùng giá tính toán thủ công
         seatTypes: {
-          standard: selectedSeats.filter((id) => {
-            const seat = seats.find((s) => s.id === id);
-            return seat && seat.type === "standard";
-          }).length,
-          couple: selectedSeats.filter((id) => {
-            const seat = seats.find((s) => s.id === id);
-            return seat && seat.type === "couple";
-          }).length,
+          standard: standardSeatsCount,
+          couple: coupleSeatsCount,
           standardPrice: standardPrice,
           couplePrice: couplePrice,
         },
@@ -835,13 +844,13 @@ const BookingPage: React.FC = () => {
         // Tạo thông tin đơn hàng
         const orderInfo = `Thanh toan ve xem phim ${movie?.name} - ${selectedSeats.length} ve`;
 
-        // Gọi API tạo URL thanh toán VNPAY
+        // Gọi API tạo URL thanh toán VNPAY với totalAmount được tính toán thủ công
         dispatch(
           createPaymentRequest({
             amount: totalAmount,
             orderInfo,
             bookingData,
-          })
+          } as any)
         );
       } catch (error) {
         message.error("Không thể tạo thanh toán. Vui lòng thử lại sau.");

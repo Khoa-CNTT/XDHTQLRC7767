@@ -39,7 +39,7 @@ interface PaymentState {
 export interface PaymentRequest {
   amount: number;
   orderInfo: string;
-  bookingData?: Record<string, unknown>; // Thông tin đặt vé để sử dụng sau khi thanh toán
+  bookingData?: Record<string, any>; // Thông tin đặt vé để sử dụng sau khi thanh toán
 }
 
 // Định nghĩa kiểu dữ liệu cho response thanh toán thành công
@@ -164,7 +164,10 @@ const paymentSlice = createSlice({
     },
 
     // Xử lý kết quả từ VNPay callback
-    handlePaymentReturnRequest: (state) => {
+    handlePaymentReturnRequest: (
+      state,
+      action: PayloadAction<Record<string, string>>
+    ) => {
       state.loading = true;
       state.error = null;
     },
