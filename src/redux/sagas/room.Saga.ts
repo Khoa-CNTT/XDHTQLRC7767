@@ -84,15 +84,14 @@ export function* getRoomListSaga(
 ): Generator<any, void, any> {
   try {
     const cinemaId = action.payload;
-    let url = "/api/rooms";
+
+    console.log("cinemaId", cinemaId);
 
     // Type guard to check if cinemaId is an object with an id property
     const isCinemaObject = (obj: any): obj is { id: number } =>
       obj !== null && typeof obj === "object" && "id" in obj;
 
-    if (cinemaId && isCinemaObject(cinemaId)) {
-      url = `/api/rooms/${cinemaId.id}`;
-    }
+    const url = `/api/rooms/${cinemaId}`;
 
     const response = yield call(axiosInstance.get, url);
     yield put(getRoomListSuccess(response.data));

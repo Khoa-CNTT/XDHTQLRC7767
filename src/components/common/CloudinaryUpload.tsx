@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Upload, Button, message } from "antd";
 import { UploadOutlined, LoadingOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadProps } from "antd/es/upload/interface";
@@ -17,21 +17,29 @@ const CloudinaryUpload: React.FC<CloudinaryUploadProps> = ({
   label = "Upload Image",
   className,
 }) => {
-  console.log("day nè:", value, onChange);
   const [loading, setLoading] = useState<boolean>(false);
-  const [fileList, setFileList] = useState<UploadFile[]>(() => {
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [key, setKey] = useState<number>(0); // Thêm key để force re-render
+
+  // Cập nhật fileList khi value thay đổi
+  useEffect(() => {
+    // Force re-render khi value thay đổi
+    setKey((prevKey) => prevKey + 1);
+
     if (value) {
-      return [
+      setFileList([
         {
           uid: "-1",
           name: "image.png",
           status: "done",
           url: value,
         },
-      ];
+      ]);
+    } else {
+      // Reset fileList khi value rỗng
+      setFileList([]);
     }
-    return [];
-  });
+  }, [value]);
 
   // We're using any here because Ant Design's types are complex
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,7 +91,7 @@ const CloudinaryUpload: React.FC<CloudinaryUploadProps> = ({
 
   return (
     <div className={className}>
-      <Upload {...uploadProps}>
+      <Upload {...uploadProps} key={key}>
         {loading ? (
           <Button icon={<LoadingOutlined />} disabled>
             Uploading...

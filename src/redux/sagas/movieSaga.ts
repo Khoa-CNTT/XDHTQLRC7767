@@ -389,7 +389,7 @@ export function* updateMovieSaga(
       ? parseInt(data.releaseDate.substring(0, 4))
       : existingMovie.releaseYear;
 
-    // Merge with updates
+    // Chuẩn bị dữ liệu gửi lên API
     const movieRequest = {
       id: id,
       name: data.title || existingMovie.name,
@@ -399,8 +399,8 @@ export function* updateMovieSaga(
       director: data.director || existingMovie.director,
       actor: data.actor || existingMovie.actor || "",
       duration: data.duration || existingMovie.duration,
-      releaseYear: releaseYear, // Keep releaseYear as it's required by the backend
-      releaseDate: data.releaseDate || existingMovie.releaseDate || "", // Also include full releaseDate
+      releaseYear: releaseYear,
+      releaseDate: data.releaseDate || existingMovie.releaseDate || "",
       rating: data.rating !== undefined ? data.rating : existingMovie.rating,
       country: data.country || existingMovie.country || "",
       language: data.language || existingMovie.language || "",
@@ -409,7 +409,8 @@ export function* updateMovieSaga(
       content: data.content || existingMovie.content || "",
       genreIds:
         data.genreIds || existingMovie.movieGenres?.map((g: any) => g.id) || [],
-      status: data.status || existingMovie.status || 1,
+      status:
+        data.status !== undefined ? data.status : existingMovie.status || 1,
     };
 
     // Update the movie
@@ -419,11 +420,11 @@ export function* updateMovieSaga(
       movieRequest
     );
 
-    // Transform response to frontend Movie format
-    // Prioritize the full releaseDate if available, otherwise create from releaseYear
+    // Chuẩn bị dữ liệu trả về cho Redux store
     const updatedMovie = {
       id: response.data.id,
       title: response.data.name,
+      name: response.data.name,
       director: response.data.director || "",
       releaseDate:
         response.data.releaseDate ||
@@ -432,9 +433,16 @@ export function* updateMovieSaga(
           : undefined),
       duration: response.data.duration || 0,
       genre: response.data.movieGenres?.map((g: any) => g.name) || [],
-      status: response.data.status || data.status || existingMovie.status || 1,
-      poster: response.data.imageUrl || "https://via.placeholder.com/150x225",
+      genres: response.data.movieGenres || [],
+      movieGenres: response.data.movieGenres || [],
+      status:
+        response.data.status !== undefined
+          ? response.data.status
+          : data.status || existingMovie.status || 1,
+      poster: response.data.imageUrl || "",
+      imageUrl: response.data.imageUrl || "",
       backdrop: response.data.backdrop || "",
+      backdropUrl: response.data.backdrop || "",
       description: response.data.description || "",
       rating: response.data.rating || 0,
       actor: response.data.actor || "",

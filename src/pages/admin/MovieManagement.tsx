@@ -56,6 +56,9 @@ export interface Movie extends Omit<ReduxMovie, "genres"> {
   director: string; // Ensure director is required
   movieGenres?: { id: number; name: string }[]; // Add movieGenres property
   genres?: { id: number; name: string }[]; // Add genres property from direct API response
+  imageUrl?: string; // Add imageUrl property as alternative to poster
+  backdropUrl?: string; // Add backdropUrl property as alternative to backdrop
+  name?: string; // Add name property as alternative to title
 }
 
 export interface FilterValues {
@@ -159,49 +162,128 @@ const MovieManagement: React.FC = () => {
   };
 
   const showModal = (movie: Movie | null = null) => {
-    setCurrentMovie(movie);
-    setIsModalVisible(true);
-    if (movie) {
-      // Ánh xạ dữ liệu từ API vào form
-      const formData = {
-        // Sử dụng các trường từ API hoặc từ Redux store
-        id: movie.id,
-        title: movie.title || movie.name,
-        description: movie.description,
-        director: movie.director,
-        releaseDate: movie.releaseDate ? dayjs(movie.releaseDate) : null,
-        duration: movie.duration,
-        status: movie.status,
-        poster: movie.poster || (movie as any).imageUrl, // Fix for imageUrl property
-        backdrop: movie.backdrop,
-        rating: movie.rating,
-        country: movie.country,
-        language: movie.language,
-        subtitle: movie.subtitle,
-        ageLimit: movie.ageLimit,
-        content: movie.content,
-        // Xử lý thể loại
-        genreIds:
-          movie.movieGenres?.map((g) => g.id) ||
-          movie.genres?.map((g) => g.id) ||
-          [],
-      };
-      form.setFieldsValue(formData);
-    } else {
-      form.resetFields();
-    }
+    // Đóng tất cả modal trước
+    setIsModalVisible(false);
+    setIsViewModalVisible(false);
+
+    // Reset form trước khi set dữ liệu mới
+    form.resetFields();
+
+    // Reset hình ảnh một cách rõ ràng
+    form.setFieldsValue({
+      poster: "",
+      backdrop: "",
+    });
+
+    // Đảm bảo state được cập nhật trước khi mở modal mới
+    setTimeout(() => {
+      setCurrentMovie(movie);
+      setIsModalVisible(true);
+
+      if (movie) {
+        // Ánh xạ dữ liệu từ API vào form
+        const formData = {
+          // Sử dụng các trường từ API hoặc từ Redux store
+          id: movie.id,
+          title: movie.title || movie.name,
+          description: movie.description,
+          director: movie.director,
+          releaseDate: movie.releaseDate ? dayjs(movie.releaseDate) : null,
+          duration: movie.duration,
+          status: movie.status,
+          // Xử lý nhất quán cho poster và backdrop
+          poster: movie.poster || movie.imageUrl, // Ưu tiên poster nếu có, nếu không thì dùng imageUrl
+          backdrop: movie.backdrop || movie.backdropUrl, // Ưu tiên backdrop nếu có, nếu không thì dùng backdropUrl
+          rating: movie.rating,
+          country: movie.country,
+          language: movie.language,
+          subtitle: movie.subtitle,
+          ageLimit: movie.ageLimit,
+          content: movie.content,
+          actor: movie.actor,
+          // Xử lý thể loại
+          genreIds:
+            movie.movieGenres?.map((g) => g.id) ||
+            movie.genres?.map((g) => g.id) ||
+            [],
+        };
+
+        // Cập nhật form với dữ liệu của phim hiện tại
+        form.setFieldsValue(formData);
+      }
+    }, 100);
   };
 
   const showViewModal = (movie: Movie) => {
-    setCurrentMovie(movie);
-    setIsViewModalVisible(true);
+    // Đóng tất cả modal trước
+    setIsModalVisible(false);
+    setIsViewModalVisible(false);
+
+    // Reset hoàn toàn form và state
+    form.resetFields();
+
+    // Reset hình ảnh một cách rõ ràng
+    form.setFieldsValue({
+      poster: "",
+      backdrop: "",
+      title: "",
+      description: "",
+      director: "",
+      releaseDate: null,
+      duration: null,
+      status: 0,
+      rating: null,
+      country: "",
+      language: "",
+      subtitle: "",
+      ageLimit: null,
+      content: "",
+      actor: "",
+      genre: [],
+    });
+
+    // Đảm bảo state được cập nhật trước khi mở modal mới
+    setTimeout(() => {
+      setCurrentMovie(movie);
+      setIsViewModalVisible(true);
+    }, 100);
   };
 
   const handleCancel = () => {
+    // Đóng tất cả modal
     setIsModalVisible(false);
     setIsViewModalVisible(false);
+
+    // Reset state
     setCurrentMovie(null);
+
+    // Reset form và dữ liệu
     form.resetFields();
+
+    // Reset tất cả các trường một cách rõ ràng
+    form.setFieldsValue({
+      poster: "",
+      backdrop: "",
+      title: "",
+      description: "",
+      director: "",
+      releaseDate: null,
+      duration: null,
+      status: 0,
+      rating: null,
+      country: "",
+      language: "",
+      subtitle: "",
+      ageLimit: null,
+      content: "",
+      actor: "",
+      genre: [],
+    });
+
+    // Đảm bảo dữ liệu được reset hoàn toàn sau khi đóng modal
+    setTimeout(() => {
+      form.resetFields();
+    }, 200);
   };
 
   const handleSubmit = (values: any) => {
@@ -234,7 +316,31 @@ const MovieManagement: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    dispatch(deleteMovieRequest(id));
+    // Hiển thị modal xác nhận trước khi xóa
+    Modal.confirm({
+      title: "Xác nhận xóa phim",
+      content:
+        "Bạn có chắc chắn muốn xóa phim này không? Hành động này không thể hoàn tác.",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: () => {
+        // Thực hiện xóa sau khi xác nhận
+        dispatch(deleteMovieRequest(id));
+
+        // Đảm bảo form được reset sau khi xóa
+        handleCancel();
+
+        // Nếu phim đang được chọn trong danh sách bulk, loại bỏ khỏi danh sách
+        if (selectedRowKeys.includes(id)) {
+          setSelectedRowKeys(selectedRowKeys.filter((key) => key !== id));
+          // Kiểm tra xem còn phim nào được chọn không
+          if (selectedRowKeys.length <= 1) {
+            setBulkActionVisible(false);
+          }
+        }
+      },
+    });
   };
 
   const handleRowSelectionChange = (selectedKeys: React.Key[]) => {
@@ -243,9 +349,30 @@ const MovieManagement: React.FC = () => {
   };
 
   const handleBulkDelete = () => {
-    dispatch(bulkDeleteMoviesRequest(selectedRowKeys as number[]));
-    setSelectedRowKeys([]);
-    setBulkActionVisible(false);
+    // Không làm gì nếu không có phim nào được chọn
+    if (selectedRowKeys.length === 0) {
+      return;
+    }
+
+    // Hiển thị modal xác nhận trước khi xóa hàng loạt
+    Modal.confirm({
+      title: "Xác nhận xóa nhiều phim",
+      content: `Bạn có chắc chắn muốn xóa ${selectedRowKeys.length} phim đã chọn? Hành động này không thể hoàn tác.`,
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: () => {
+        // Thực hiện xóa nhiều phim sau khi xác nhận
+        dispatch(bulkDeleteMoviesRequest(selectedRowKeys as number[]));
+
+        // Reset trạng thái
+        setSelectedRowKeys([]);
+        setBulkActionVisible(false);
+
+        // Đảm bảo form được reset
+        handleCancel();
+      },
+    });
   };
 
   const handleBulkChangeStatus = (status: string) => {
@@ -316,6 +443,43 @@ const MovieManagement: React.FC = () => {
     return matchesFilters;
   }) as Movie[];
 
+  // Thêm hàm riêng để xử lý việc thêm mới
+  const handleAddNew = () => {
+    // Đóng tất cả modal trước
+    setIsModalVisible(false);
+    setIsViewModalVisible(false);
+
+    // Reset hoàn toàn form và state
+    form.resetFields();
+    setCurrentMovie(null);
+
+    // Reset hình ảnh một cách rõ ràng
+    form.setFieldsValue({
+      poster: "",
+      backdrop: "",
+      title: "",
+      description: "",
+      director: "",
+      releaseDate: null,
+      duration: null,
+      status: 0,
+      rating: null,
+      country: "",
+      language: "",
+      subtitle: "",
+      ageLimit: null,
+      content: "",
+      actor: "",
+      genre: [],
+    });
+
+    // Đảm bảo state được cập nhật trước khi mở modal mới
+    setTimeout(() => {
+      // Mở modal thêm mới
+      setIsModalVisible(true);
+    }, 100);
+  };
+
   return (
     <div>
       <PageHeader>
@@ -323,11 +487,7 @@ const MovieManagement: React.FC = () => {
         <Space>
           <Button icon={<ImportOutlined />}>Nhập Excel</Button>
           <Button icon={<ExportOutlined />}>Xuất Excel</Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal()}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
             Thêm phim mới
           </Button>
         </Space>

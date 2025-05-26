@@ -36,7 +36,7 @@ import {
   deleteEmployeeRequest,
   resetEmployeeState,
   RegisterEmployeeRequest,
-  Employee,
+  Employee as BaseEmployee,
 } from "../../redux/slices/staffSlice";
 import { RootState } from "../../redux/store";
 import CloudinaryUpload from "../../components/common/CloudinaryUpload";
@@ -70,10 +70,31 @@ const AvatarPreview = styled(Avatar)`
   margin-right: 16px;
 `;
 
-// Định nghĩa interface Position để phù hợp với backend model
+// Enhanced Position interface that matches backend
 interface Position {
-  id?: string | number;
-  name?: string;
+  id: number;
+  name: string;
+  isDelete?: boolean;
+}
+
+// Username object interface from backend
+interface UsernameObject {
+  username: string;
+  password?: string;
+  isDelete?: boolean;
+  isEnable?: boolean;
+  role: string;
+  isVerify?: boolean;
+  loginType?: string;
+  isNonePassword?: boolean;
+}
+
+// Extended Employee interface to match actual backend response
+interface Employee
+  extends Omit<BaseEmployee, "position" | "username" | "role"> {
+  position?: Position;
+  username?: UsernameObject;
+  // No direct role property as it's in the username object
 }
 
 const StaffManagement: React.FC = () => {
@@ -178,6 +199,15 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleEdit = (record: Employee) => {
+    // Don't allow editing of admin users
+    if (record.username?.role === "ADMIN") {
+      notificationUtils.error({
+        message: "Không có quyền",
+        description: "Bạn không có quyền chỉnh sửa tài khoản Admin",
+      });
+      return;
+    }
+
     form.setFieldsValue({
       fullName: record.fullName,
       email: record.email,
@@ -186,11 +216,11 @@ const StaffManagement: React.FC = () => {
       birthday: record.birthday ? moment(record.birthday) : null,
       address: record.address,
       cardId: record.cardId,
-      positionId: 1,
+      positionId: record.position?.id || 1,
       department: record.department,
-      username: record.username,
+      username: record.username?.username || "",
       password: "",
-      role: record.role || "EMPLOYEE",
+      role: record.username?.role || "EMPLOYEE",
     });
     setEditingId(record.id || null);
     setAvatarUrl(record.image || "");
@@ -198,6 +228,18 @@ const StaffManagement: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
+    // Find the employee by id
+    const employee = employees.find((emp) => emp.id === id);
+
+    // Don't allow deletion of admin users
+    if (employee?.username?.role === "ADMIN") {
+      notificationUtils.error({
+        message: "Không có quyền",
+        description: "Bạn không có quyền xóa tài khoản Admin",
+      });
+      return;
+    }
+
     dispatch(deleteEmployeeRequest(id));
   };
 
@@ -266,7 +308,7 @@ const StaffManagement: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<Employee> = [
+  const columns: ColumnsType<any> = [
     {
       title: "Avatar",
       dataIndex: "image",
@@ -328,7 +370,11 @@ const StaffManagement: React.FC = () => {
         { text: "Nhân viên", value: 3 },
       ],
       onFilter: (value, record) => {
-        const positionId = record.position?.id;
+        const position = record.position;
+        const positionId =
+          typeof position === "object" && position !== null
+            ? position.id
+            : undefined;
         return positionId === value;
       },
     },
@@ -386,24 +432,28 @@ const StaffManagement: React.FC = () => {
       key: "action",
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="Chỉnh sửa">
-            <ActionButton
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-              type="primary"
-              size="small"
-            />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Popconfirm
-              title="Bạn có chắc chắn muốn xóa nhân viên này?"
-              onConfirm={() => record.id && handleDelete(record.id)}
-              okText="Có"
-              cancelText="Không"
-            >
-              <ActionButton icon={<DeleteOutlined />} danger size="small" />
-            </Popconfirm>
-          </Tooltip>
+          {(!record.username?.role || record.username.role !== "ADMIN") && (
+            <>
+              <Tooltip title="Chỉnh sửa">
+                <ActionButton
+                  icon={<EditOutlined />}
+                  onClick={() => handleEdit(record)}
+                  type="primary"
+                  size="small"
+                />
+              </Tooltip>
+              <Tooltip title="Xóa">
+                <Popconfirm
+                  title="Bạn có chắc chắn muốn xóa nhân viên này?"
+                  onConfirm={() => record.id && handleDelete(record.id)}
+                  okText="Có"
+                  cancelText="Không"
+                >
+                  <ActionButton icon={<DeleteOutlined />} danger size="small" />
+                </Popconfirm>
+              </Tooltip>
+            </>
+          )}
         </Space>
       ),
     },
@@ -433,7 +483,7 @@ const StaffManagement: React.FC = () => {
       <TableContainer>
         <Table
           columns={columns}
-          dataSource={employees}
+          dataSource={employees as any[]}
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 10 }}

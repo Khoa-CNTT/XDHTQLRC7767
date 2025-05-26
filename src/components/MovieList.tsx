@@ -21,15 +21,20 @@ import HomePageSkeleton from "./home/HomePageSkeleton";
 const MovieListContainer = styled.div`
   width: 100%;
   background: linear-gradient(to bottom, #1a1a2e, #16213e);
-  padding: 40px 0;
+  padding: 60px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+
+  @media (max-width: 768px) {
+    padding: 40px 0;
+  }
 `;
 
 const MovieListContent = styled.div`
-  width: 80%;
-  max-width: 1200px;
+  width: 85%;
+  max-width: 1300px;
 
   @media (max-width: 768px) {
     width: 90%;
@@ -40,7 +45,7 @@ const TabsContainer = styled.div`
   display: flex;
   justify-content: center;
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -54,15 +59,17 @@ const TabButton = styled(Button)<{ $active?: boolean }>`
     props.$active ? "#00bfff" : "transparent"} !important;
   color: white !important;
   border: 2px solid ${(props) => (props.$active ? "#00bfff" : "white")} !important;
-  border-radius: 25px !important;
+  border-radius: 30px !important;
   font-weight: bold !important;
   padding: 0 30px !important;
-  height: 40px !important;
+  height: 45px !important;
   font-size: 16px !important;
+  transition: all 0.3s ease !important;
 
   &:hover {
     background-color: #00bfff !important;
     border-color: #00bfff !important;
+    transform: translateY(-2px);
   }
 `;
 
@@ -75,7 +82,7 @@ const MoviesSlider = styled.div`
 const MoviesContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 25px;
   min-height: 500px; /* Add a minimum height to prevent layout shifts */
 
   @media (max-width: 1024px) {
@@ -84,6 +91,7 @@ const MoviesContainer = styled.div`
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 
   @media (max-width: 480px) {
@@ -97,13 +105,18 @@ const MovieCard = styled.div`
   flex-direction: column;
   background-color: transparent;
   cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 `;
 
 const MoviePoster = styled.div`
-  height: 400px;
+  height: 350px;
   overflow: hidden;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   position: relative;
   background-color: #000;
 
@@ -113,6 +126,14 @@ const MoviePoster = styled.div`
 
   &:hover .overlay {
     opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    height: 320px;
+  }
+
+  @media (max-width: 480px) {
+    height: 400px;
   }
 `;
 
@@ -130,36 +151,41 @@ const PosterOverlay = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
   gap: 10px;
 `;
 
 const MovieTitle = styled.h3`
-  height: 60px;
+  min-height: 50px;
   color: white;
   text-align: center;
   font-weight: bold;
-  margin: 0;
+  margin: 0 0 10px 0;
   font-size: 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 `;
 
 const MovieInfo = styled.div`
   color: white;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  font-size: 14px;
 `;
 
 const ButtonsContainer = styled.div`
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 5px;
 `;
 
 const ActionButton = styled(Button)`
@@ -168,6 +194,10 @@ const ActionButton = styled(Button)`
   border: none !important;
   border-radius: 20px !important;
   font-weight: bold !important;
+  padding: 0 15px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
 
   &:hover {
     background-color: #0099cc !important;
@@ -181,7 +211,7 @@ const SliderButton = styled.div`
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   color: #00bfff;
   display: flex;
   align-items: center;
@@ -191,31 +221,30 @@ const SliderButton = styled.div`
   border-radius: 50%;
   z-index: 10;
   transition: all 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 191, 255, 0.8);
+    color: white;
     transform: translateY(-50%) scale(1.1);
   }
 `;
 
 const LeftSlideButton = styled(SliderButton)`
-  left: -20px;
+  left: -25px;
+
+  @media (max-width: 768px) {
+    left: -15px;
+  }
 `;
 
 const RightSlideButton = styled(SliderButton)`
-  right: -20px;
-`;
+  right: -25px;
 
-// MovieRating component used for future star rating display
-// const MovieRating = styled.div`
-//   position: absolute;
-//   top: 10px;
-//   right: 10px;
-//   background-color: rgba(0, 0, 0, 0.5);
-//   color: white;
-//   padding: 2px 5px;
-//   border-radius: 5px;
-// `;
+  @media (max-width: 768px) {
+    right: -15px;
+  }
+`;
 
 // Thêm styled component cho nút Chi tiết phim
 const DetailButton = styled(Button)`
@@ -224,6 +253,10 @@ const DetailButton = styled(Button)`
   border: none;
   border-radius: 20px;
   margin-right: 8px;
+  padding: 0 15px;
+  height: 32px;
+  display: flex;
+  align-items: center;
 
   &:hover {
     background-color: #0099cc;
@@ -237,6 +270,24 @@ const LoadingContainer = styled.div`
   align-items: center;
   min-height: 500px;
   width: 100%;
+`;
+
+// Add a styled component for pagination
+const PaginationIndicator = styled.div`
+  text-align: center;
+  margin-top: 30px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+`;
+
+const PageNumber = styled.span`
+  color: #00bfff;
+  font-weight: bold;
 `;
 
 const MovieList: React.FC = () => {
@@ -498,11 +549,10 @@ const MovieList: React.FC = () => {
 
         {/* Pagination indicator */}
         {!isLoading && totalMovies > 0 && (
-          <div
-            style={{ textAlign: "center", marginTop: "20px", color: "white" }}
-          >
-            Trang {currentPage + 1} / {totalPages}
-          </div>
+          <PaginationIndicator>
+            Trang <PageNumber>{currentPage + 1}</PageNumber> /{" "}
+            <PageNumber>{totalPages}</PageNumber>
+          </PaginationIndicator>
         )}
       </MovieListContent>
     </MovieListContainer>
