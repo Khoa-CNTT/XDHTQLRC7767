@@ -3,7 +3,10 @@ import { Form, Input, Button, notification, Spin } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import { changePasswordStart } from "../../redux/slices/authSlice";
+import {
+  changePasswordStart,
+  getUserInfoRequest,
+} from "../../redux/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
@@ -82,13 +85,6 @@ const PasswordChange: React.FC = () => {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
-
-  // Reset form chỉ khi đổi mật khẩu thành công
-  useEffect(() => {
-    if (isSuccess) {
-      form.resetFields();
-    }
-  }, [isSuccess, form]);
 
   if (userInfoLoading) {
     return (

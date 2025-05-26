@@ -171,6 +171,8 @@ function* changePasswordSaga(
     }
 
     yield put(changePasswordSuccess());
+    // Fetch updated user info after password change to get the latest isNonePassword value
+    yield put(getUserInfoRequest());
     notificationUtils.successMessage("Thành công", "Mật khẩu đã được thay đổi");
   } catch (error: any) {
     const errorMessage =

@@ -73,6 +73,7 @@ interface MovieDTO {
   description: string;
   director: string;
   actor?: string; // Từ API trả về
+  actors?: string[]; // Mảng actors mới
   country?: string; // Từ API trả về
   language?: string; // Từ API trả về
   subtitle?: string; // Từ API trả về
@@ -398,12 +399,42 @@ const CastItem = styled.div`
   padding: 16px;
   transition: all 0.3s ease;
   border-left: 3px solid #00bfff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 191, 255, 0.2);
     background: rgba(255, 255, 255, 0.12);
   }
+`;
+
+const ActorAvatar = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00bfff, #0080ff);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 127, 255, 0.3);
+`;
+
+const ActorImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const ActorInitials = styled.div`
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
 `;
 
 const CastName = styled.div`
@@ -1027,20 +1058,27 @@ const MovieDetail: React.FC = () => {
         formattedLocation.showtimes = location.showtimes.map((st) => {
           if (typeof st === "string") {
             return { id: 0, time: st }; // Fallback nếu là string
-          } else if (typeof st === "object") {
+          } else if (typeof st === "object" && st !== null) {
+            const stObj = st as any;
             return {
-              id: st.id || 0,
+              id: stObj.id || 0,
               time:
-                st.time || (st.startTime ? st.startTime.substring(0, 5) : ""),
+                stObj.time ||
+                (stObj.startTime ? stObj.startTime.substring(0, 5) : ""),
             };
           }
           return { id: 0, time: "" };
         });
       } else if (location.showTimes && Array.isArray(location.showTimes)) {
-        formattedLocation.showtimes = location.showTimes.map((st) => ({
-          id: st.id || 0,
-          time: st.startTime ? st.startTime.substring(0, 5) : st.time || "",
-        }));
+        formattedLocation.showtimes = location.showTimes.map((st) => {
+          const stObj = st as any;
+          return {
+            id: stObj.id || 0,
+            time: stObj.startTime
+              ? stObj.startTime.substring(0, 5)
+              : stObj.time || "",
+          };
+        });
       }
 
       return formattedLocation;
@@ -1282,6 +1320,7 @@ const MovieDetail: React.FC = () => {
     genre: movie?.movieGenres
       ? movie.movieGenres.map((genre: MovieGenre) => genre.name)
       : movie?.genre || [],
+    actors: movie?.actors || [],
     cast: movie?.actor
       ? [{ name: movie.actor, role: "Diễn viên chính" }]
       : movie?.cast || [],
@@ -1407,19 +1446,65 @@ const MovieDetail: React.FC = () => {
                         </h3>
                       </SectionHeader>
                       <CastList>
-                        {Array.isArray(processedMovie.cast) &&
-                        processedMovie.cast.length > 0 ? (
+                        {/* Ưu tiên hiển thị mảng actors nếu có */}
+                        {Array.isArray(processedMovie.actors) &&
+                        processedMovie.actors.length > 0 ? (
+                          processedMovie.actors.map(
+                            (actor: string, index: number) => {
+                              // Lấy chữ cái đầu của tên diễn viên để hiển thị khi không có ảnh
+                              const nameParts = actor.split(" ");
+                              const initials =
+                                nameParts.length > 1
+                                  ? `${nameParts[0][0]}${
+                                      nameParts[nameParts.length - 1][0]
+                                    }`
+                                  : actor.substring(0, 2);
+
+                              return (
+                                <CastItem key={index}>
+                                  <ActorAvatar>
+                                    <ActorInitials>{initials}</ActorInitials>
+                                  </ActorAvatar>
+                                  <CastName>{actor}</CastName>
+                                  <CastRole>Diễn viên</CastRole>
+                                </CastItem>
+                              );
+                            }
+                          )
+                        ) : Array.isArray(processedMovie.cast) &&
+                          processedMovie.cast.length > 0 ? (
                           processedMovie.cast.map(
-                            (actor: Actor, index: number) => (
-                              <CastItem key={index}>
-                                <CastName>
-                                  {actor.name || "Chưa cập nhật"}
-                                </CastName>
-                                <CastRole>
-                                  {actor.role || "Chưa cập nhật"}
-                                </CastRole>
-                              </CastItem>
-                            )
+                            (actor: Actor, index: number) => {
+                              // Lấy chữ cái đầu của tên diễn viên để hiển thị khi không có ảnh
+                              const nameParts = actor.name.split(" ");
+                              const initials =
+                                nameParts.length > 1
+                                  ? `${nameParts[0][0]}${
+                                      nameParts[nameParts.length - 1][0]
+                                    }`
+                                  : actor.name.substring(0, 2);
+
+                              return (
+                                <CastItem key={index}>
+                                  <ActorAvatar>
+                                    {actor.image ? (
+                                      <ActorImage
+                                        src={actor.image}
+                                        alt={actor.name}
+                                      />
+                                    ) : (
+                                      <ActorInitials>{initials}</ActorInitials>
+                                    )}
+                                  </ActorAvatar>
+                                  <CastName>
+                                    {actor.name || "Chưa cập nhật"}
+                                  </CastName>
+                                  <CastRole>
+                                    {actor.role || "Diễn viên"}
+                                  </CastRole>
+                                </CastItem>
+                              );
+                            }
                           )
                         ) : (
                           <div style={{ color: "white" }}>
