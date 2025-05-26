@@ -116,7 +116,8 @@ function* createShowtimeSaga(
   } catch (error) {
     const err = error as AxiosError;
     const errorMessage =
-      err.response?.data?.message || "Không thể tạo lịch chiếu mới";
+      err.response?.data?.message ||
+      "Không thể tạo lịch chiếu mới vì trùng lịch chiếu";
     yield put(createShowtimeFailure(errorMessage));
 
     // Check if error is related to conflict or overlapping

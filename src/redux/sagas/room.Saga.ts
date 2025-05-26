@@ -296,7 +296,7 @@ export function* updateRoomSaga(
     } else {
       notificationUtils.error({
         message: "Cập nhật phòng chiếu thất bại",
-        description: errorMessage,
+        description: "Phòng chiếu đang được sử dụng trong lịch chiếu.",
       });
     }
   }
@@ -321,9 +321,7 @@ export function* deleteRoomSaga(
     yield put(deleteRoomFailure(errorMessage));
     notificationUtils.error({
       message: "Xóa phòng chiếu thất bại",
-      description:
-        errorMessage +
-        ". Phòng chiếu có thể đang được sử dụng trong lịch chiếu.",
+      description: "Phòng chiếu đang được sử dụng trong lịch chiếu.",
     });
   }
 }
