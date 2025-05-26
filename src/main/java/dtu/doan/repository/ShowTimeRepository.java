@@ -88,4 +88,9 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
     GROUP BY s.id
 """, nativeQuery = true)
     List<Object[]> getAllShowtimeStatistics();
+
+    @Query("SELECT s FROM ShowTime s WHERE s.room.id = :roomId AND s.status = 'ACTIVE'")
+    List<ShowTime> findAllShowtimesInOneRoom(
+            @Param("roomId") Long roomId
+    );
 }

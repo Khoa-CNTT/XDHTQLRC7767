@@ -7,6 +7,7 @@ import dtu.doan.model.SeatFormat;
 import dtu.doan.repository.CinemaRepository;
 import dtu.doan.repository.RoomRepository;
 import dtu.doan.repository.SeatFormatRepository;
+import dtu.doan.repository.ShowTimeRepository;
 import dtu.doan.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,9 @@ public class RoomServiceImpl implements RoomService {
     @Autowired
     private SeatFormatRepository seatFormatRepository;
 
+    @Autowired
+    private ShowTimeRepository showTimeRepository;
+
     @Override
     public List<Room> findAllRooms() {
         return roomRepository.findAll();
@@ -38,113 +42,112 @@ public class RoomServiceImpl implements RoomService {
     public RoomDTO createRoomWithSeats(RoomDTO room) {
         int capacity = room.getCapacity();
         List<SeatFormat> seatFormats = new ArrayList<>();
+        List<Room> existingRooms = roomRepository.findRoomsByCinemaId(
+                Long.valueOf(room.getCinemaId())
+        );
+        if (existingRooms.stream().anyMatch(r -> r.getName().equals(room.getName()))) {
+            throw new RuntimeException("Room with name " + room.getName() + " already exists in this cinema.");
+        } else {
+            // Fetch the Cinema and validate
+            Cinema cinema = cinemaRepository.findByid(room.getCinemaId());
+            if (cinema == null) {
+                throw new RuntimeException("Cinema not found with id: " + room.getCinemaId());
+            }
 
-        // Fetch the Cinema and validate
-        Cinema cinema = cinemaRepository.findByid(room.getCinemaId());
-        if (cinema == null) {
-            throw new RuntimeException("Cinema not found with id: " + room.getCinemaId());
+            Room room1 = new Room();
+            room1.setName(room.getName());
+            room1.setType(room.getType());
+            room1.setCapacity(capacity);
+            room1.setStatus("ACTIVE");
+            room1.setCinema(cinema); // Ensure Cinema is set
+
+            // Save Room to generate ID
+            Room savedRoom = roomRepository.save(room1);
+
+            for (int i = 1; i <= capacity; i++) {
+                SeatFormat seat = new SeatFormat();
+                seat.setName(String.valueOf(i));
+                seat.setRoom(savedRoom);
+                seat.setType(i > capacity - 10 ? "COUPLE" : "STANDARD");
+                seatFormats.add(seat);
+            }
+
+            // Save seats
+            seatFormatRepository.saveAll(seatFormats);
+            savedRoom.setSeats(new HashSet<>(seatFormats));
+
+            // Return DTO
+            RoomDTO roomDTO = new RoomDTO();
+            roomDTO.setStatus(savedRoom.getStatus());
+            roomDTO.setName(savedRoom.getName());
+            roomDTO.setType(savedRoom.getType());
+            roomDTO.setCapacity(savedRoom.getCapacity());
+            roomDTO.setCinemaId(savedRoom.getCinema().getName()); // Cinema is now guaranteed to be non-null
+            return roomDTO;
         }
-
-        Room room1 = new Room();
-        room1.setName(room.getName());
-        room1.setType(room.getType());
-        room1.setCapacity(capacity);
-        room1.setStatus("ACTIVE");
-        room1.setCinema(cinema); // Ensure Cinema is set
-
-        // Save Room to generate ID
-        Room savedRoom = roomRepository.save(room1);
-
-        for (int i = 1; i <= capacity; i++) {
-            SeatFormat seat = new SeatFormat();
-            seat.setName(String.valueOf(i));
-            seat.setRoom(savedRoom);
-            seat.setType(i > capacity - 10 ? "COUPLE" : "STANDARD");
-            seatFormats.add(seat);
-        }
-
-        // Save seats
-        seatFormatRepository.saveAll(seatFormats);
-        savedRoom.setSeats(new HashSet<>(seatFormats));
-
-        // Return DTO
-        RoomDTO roomDTO = new RoomDTO();
-        roomDTO.setStatus(savedRoom.getStatus());
-        roomDTO.setName(savedRoom.getName());
-        roomDTO.setType(savedRoom.getType());
-        roomDTO.setCapacity(savedRoom.getCapacity());
-        roomDTO.setCinemaId(savedRoom.getCinema().getName()); // Cinema is now guaranteed to be non-null
-        return roomDTO;
     }
-
 
 
     @Transactional
     @Override
     public void updateRoom(Long id, RoomDTO roomDTO) {
-        Optional<Room> optionalRoom = roomRepository.findById(id);
-        if (!optionalRoom.isPresent()) {
-            throw new RuntimeException("Room not found with id: " + id);
-        }
+        if (showTimeRepository.findAllShowtimesInOneRoom(id).size() > 0) {
+            throw new RuntimeException("Cannot update room with existing showtimes.");
 
-        Room room = optionalRoom.get();
-        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
-        if (cinema == null) {
-            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
-        }
+        } else {
+            Optional<Room> optionalRoom = roomRepository.findById(id);
+            if (!optionalRoom.isPresent()) {
+                throw new RuntimeException("Room not found with id: " + id);
+            }
 
-        // Update room details
-        room.setName(roomDTO.getName());
-        room.setType(roomDTO.getType());
-        room.setCinema(cinema);
+            Room room = optionalRoom.get();
+            Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
+            if (cinema == null) {
+                throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
+            }
 
-        // Handle capacity and seat updates
-        int newCapacity = roomDTO.getCapacity();
-        if (newCapacity != room.getCapacity()) {
-            room.setCapacity(newCapacity);
+            // Update room details
+            room.setName(roomDTO.getName());
+            room.setType(roomDTO.getType());
+            room.setCinema(cinema);
 
-            // Recreate seats based on new capacity
-            int cols = 10;
-            int rows = (int) Math.ceil((double) newCapacity / cols);
-            Set<SeatFormat> newSeatFormats = new HashSet<>();
-
-            // Delete existing seats
-            seatFormatRepository.deleteAll(room.getSeats());
-
-            // Create new seats
-            for (int i = 0; i < rows; i++) {
-                char rowLetter = (char) ('A' + i);
-                for (int j = 1; j <= cols; j++) {
-                    int currentSeatIndex = i * cols + (j - 1);
-                    if (currentSeatIndex >= newCapacity) break;
-
+            // Handle capacity and seat updates
+            int newCapacity = roomDTO.getCapacity();
+            if (newCapacity != room.getCapacity()) {
+                room.setCapacity(newCapacity);
+                // Recreate seats based on new capacity
+                Set<SeatFormat> newSeatFormats = new HashSet<>();
+                // Delete existing seats
+                seatFormatRepository.deleteAll(room.getSeats());
+                // Create new seats
+                for (int i = 1; i <= newCapacity; i++) {
                     SeatFormat seat = new SeatFormat();
-                    seat.setName(rowLetter + String.valueOf(j));
+                    seat.setName(String.valueOf(i));
                     seat.setRoom(room);
-                    seat.setType(currentSeatIndex >= newCapacity - 10 ? "COUPLE" : "STANDARD");
-
+                    seat.setType(i > newCapacity - 10 ? "COUPLE" : "STANDARD");
                     newSeatFormats.add(seat);
                 }
+                seatFormatRepository.saveAll(newSeatFormats);
+                room.setSeats(newSeatFormats);
             }
-            seatFormatRepository.saveAll(newSeatFormats);
-            room.setSeats(newSeatFormats);
-        }
 
-        roomRepository.save(room);
+            roomRepository.save(room);
+        }
     }
 
     @Transactional
     @Override
     public void deleteRoom(Long id) {
-        Optional<Room> optionalRoom = roomRepository.findById(id);
-        if (!optionalRoom.isPresent()) {
-            throw new RuntimeException("Room not found with id: " + id);
+        if (showTimeRepository.findAllShowtimesInOneRoom(id).size() > 0) {
+            throw new RuntimeException("Cannot delete room with existing showtimes.");
+        } else {
+            Optional<Room> optionalRoom = roomRepository.findById(id);
+            if (!optionalRoom.isPresent()) {
+                throw new RuntimeException("Room not found with id: " + id);
+            }
+            Room room = optionalRoom.get();
+            room.setStatus("INACTIVE");
+            roomRepository.save(room);
         }
-
-        Room room = optionalRoom.get();
-        // Delete associated seats
-        seatFormatRepository.deleteAll(room.getSeats());
-        // Delete the room
-        roomRepository.delete(room);
     }
 }
