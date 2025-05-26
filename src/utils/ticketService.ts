@@ -32,6 +32,8 @@ export interface TicketHistoryDTO {
   date: string;
   cinemaName: string;
   startTime: string;
+  totalPrice: number;
+  chairName: string[];
 }
 
 /**

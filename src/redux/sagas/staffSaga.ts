@@ -89,11 +89,13 @@ export function* getEmployeeListSaga(
     yield put(getEmployeeListSuccess(response.data));
   } catch (error) {
     const apiError = error as ApiError;
-    yield put(
-      getEmployeeListFailure(
-        apiError.response?.data?.message || "Không thể lấy danh sách nhân viên"
-      )
-    );
+    const errorMessage =
+      apiError.response?.data?.message || "Không thể lấy danh sách nhân viên";
+    yield put(getEmployeeListFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -110,11 +112,13 @@ export function* getEmployeeDetailSaga(
     yield put(getEmployeeDetailSuccess(response.data));
   } catch (error) {
     const apiError = error as ApiError;
-    yield put(
-      getEmployeeDetailFailure(
-        apiError.response?.data?.message || "Không thể lấy thông tin nhân viên"
-      )
-    );
+    const errorMessage =
+      apiError.response?.data?.message || "Không thể lấy thông tin nhân viên";
+    yield put(getEmployeeDetailFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -132,11 +136,27 @@ export function* addEmployeeSaga(action: AddEmployeeAction): SagaIterator {
     yield put(getEmployeeListRequest({}));
   } catch (error) {
     const apiError = error as ApiError;
-    yield put(
-      addEmployeeFailure(
-        apiError.response?.data?.message || "Không thể thêm nhân viên mới"
-      )
-    );
+    const errorMessage =
+      apiError.response?.data?.message || "Không thể thêm nhân viên mới";
+    yield put(addEmployeeFailure(errorMessage));
+
+    // Check if error is related to duplicate information
+    if (
+      errorMessage.toLowerCase().includes("duplicate") ||
+      errorMessage.toLowerCase().includes("đã tồn tại") ||
+      errorMessage.toLowerCase().includes("already exists")
+    ) {
+      notificationUtils.error({
+        message: "Thêm nhân viên thất bại",
+        description:
+          "Thông tin nhân viên đã tồn tại trong hệ thống. Vui lòng kiểm tra email, số điện thoại hoặc username.",
+      });
+    } else {
+      notificationUtils.error({
+        message: "Thêm nhân viên thất bại",
+        description: errorMessage,
+      });
+    }
   }
 }
 
@@ -157,12 +177,28 @@ export function* updateEmployeeSaga(
     yield put(getEmployeeListRequest({}));
   } catch (error) {
     const apiError = error as ApiError;
-    yield put(
-      updateEmployeeFailure(
-        apiError.response?.data?.message ||
-          "Không thể cập nhật thông tin nhân viên"
-      )
-    );
+    const errorMessage =
+      apiError.response?.data?.message ||
+      "Không thể cập nhật thông tin nhân viên";
+    yield put(updateEmployeeFailure(errorMessage));
+
+    // Check if error is related to duplicate information
+    if (
+      errorMessage.toLowerCase().includes("duplicate") ||
+      errorMessage.toLowerCase().includes("đã tồn tại") ||
+      errorMessage.toLowerCase().includes("already exists")
+    ) {
+      notificationUtils.error({
+        message: "Cập nhật nhân viên thất bại",
+        description:
+          "Thông tin nhân viên đã tồn tại trong hệ thống. Vui lòng kiểm tra email, số điện thoại hoặc username.",
+      });
+    } else {
+      notificationUtils.error({
+        message: "Cập nhật nhân viên thất bại",
+        description: errorMessage,
+      });
+    }
   }
 }
 
@@ -183,11 +219,14 @@ export function* deleteEmployeeSaga(
     yield put(getEmployeeListRequest({}));
   } catch (error) {
     const apiError = error as ApiError;
-    yield put(
-      deleteEmployeeFailure(
-        apiError.response?.data?.message || "Không thể xóa nhân viên"
-      )
-    );
+    const errorMessage =
+      apiError.response?.data?.message || "Không thể xóa nhân viên";
+    yield put(deleteEmployeeFailure(errorMessage));
+    notificationUtils.error({
+      message: "Xóa nhân viên thất bại",
+      description:
+        errorMessage + ". Nhân viên có thể đang được sử dụng trong hệ thống.",
+    });
   }
 }
 

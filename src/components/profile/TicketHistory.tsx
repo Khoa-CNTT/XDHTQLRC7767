@@ -6,6 +6,8 @@ import {
   ClockCircleOutlined,
   EnvironmentOutlined,
   VideoCameraOutlined,
+  TagOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -23,7 +25,8 @@ interface TicketHistoryDTO {
   date: string;
   cinemaName: string;
   startTime: string;
-  // Add other fields as needed
+  totalPrice: number;
+  chairName: string[];
 }
 
 const HistoryContainer = styled(motion.div)`
@@ -163,6 +166,11 @@ const DetailValue = styled.span`
   color: #333;
 `;
 
+const ChairBadge = styled(Tag)`
+  margin: 0 4px 4px 0;
+  padding: 2px 8px;
+`;
+
 const QRContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -253,6 +261,13 @@ const TicketHistory: React.FC = () => {
       title: "Giờ",
       dataIndex: "startTime",
       key: "startTime",
+    },
+    {
+      title: "Giá vé",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      render: (price: number) => `${price.toLocaleString("vi-VN")} đ`,
+      responsive: ["md"],
     },
     {
       title: "",
@@ -398,6 +413,28 @@ const TicketHistory: React.FC = () => {
                   </DetailIcon>
                   <DetailLabel>Mã vé:</DetailLabel>
                   <DetailValue>#{selectedTicket.id}</DetailValue>
+                </DetailItem>
+                <DetailItem>
+                  <DetailIcon>
+                    <TagOutlined />
+                  </DetailIcon>
+                  <DetailLabel>Ghế:</DetailLabel>
+                  <DetailValue>
+                    {selectedTicket.chairName.map((chair) => (
+                      <ChairBadge key={chair} color="blue">
+                        {chair}
+                      </ChairBadge>
+                    ))}
+                  </DetailValue>
+                </DetailItem>
+                <DetailItem>
+                  <DetailIcon>
+                    <DollarOutlined />
+                  </DetailIcon>
+                  <DetailLabel>Tổng tiền:</DetailLabel>
+                  <DetailValue>
+                    {selectedTicket.totalPrice.toLocaleString("vi-VN")} đ
+                  </DetailValue>
                 </DetailItem>
               </DetailsContainer>
             </TicketDetails>

@@ -16,6 +16,7 @@ import {
   Input,
   Popconfirm,
   Card,
+  InputNumber,
 } from "antd";
 import {
   PlusOutlined,
@@ -115,7 +116,7 @@ const ShowtimeManagement: React.FC = () => {
         pricePerShowTime: showtime.pricePerShowTime,
       });
       // Load rooms for this cinema
-      dispatch(getRoomListRequest({ id: showtime.room.cinema.id }));
+      dispatch(getRoomListRequest(showtime.room.cinema.id));
     } else {
       form.resetFields();
     }
@@ -337,7 +338,7 @@ const ShowtimeManagement: React.FC = () => {
               placeholder="Chọn rạp"
               onChange={(value) => {
                 console.log(value);
-                dispatch(getRoomListRequest({ id: value }));
+                dispatch(getRoomListRequest(value));
               }}
             >
               {cinemaList?.data?.map((cinema: any) => (
@@ -410,15 +411,30 @@ const ShowtimeManagement: React.FC = () => {
           <Form.Item
             name="pricePerShowTime"
             label="Giá vé (VNĐ)"
-            rules={[{ required: true, message: "Vui lòng nhập giá vé!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập giá vé!" },
+              {
+                type: "number",
+                min: 45000,
+                message: "Giá vé phải từ 45.000đ trở lên!",
+              },
+              {
+                type: "number",
+                max: 140000,
+                message: "Giá vé phải nhỏ hơn 140.000đ!",
+              },
+            ]}
           >
-            <Select placeholder="Chọn giá vé">
-              <Option value={75000}>75,000đ</Option>
-              <Option value={85000}>85,000đ</Option>
-              <Option value={90000}>90,000đ</Option>
-              <Option value={100000}>100,000đ</Option>
-              <Option value={120000}>120,000đ (VIP)</Option>
-            </Select>
+            <InputNumber
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) =>
+                value ? Number(value.replace(/\$\s?|(,*)/g, "")) : undefined
+              }
+              placeholder="Nhập giá vé"
+            />
           </Form.Item>
 
           <div style={{ textAlign: "right", marginTop: 24 }}>

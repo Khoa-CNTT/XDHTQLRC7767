@@ -32,6 +32,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getAllPaymentsRequest,
   updatePaymentStatusRequest,
+  Payment,
 } from "../../redux/slices/paymentSlice";
 import { RootState } from "../../redux/store";
 
@@ -59,26 +60,8 @@ const StyledBadge = styled(Badge)`
   }
 `;
 
-// Interface for Payment from backend
-interface Payment {
-  paymentId: number | null;
-  paymentDate: string;
-  paymentAmount: number;
-  paymentStatus: string;
-  ticketName: string[];
-  cinemaName: string;
-  roomName: string;
-  showDate: string;
-  showTime: string;
-  movieName: string;
-}
-
-// Interface for payment details with additional customer info
-interface PaymentDetail extends Payment {
-  customerName?: string;
-  customerEmail?: string;
-  customerPhone?: string;
-}
+// Interface for payment details
+interface PaymentDetail extends Payment {}
 
 const OrderManagement: React.FC = () => {
   const dispatch = useDispatch();
@@ -118,15 +101,8 @@ const OrderManagement: React.FC = () => {
   };
 
   const showPaymentDetail = (payment: Payment) => {
-    // Enhance payment with additional details for display
-    const paymentDetail: PaymentDetail = {
-      ...payment,
-      // These could be fetched from a different API if available
-      customerName: "Khách hàng",
-      customerEmail: "customer@example.com",
-      customerPhone: "0123456789",
-    };
-    setCurrentPayment(paymentDetail);
+    // Set current payment directly from API data
+    setCurrentPayment(payment);
     setDrawerVisible(true);
   };
 
@@ -443,7 +419,7 @@ const OrderManagement: React.FC = () => {
                 {currentPayment.customerEmail || "N/A"}
               </Descriptions.Item>
               <Descriptions.Item label="Số điện thoại">
-                {currentPayment.customerPhone || "N/A"}
+                {currentPayment.customerPhoneNumber || "Chưa cập nhật"}
               </Descriptions.Item>
             </Descriptions>
 

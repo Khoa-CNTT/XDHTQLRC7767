@@ -214,7 +214,9 @@ interface VnpayResponse {
 }
 
 // Saga xử lý tạo URL thanh toán
-function* createPaymentSaga(action: PayloadAction<PaymentRequest>) {
+export function* createPaymentSaga(
+  action: PayloadAction<PaymentRequest>
+): Generator<any, void, any> {
   try {
     const { amount, orderInfo, bookingData } = action.payload;
 
@@ -238,15 +240,18 @@ function* createPaymentSaga(action: PayloadAction<PaymentRequest>) {
     } else {
       throw new Error("Không nhận được URL thanh toán từ VNPay");
     }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Không thể tạo thanh toán";
-    yield put(createPaymentFailure(errorMessage));
-
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Create payment error:", error);
+    yield put(
+      createPaymentFailure(
+        error.response?.data?.message || "Không thể tạo yêu cầu thanh toán"
+      )
+    );
     notificationUtils.error({
-      message: "Lỗi thanh toán",
+      message: "Tạo yêu cầu thanh toán thất bại",
       description:
-        errorMessage || "Không thể tạo thanh toán. Vui lòng thử lại sau.",
+        error.response?.data?.message ||
+        "Không thể tạo yêu cầu thanh toán. Vui lòng thử lại sau.",
     });
   }
 }
@@ -254,7 +259,7 @@ function* createPaymentSaga(action: PayloadAction<PaymentRequest>) {
 // Saga xử lý kết quả trả về từ VNPay
 export function* handlePaymentReturnSaga(
   action: PayloadAction<Record<string, string>>
-) {
+): Generator<any, void, any> {
   try {
     const startTime = Date.now();
     console.log(
@@ -327,13 +332,19 @@ export function* handlePaymentReturnSaga(
         )
       );
     }
-  } catch (error) {
-    console.error("[PAYMENT_SAGA] Error in handlePaymentReturnSaga:", error);
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Handle payment return error:", error);
     yield put(
       handlePaymentReturnFailure(
-        error instanceof Error ? error.message : "Unknown error"
+        error.response?.data?.message || "Xử lý thanh toán thất bại"
       )
     );
+    notificationUtils.error({
+      message: "Xử lý kết quả thanh toán thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể xác nhận kết quả thanh toán. Vui lòng liên hệ quản trị viên.",
+    });
   }
 }
 
@@ -346,7 +357,9 @@ interface PagedResponse<T> {
 }
 
 // Get payment page saga
-function* getPaymentsPageSaga(action: PayloadAction<PaymentPageParams>) {
+export function* getPaymentsPageSaga(
+  action: PayloadAction<PaymentPageParams>
+): Generator<any, void, any> {
   try {
     const { page } = action.payload;
     // URL: http://localhost:8080/api/payment
@@ -356,19 +369,28 @@ function* getPaymentsPageSaga(action: PayloadAction<PaymentPageParams>) {
     );
     const data = response.data as PagedResponse<Payment>;
     yield put(getPaymentsPageSuccess(data));
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể lấy danh sách thanh toán";
-    yield put(getPaymentsPageFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get payments page error:", error);
+    yield put(
+      getPaymentsPageFailure(
+        error.response?.data?.message || "Không thể lấy danh sách thanh toán"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy danh sách thanh toán. Vui lòng thử lại sau.",
+    });
   }
 }
 
 type MonthlyRevenueData = Array<[number, number]>;
 
 // Get yearly revenue saga
-function* getYearlyRevenueSaga(action: PayloadAction<YearlyRevenueParams>) {
+export function* getYearlyRevenueSaga(
+  action: PayloadAction<YearlyRevenueParams>
+): Generator<any, void, any> {
   try {
     const { year } = action.payload;
     // URL: http://localhost:8080/api/payment/total-revenue/2025
@@ -393,17 +415,26 @@ function* getYearlyRevenueSaga(action: PayloadAction<YearlyRevenueParams>) {
     }
 
     yield put(getYearlyRevenueSuccess(completeData));
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể lấy doanh thu theo tháng";
-    yield put(getYearlyRevenueFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get yearly revenue error:", error);
+    yield put(
+      getYearlyRevenueFailure(
+        error.response?.data?.message || "Không thể lấy doanh thu theo năm"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu thống kê",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy doanh thu theo năm. Vui lòng thử lại sau.",
+    });
   }
 }
 
 // Get daily revenue saga
-function* getDailyRevenueSaga(action: PayloadAction<DailyRevenueParams>) {
+export function* getDailyRevenueSaga(
+  action: PayloadAction<DailyRevenueParams>
+): Generator<any, void, any> {
   try {
     const { date } = action.payload;
     const response = yield call(
@@ -412,19 +443,28 @@ function* getDailyRevenueSaga(action: PayloadAction<DailyRevenueParams>) {
     );
     const data = response.data as DailyRevenueDTO;
     yield put(getDailyRevenueSuccess(data));
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể lấy doanh thu theo ngày";
-    yield put(getDailyRevenueFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get daily revenue error:", error);
+    yield put(
+      getDailyRevenueFailure(
+        error.response?.data?.message || "Không thể lấy doanh thu theo ngày"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu thống kê",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy doanh thu theo ngày. Vui lòng thử lại sau.",
+    });
   }
 }
 
 type StatisticsData = Array<[string, number, number]>;
 
 // Get payment statistics saga
-function* getPaymentStatisticsSaga(action: PayloadAction<StatisticsParams>) {
+export function* getPaymentStatisticsSaga(
+  action: PayloadAction<StatisticsParams>
+): Generator<any, void, any> {
   try {
     const { startDate, endDate } = action.payload;
     // URL: http://localhost:8080/api/payment/statistics?startDate=2025-05-15&endDate=2025-06-15
@@ -434,33 +474,47 @@ function* getPaymentStatisticsSaga(action: PayloadAction<StatisticsParams>) {
     );
     const data = response.data as StatisticsData;
     yield put(getPaymentStatisticsSuccess(data));
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể lấy thống kê thanh toán";
-    yield put(getPaymentStatisticsFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get payment statistics error:", error);
+    yield put(
+      getPaymentStatisticsFailure(
+        error.response?.data?.message || "Không thể lấy thống kê thanh toán"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu thống kê",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy thống kê thanh toán. Vui lòng thử lại sau.",
+    });
   }
 }
 
 // New saga to get all payments
-function* getAllPaymentsSaga() {
+export function* getAllPaymentsSaga(): Generator<any, void, any> {
   try {
     const response = yield call(axiosInstance.get, "/api/payment/all");
     yield put(getAllPaymentsSuccess(response.data));
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể lấy danh sách thanh toán";
-    yield put(getAllPaymentsFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get all payments error:", error);
+    yield put(
+      getAllPaymentsFailure(
+        error.response?.data?.message || "Không thể lấy tất cả thanh toán"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy tất cả dữ liệu thanh toán. Vui lòng thử lại sau.",
+    });
   }
 }
 
 // New saga to update payment status
-function* updatePaymentStatusSaga(
+export function* updatePaymentStatusSaga(
   action: PayloadAction<UpdatePaymentStatusParams>
-) {
+): Generator<any, void, any> {
   try {
     const { paymentId, status } = action.payload;
     // Call API to update payment status
@@ -472,12 +526,20 @@ function* updatePaymentStatusSaga(
     yield put(updatePaymentStatusSuccess(response.data));
     // Refresh payments list after update
     yield put(getAllPaymentsRequest());
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Không thể cập nhật trạng thái thanh toán";
-    yield put(updatePaymentStatusFailure(errorMessage));
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Update payment status error:", error);
+    yield put(
+      updatePaymentStatusFailure(
+        error.response?.data?.message ||
+          "Không thể cập nhật trạng thái thanh toán"
+      )
+    );
+    notificationUtils.error({
+      message: "Cập nhật trạng thái thanh toán thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể cập nhật trạng thái thanh toán. Vui lòng thử lại sau.",
+    });
   }
 }
 

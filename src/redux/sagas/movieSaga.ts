@@ -280,6 +280,11 @@ export function* getAdminMovieListSaga(
         error.response?.data?.message || "Không thể lấy danh sách phim"
       )
     );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description:
+        error.response?.data?.message || "Không thể lấy danh sách phim",
+    });
   }
 }
 
@@ -359,6 +364,12 @@ export function* addMovieSaga(
         error.response?.data?.message || "Không thể thêm phim mới"
       )
     );
+    notificationUtils.error({
+      message: "Thêm phim thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể thêm phim mới. Vui lòng kiểm tra lại thông tin.",
+    });
   }
 }
 
@@ -445,6 +456,12 @@ export function* updateMovieSaga(
         error.response?.data?.message || "Không thể cập nhật phim"
       )
     );
+    notificationUtils.error({
+      message: "Cập nhật phim thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể cập nhật thông tin phim. Vui lòng thử lại sau.",
+    });
   }
 }
 
@@ -464,6 +481,12 @@ export function* deleteMovieSaga(
     yield put(
       deleteMovieFailure(error.response?.data?.message || "Không thể xóa phim")
     );
+    notificationUtils.error({
+      message: "Xóa phim thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể xóa phim. Phim có thể đang được sử dụng hoặc đã có lịch chiếu.",
+    });
   }
 }
 
@@ -486,6 +509,12 @@ export function* bulkDeleteMoviesSaga(
         error.response?.data?.message || "Không thể xóa phim hàng loạt"
       )
     );
+    notificationUtils.error({
+      message: "Xóa nhiều phim thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể xóa hàng loạt phim. Một số phim có thể đang được sử dụng.",
+    });
   }
 }
 
@@ -525,6 +554,12 @@ export function* bulkUpdateStatusSaga(
           "Không thể cập nhật trạng thái phim hàng loạt"
       )
     );
+    notificationUtils.error({
+      message: "Cập nhật trạng thái thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể cập nhật trạng thái hàng loạt. Vui lòng thử lại sau.",
+    });
   }
 }
 

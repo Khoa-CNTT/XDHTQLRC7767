@@ -65,11 +65,13 @@ function* getShowtimeListSaga(
     yield put(getShowtimeListSuccess(response.data));
   } catch (error) {
     const err = error as AxiosError;
-    yield put(
-      getShowtimeListFailure(
-        err.response?.data?.message || "Không thể lấy danh sách lịch chiếu"
-      )
-    );
+    const errorMessage =
+      err.response?.data?.message || "Không thể lấy danh sách lịch chiếu";
+    yield put(getShowtimeListFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -86,11 +88,13 @@ function* getShowtimeWithChairsSaga(
     yield put(getShowtimeWithChairsSuccess(response.data));
   } catch (error) {
     const err = error as AxiosError;
-    yield put(
-      getShowtimeWithChairsFailure(
-        err.response?.data?.message || "Không thể lấy thông tin ghế ngồi"
-      )
-    );
+    const errorMessage =
+      err.response?.data?.message || "Không thể lấy thông tin ghế ngồi";
+    yield put(getShowtimeWithChairsFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -111,11 +115,28 @@ function* createShowtimeSaga(
     });
   } catch (error) {
     const err = error as AxiosError;
-    yield put(
-      createShowtimeFailure(
-        err.response?.data?.message || "Không thể tạo lịch chiếu mới"
-      )
-    );
+    const errorMessage =
+      err.response?.data?.message || "Không thể tạo lịch chiếu mới";
+    yield put(createShowtimeFailure(errorMessage));
+
+    // Check if error is related to conflict or overlapping
+    if (
+      errorMessage.toLowerCase().includes("conflict") ||
+      errorMessage.toLowerCase().includes("overlap") ||
+      errorMessage.toLowerCase().includes("đã tồn tại") ||
+      errorMessage.toLowerCase().includes("trùng lịch")
+    ) {
+      notificationUtils.error({
+        message: "Tạo lịch chiếu thất bại",
+        description:
+          "Lịch chiếu bị trùng với lịch đã tồn tại. Vui lòng chọn thời gian khác hoặc phòng chiếu khác.",
+      });
+    } else {
+      notificationUtils.error({
+        message: "Tạo lịch chiếu thất bại",
+        description: errorMessage,
+      });
+    }
   }
 }
 
@@ -143,11 +164,13 @@ function* searchShowtimeSaga(
     yield put(searchShowtimesSuccess(response.data));
   } catch (error) {
     const err = error as AxiosError;
-    yield put(
-      searchShowtimesFailure(
-        err.response?.data?.message || "Không thể tìm kiếm lịch chiếu"
-      )
-    );
+    const errorMessage =
+      err.response?.data?.message || "Không thể tìm kiếm lịch chiếu";
+    yield put(searchShowtimesFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tìm kiếm",
+      description: errorMessage,
+    });
   }
 }
 
@@ -200,11 +223,13 @@ function* getShowtimeStatisticsSaga(): Generator<unknown, void, any> {
     yield put(getShowtimeStatisticsSuccess(enhancedStatistics));
   } catch (error) {
     const err = error as AxiosError;
-    yield put(
-      getShowtimeStatisticsFailure(
-        err.response?.data?.message || "Không thể lấy thống kê lịch chiếu"
-      )
-    );
+    const errorMessage =
+      err.response?.data?.message || "Không thể lấy thống kê lịch chiếu";
+    yield put(getShowtimeStatisticsFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu thống kê",
+      description: errorMessage,
+    });
   }
 }
 

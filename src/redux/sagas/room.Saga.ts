@@ -84,15 +84,22 @@ export function* getRoomListSaga(
 ): Generator<any, void, any> {
   try {
     const cinemaId = action.payload;
-    const url = cinemaId ? `/api/rooms/${cinemaId.id}` : "/api/rooms";
+    let url = "/api/rooms";
+
+    if (cinemaId && typeof cinemaId === "object" && "id" in cinemaId) {
+      url = `/api/rooms/${cinemaId.id}`;
+    }
+
     const response = yield call(axiosInstance.get, url);
     yield put(getRoomListSuccess(response.data));
   } catch (error: any) {
-    yield put(
-      getRoomListFailure(
-        error.response?.data?.message || "Không thể lấy danh sách phòng chiếu"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể lấy danh sách phòng chiếu";
+    yield put(getRoomListFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -105,11 +112,13 @@ export function* getRoomDetailSaga(
     const response = yield call(axiosInstance.get, `/api/rooms/detail/${id}`);
     yield put(getRoomDetailSuccess(response.data));
   } catch (error: any) {
-    yield put(
-      getRoomDetailFailure(
-        error.response?.data?.message || "Không thể lấy thông tin phòng chiếu"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể lấy thông tin phòng chiếu";
+    yield put(getRoomDetailFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -152,11 +161,13 @@ export function* getAdminRoomListSaga(
 
     yield put(getAdminRoomListSuccess(rooms));
   } catch (error: any) {
-    yield put(
-      getAdminRoomListFailure(
-        error.response?.data?.message || "Không thể lấy danh sách phòng chiếu"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể lấy danh sách phòng chiếu";
+    yield put(getAdminRoomListFailure(errorMessage));
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description: errorMessage,
+    });
   }
 }
 
@@ -199,11 +210,26 @@ export function* addRoomSaga(action: AddRoomAction): Generator<any, void, any> {
       description: "Thêm phòng chiếu mới thành công",
     });
   } catch (error: any) {
-    yield put(
-      addRoomFailure(
-        error.response?.data?.message || "Không thể thêm phòng chiếu mới"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể thêm phòng chiếu mới";
+    yield put(addRoomFailure(errorMessage));
+
+    // Check if error is related to duplicate information
+    if (
+      errorMessage.toLowerCase().includes("duplicate") ||
+      errorMessage.toLowerCase().includes("đã tồn tại") ||
+      errorMessage.toLowerCase().includes("already exists")
+    ) {
+      notificationUtils.error({
+        message: "Thêm phòng chiếu thất bại",
+        description: "Phòng chiếu có tên này đã tồn tại trong hệ thống.",
+      });
+    } else {
+      notificationUtils.error({
+        message: "Thêm phòng chiếu thất bại",
+        description: errorMessage,
+      });
+    }
   }
 }
 
@@ -247,15 +273,26 @@ export function* updateRoomSaga(
       description: "Cập nhật phòng chiếu thành công",
     });
   } catch (error: any) {
-    yield put(
-      updateRoomFailure(
-        error.response?.data?.message || "Không thể cập nhật phòng chiếu"
-      )
-    );
-    notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể cập nhật phòng chiếu",
-    });
+    const errorMessage =
+      error.response?.data?.message || "Không thể cập nhật phòng chiếu";
+    yield put(updateRoomFailure(errorMessage));
+
+    // Check if error is related to duplicate information
+    if (
+      errorMessage.toLowerCase().includes("duplicate") ||
+      errorMessage.toLowerCase().includes("đã tồn tại") ||
+      errorMessage.toLowerCase().includes("already exists")
+    ) {
+      notificationUtils.error({
+        message: "Cập nhật phòng chiếu thất bại",
+        description: "Phòng chiếu có tên này đã tồn tại trong hệ thống.",
+      });
+    } else {
+      notificationUtils.error({
+        message: "Cập nhật phòng chiếu thất bại",
+        description: errorMessage,
+      });
+    }
   }
 }
 
@@ -273,11 +310,15 @@ export function* deleteRoomSaga(
       description: "Xóa phòng chiếu thành công",
     });
   } catch (error: any) {
-    yield put(
-      deleteRoomFailure(
-        error.response?.data?.message || "Không thể xóa phòng chiếu"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể xóa phòng chiếu";
+    yield put(deleteRoomFailure(errorMessage));
+    notificationUtils.error({
+      message: "Xóa phòng chiếu thất bại",
+      description:
+        errorMessage +
+        ". Phòng chiếu có thể đang được sử dụng trong lịch chiếu.",
+    });
   }
 }
 
@@ -295,14 +336,14 @@ export function* bulkDeleteRoomsSaga(
       description: `Đã xóa ${ids.length} phòng chiếu`,
     });
   } catch (error: any) {
-    yield put(
-      bulkDeleteRoomsFailure(
-        error.response?.data?.message || "Không thể xóa phòng chiếu hàng loạt"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message || "Không thể xóa hàng loạt phòng chiếu";
+    yield put(bulkDeleteRoomsFailure(errorMessage));
     notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể xóa phòng chiếu hàng loạt",
+      message: "Xóa nhiều phòng chiếu thất bại",
+      description:
+        errorMessage +
+        ". Một số phòng chiếu có thể đang được sử dụng trong lịch chiếu.",
     });
   }
 }
@@ -330,15 +371,13 @@ export function* bulkUpdateStatusSaga(
       description: `Đã cập nhật trạng thái cho ${ids.length} phòng chiếu`,
     });
   } catch (error: any) {
-    yield put(
-      bulkUpdateRoomStatusFailure(
-        error.response?.data?.message ||
-          "Không thể cập nhật trạng thái phòng chiếu hàng loạt"
-      )
-    );
+    const errorMessage =
+      error.response?.data?.message ||
+      "Không thể cập nhật trạng thái hàng loạt";
+    yield put(bulkUpdateRoomStatusFailure(errorMessage));
     notificationUtils.error({
-      message: "Lỗi",
-      description: "Không thể cập nhật trạng thái phòng chiếu hàng loạt",
+      message: "Cập nhật trạng thái thất bại",
+      description: errorMessage,
     });
   }
 }

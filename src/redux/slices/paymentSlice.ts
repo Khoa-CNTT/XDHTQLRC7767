@@ -60,6 +60,9 @@ export interface Payment {
   showDate: string;
   showTime: string;
   movieName: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhoneNumber: string;
 }
 
 export type MonthlyRevenue = [number, number];

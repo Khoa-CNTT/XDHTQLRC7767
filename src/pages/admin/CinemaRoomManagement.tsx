@@ -267,7 +267,19 @@ const CinemaRoomManagement: React.FC = () => {
           <Form.Item
             name="capacity"
             label="Sức chứa"
-            rules={[{ required: true, message: "Vui lòng nhập sức chứa!" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập sức chứa!" },
+              {
+                validator: (_, value) => {
+                  if (value && (value <= 50 || value >= 120)) {
+                    return Promise.reject(
+                      new Error("Sức chứa phải lớn hơn 50 và nhỏ hơn 120")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Input type="number" placeholder="Nhập sức chứa" />
           </Form.Item>
