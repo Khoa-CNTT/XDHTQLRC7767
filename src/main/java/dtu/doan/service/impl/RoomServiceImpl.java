@@ -109,6 +109,7 @@ public class RoomServiceImpl implements RoomService {
             // Update room details
             room.setName(roomDTO.getName());
             room.setType(roomDTO.getType());
+            room.setStatus(roomDTO.getStatus());
             room.setCinema(cinema);
 
             // Handle capacity and seat updates
