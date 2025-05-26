@@ -111,10 +111,13 @@ public class RoomServiceImpl implements RoomService {
 
         int newCapacity = roomDTO.getCapacity();
         if (newCapacity != room.getCapacity()) {
-            // Xóa từng ghế khỏi danh sách hiện tại
-            room.getSeats().clear();
+            // XÓA GHẾ CŨ ĐÚNG CÁCH để Hibernate orphanRemoval hoạt động
+            Set<SeatFormat> oldSeats = room.getSeats();
+            if (oldSeats != null) {
+                oldSeats.clear(); // orphanRemoval sẽ xoá khỏi DB
+            }
 
-            // Tạo lại danh sách ghế
+            // Tạo danh sách ghế mới
             Set<SeatFormat> newSeatFormats = new HashSet<>();
             for (int i = 1; i <= newCapacity; i++) {
                 SeatFormat seat = new SeatFormat();
@@ -125,11 +128,12 @@ public class RoomServiceImpl implements RoomService {
             }
 
             room.setCapacity(newCapacity);
-            room.setSeats(newSeatFormats); // Gán lại danh sách mới
+            room.getSeats().addAll(newSeatFormats); // Dùng addAll thay vì set() mới
         }
 
-        roomRepository.save(room); // Hibernate sẽ tự động xử lý orphanRemoval
+        roomRepository.save(room); // Hibernate sẽ xử lý mọi thứ
     }
+
 
 
     @Transactional
