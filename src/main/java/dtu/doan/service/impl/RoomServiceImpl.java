@@ -147,8 +147,11 @@ public class RoomServiceImpl implements RoomService {
                 throw new RuntimeException("Room not found with id: " + id);
             }
             Room room = optionalRoom.get();
-            room.setStatus("INACTIVE");
-            roomRepository.save(room);
+            // Delete all seats associated with the room
+            seatFormatRepository.deleteAll(room.getSeats());
+            // Delete the room itself
+            roomRepository.delete(room);
+
         }
     }
 }
