@@ -103,6 +103,11 @@ export interface UpdatePaymentStatusParams {
   status: string;
 }
 
+// Thêm interface mới cho việc xác minh giao dịch
+export interface VerifyTransactionParams {
+  txnRef: string;
+}
+
 // Trạng thái ban đầu
 const initialState: PaymentState = {
   paymentUrl: null,
@@ -305,6 +310,28 @@ const paymentSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+
+    // New reducers for payment verification
+    verifyTransactionRequest: (
+      state,
+      action: PayloadAction<VerifyTransactionParams>
+    ) => {
+      state.loading = true;
+      state.error = null;
+    },
+    verifyTransactionSuccess: (
+      state,
+      action: PayloadAction<Record<string, unknown>>
+    ) => {
+      state.loading = false;
+      state.paymentResult = action.payload;
+      state.success = action.payload.isSuccess === true;
+    },
+    verifyTransactionFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.success = false;
+    },
   },
 });
 
@@ -337,6 +364,10 @@ export const {
   updatePaymentStatusRequest,
   updatePaymentStatusSuccess,
   updatePaymentStatusFailure,
+  // New exports for transaction verification
+  verifyTransactionRequest,
+  verifyTransactionSuccess,
+  verifyTransactionFailure,
 } = paymentSlice.actions;
 
 // Export reducer

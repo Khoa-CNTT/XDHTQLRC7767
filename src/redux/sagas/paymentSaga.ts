@@ -33,6 +33,10 @@ import {
   updatePaymentStatusSuccess,
   updatePaymentStatusFailure,
   UpdatePaymentStatusParams,
+  verifyTransactionRequest,
+  verifyTransactionSuccess,
+  verifyTransactionFailure,
+  VerifyTransactionParams,
 } from "../slices/paymentSlice";
 import { createTicketRequest } from "../slices/ticketSlice";
 import { vnpayService } from "../../utils/vnpayService";
@@ -560,6 +564,89 @@ export function* updatePaymentStatusSaga(
   }
 }
 
+// Saga to verify transaction status
+export function* verifyTransactionSaga(
+  action: PayloadAction<VerifyTransactionParams>
+): Generator<any, void, any> {
+  try {
+    const { txnRef } = action.payload;
+    console.log(`[PAYMENT_SAGA] Verifying transaction: ${txnRef}`);
+
+    // Race between the verification call and a timeout
+    const raceResult: {
+      result?: any;
+      timeout?: boolean;
+    } = yield race({
+      result: call([vnpayService, vnpayService.verifyTransaction], txnRef),
+      timeout: delay(10000), // 10 seconds timeout
+    });
+
+    const { result, timeout } = raceResult;
+
+    if (timeout) {
+      throw new Error("Transaction verification timed out");
+    }
+
+    if (!result) {
+      throw new Error("No response received from transaction verification");
+    }
+
+    console.log(`[PAYMENT_SAGA] Transaction verification result:`, result);
+
+    // If verification is successful
+    if (result.isSuccess) {
+      console.log(
+        `[PAYMENT_SAGA] Transaction verified as successful: ${txnRef}`
+      );
+
+      // Update state with verification result
+      yield put(verifyTransactionSuccess(result));
+
+      // Lấy dữ liệu đặt vé từ state
+      const state: RootState = yield select();
+      const bookingData = state.payment.bookingData;
+
+      if (!bookingData) {
+        console.error("[PAYMENT_SAGA] Missing booking data in state");
+        throw new Error("Missing booking data");
+      }
+
+      // Kiểm tra xem đã tạo vé chưa
+      const ticketState = state.ticket;
+      const ticketCreated = ticketState.createTicket.success;
+
+      if (!ticketCreated) {
+        console.log(
+          "[PAYMENT_SAGA] Ticket not created yet, creating ticket after verification"
+        );
+        // Tạo vé nếu chưa tạo
+        yield call(createTicket, bookingData);
+      }
+    } else {
+      console.log(`[PAYMENT_SAGA] Transaction verification failed: ${txnRef}`);
+      yield put(
+        verifyTransactionFailure(
+          result.message || "Xác minh giao dịch thất bại"
+        )
+      );
+    }
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Transaction verification error:", error);
+    yield put(
+      verifyTransactionFailure(
+        error.response?.data?.message ||
+          "Không thể xác minh trạng thái giao dịch"
+      )
+    );
+    notificationUtils.error({
+      message: "Xác minh giao dịch thất bại",
+      description:
+        error.response?.data?.message ||
+        "Không thể xác minh trạng thái giao dịch. Vui lòng kiểm tra lịch sử thanh toán.",
+    });
+  }
+}
+
 // Saga chính
 export default function* paymentSaga() {
   yield takeEvery(createPaymentRequest.type, createPaymentSaga);
@@ -574,4 +661,7 @@ export default function* paymentSaga() {
   // Register additional sagas for all payments
   yield takeEvery(getAllPaymentsRequest.type, getAllPaymentsSaga);
   yield takeEvery(updatePaymentStatusRequest.type, updatePaymentStatusSaga);
+
+  // Register saga for transaction verification
+  yield takeEvery(verifyTransactionRequest.type, verifyTransactionSaga);
 }

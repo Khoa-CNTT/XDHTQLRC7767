@@ -4,10 +4,20 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   handlePaymentReturnRequest,
   createPaymentSuccess,
+  verifyTransactionRequest,
 } from "../../redux/slices/paymentSlice";
 import { createTicketRequest } from "../../redux/slices/ticketSlice";
 import { RootState } from "../../redux/store";
-import { Spin, Result, Button, Card, Typography, Divider, message } from "antd";
+import {
+  Spin,
+  Result,
+  Button,
+  Card,
+  Typography,
+  Divider,
+  message,
+  Alert,
+} from "antd";
 import styled from "styled-components";
 import PaymentCallbackSkeleton from "../../components/payment/PaymentCallbackSkeleton";
 
@@ -69,7 +79,7 @@ const PaymentCallback: React.FC = () => {
           createPaymentSuccess({
             paymentUrl: "",
             bookingData: parsedData,
-          })
+          } as any)
         );
       } catch (e) {
         console.error("Error parsing bookingData from localStorage:", e);
@@ -79,6 +89,15 @@ const PaymentCallback: React.FC = () => {
     // Lấy các tham số từ URL query
     const params = Object.fromEntries(new URLSearchParams(location.search));
     console.log("[PAYMENT_CALLBACK] URL Params:", params);
+
+    // Kiểm tra lỗi chữ ký
+    const isSignatureError = params.vnp_ResponseCode === "97";
+    if (isSignatureError) {
+      console.warn("[PAYMENT_CALLBACK] Signature validation error detected");
+      message.warning(
+        "Phát hiện lỗi xác thực chữ ký. Đang kiểm tra lại trạng thái giao dịch..."
+      );
+    }
 
     // Chỉ xử lý nếu có params và chưa xử lý trước đó
     if (Object.keys(params).length > 0 && !hasProcessedRef.current) {
@@ -123,6 +142,18 @@ const PaymentCallback: React.FC = () => {
             navigate("/");
           }
         } else {
+          // Nếu là lỗi chữ ký, thử kiểm tra lại trạng thái giao dịch
+          if (isSignatureError && params.vnp_TxnRef) {
+            try {
+              dispatch(
+                verifyTransactionRequest({ txnRef: params.vnp_TxnRef } as any)
+              );
+              return; // Không navigate ngay, đợi kết quả kiểm tra
+            } catch (error) {
+              console.error("Error verifying transaction:", error);
+            }
+          }
+
           message.error("Thanh toán thất bại. Vui lòng thử lại.");
           navigate("/");
         }
@@ -701,18 +732,77 @@ const PaymentCallback: React.FC = () => {
       ) : (
         <Result
           status="error"
-          title="Thanh toán thất bại"
+          title={
+            paymentResult?.vnp_ResponseCode === "97"
+              ? "Lỗi xác thực chữ ký"
+              : "Thanh toán thất bại"
+          }
           subTitle={
-            error ||
-            "Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại sau."
+            paymentResult?.vnp_ResponseCode === "97"
+              ? "Giao dịch gặp lỗi xác thực chữ ký. Hệ thống đang kiểm tra lại trạng thái giao dịch của bạn."
+              : error ||
+                "Có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại sau."
           }
           extra={
-            <ButtonGroup>
-              <Button type="primary" onClick={() => navigate(-1)}>
-                Thử lại
-              </Button>
-              <Button onClick={handleFailure}>Trang chủ</Button>
-            </ButtonGroup>
+            <>
+              {paymentResult?.vnp_ResponseCode === "97" && (
+                <Alert
+                  message="Thông báo quan trọng"
+                  description={
+                    <>
+                      <p>
+                        Giao dịch của bạn có thể đã được xử lý thành công tại
+                        ngân hàng, nhưng có lỗi khi xác nhận với hệ thống của
+                        chúng tôi.
+                      </p>
+                      <p>
+                        Vui lòng kiểm tra tài khoản ngân hàng của bạn. Nếu tiền
+                        đã bị trừ, vui lòng không thực hiện thanh toán lại và
+                        liên hệ với chúng tôi qua email
+                        <strong> hotrovnpay@vnpay.vn</strong> hoặc hotline{" "}
+                        <strong>1900.5555.77</strong> kèm theo mã giao dịch:{" "}
+                        <strong>{paymentResult.vnp_TxnRef as string}</strong>
+                      </p>
+                    </>
+                  }
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 20 }}
+                />
+              )}
+              <ButtonGroup>
+                {paymentResult?.vnp_ResponseCode === "97" ? (
+                  <>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        // Thử kiểm tra lại giao dịch
+                        if (paymentResult?.vnp_TxnRef) {
+                          dispatch(
+                            verifyTransactionRequest({
+                              txnRef: paymentResult.vnp_TxnRef as string,
+                            } as any)
+                          );
+                          message.info(
+                            "Đang kiểm tra lại trạng thái giao dịch..."
+                          );
+                        }
+                      }}
+                    >
+                      Kiểm tra lại giao dịch
+                    </Button>
+                    <Button onClick={() => navigate("/")}>Trang chủ</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button type="primary" onClick={() => navigate(-1)}>
+                      Thử lại
+                    </Button>
+                    <Button onClick={handleFailure}>Trang chủ</Button>
+                  </>
+                )}
+              </ButtonGroup>
+            </>
           }
         />
       )}
