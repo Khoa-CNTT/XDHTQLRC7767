@@ -5,15 +5,13 @@ import {
   Input,
   Button,
   Select,
-  message,
   Typography,
   Table,
-  Popconfirm,
-  Tag,
   Modal,
   Space,
+  Popconfirm,
 } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -29,6 +27,15 @@ import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const { Title } = Typography;
 const { Option } = Select;
+
+// Define Cinema interface if it's not already imported
+interface Cinema {
+  id: number;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
 
 const PageHeader = styled.div`
   margin-bottom: 24px;
@@ -46,9 +53,7 @@ const CinemaRoomManagement: React.FC = () => {
 
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
-  const [currentDeletingId, setCurrentDeletingId] = useState<number | null>(
-    null
-  );
+  const [deletingRoomId, setDeletingRoomId] = useState<number | null>(null);
 
   const dispatch = useDispatch();
   const { data: roomsFromRedux, loading: roomsLoading } = useSelector(
@@ -56,7 +61,7 @@ const CinemaRoomManagement: React.FC = () => {
   );
   const { data: cinemasFromRedux, loading: cinemasLoading } = useSelector(
     (state: RootState) => state.cinema.cinemaList
-  );
+  ) as { data: Cinema[]; loading: boolean };
 
   // Get loading states for room operations
   const { loading: addRoomLoading, success: addRoomSuccess } = useSelector(
@@ -64,20 +69,8 @@ const CinemaRoomManagement: React.FC = () => {
   );
   const { loading: updateRoomLoading, success: updateRoomSuccess } =
     useSelector((state: RootState) => state.room.adminRoomUpdate);
-  const { loading: deleteRoomLoading } = useSelector(
-    (state: RootState) => state.room.adminRoomDelete
-  );
-
-  // Reset deleting ID when delete operation completes
-  const { success: deleteRoomSuccess } = useSelector(
-    (state: RootState) => state.room.adminRoomDelete
-  );
-
-  useEffect(() => {
-    if (deleteRoomSuccess) {
-      setCurrentDeletingId(null);
-    }
-  }, [deleteRoomSuccess]);
+  const { loading: deleteRoomLoading, success: deleteRoomSuccess } =
+    useSelector((state: RootState) => state.room.adminRoomDelete);
 
   // Fetch rooms and cinemas on component mount
   useEffect(() => {
@@ -92,6 +85,13 @@ const CinemaRoomManagement: React.FC = () => {
       roomForm.resetFields();
     }
   }, [addRoomSuccess, updateRoomSuccess, roomForm]);
+
+  // Reset deleting state when delete operation completes
+  useEffect(() => {
+    if (deleteRoomSuccess) {
+      setDeletingRoomId(null);
+    }
+  }, [deleteRoomSuccess]);
 
   const showRoomModal = (room: Room | null = null) => {
     setCurrentRoom(room);
@@ -108,7 +108,7 @@ const CinemaRoomManagement: React.FC = () => {
       dispatch(
         updateRoomRequest({
           id: currentRoom.id,
-          ...values,
+          data: values,
         })
       );
     } else {
@@ -117,17 +117,8 @@ const CinemaRoomManagement: React.FC = () => {
   };
 
   const handleDeleteRoom = (id: number) => {
-    setCurrentDeletingId(id);
+    setDeletingRoomId(id);
     dispatch(deleteRoomRequest(id));
-  };
-
-  const handleToggleRoomStatus = (id: number, status: string) => {
-    dispatch(
-      updateRoomRequest({
-        id,
-        status: status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
-      })
-    );
   };
 
   const handleCancel = () => {
@@ -169,11 +160,8 @@ const CinemaRoomManagement: React.FC = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={status === "ACTIVE" ? "green" : "red"}>
-          {status === "ACTIVE" ? "Hoạt động" : "Ngừng hoạt động"}
-        </Tag>
-      ),
+      render: (status: string) =>
+        status === "ACTIVE" ? "Hoạt động" : "Ngừng hoạt động",
     },
     {
       title: "Thao tác",
@@ -181,10 +169,12 @@ const CinemaRoomManagement: React.FC = () => {
       render: (_: any, record: Room) => (
         <Space size="small">
           <Button
+            type="primary"
             icon={<EditOutlined />}
             onClick={() => showRoomModal(record)}
-            type="link"
-          />
+          >
+            Cập nhật
+          </Button>
           <Popconfirm
             title="Bạn có chắc chắn muốn xóa phòng này?"
             onConfirm={() => handleDeleteRoom(record.id)}
@@ -192,11 +182,13 @@ const CinemaRoomManagement: React.FC = () => {
             cancelText="Hủy"
           >
             <Button
-              icon={<DeleteOutlined />}
               danger
-              type="link"
-              loading={currentDeletingId === record.id && deleteRoomLoading}
-            />
+              type="primary"
+              icon={<DeleteOutlined />}
+              loading={deletingRoomId === record.id && deleteRoomLoading}
+            >
+              Xóa
+            </Button>
           </Popconfirm>
         </Space>
       ),

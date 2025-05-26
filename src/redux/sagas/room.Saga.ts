@@ -86,7 +86,11 @@ export function* getRoomListSaga(
     const cinemaId = action.payload;
     let url = "/api/rooms";
 
-    if (cinemaId && typeof cinemaId === "object" && "id" in cinemaId) {
+    // Type guard to check if cinemaId is an object with an id property
+    const isCinemaObject = (obj: any): obj is { id: number } =>
+      obj !== null && typeof obj === "object" && "id" in obj;
+
+    if (cinemaId && isCinemaObject(cinemaId)) {
       url = `/api/rooms/${cinemaId.id}`;
     }
 
@@ -270,7 +274,9 @@ export function* updateRoomSaga(
 
     notificationUtils.success({
       message: "Thành công",
-      description: "Cập nhật phòng chiếu thành công",
+      description: data.status
+        ? "Cập nhật trạng thái phòng chiếu thành công"
+        : "Cập nhật phòng chiếu thành công",
     });
   } catch (error: any) {
     const errorMessage =
