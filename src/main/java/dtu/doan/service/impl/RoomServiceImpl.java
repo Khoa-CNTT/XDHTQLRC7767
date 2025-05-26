@@ -93,48 +93,44 @@ public class RoomServiceImpl implements RoomService {
     public void updateRoom(Long id, RoomDTO roomDTO) {
         if (showTimeRepository.findAllShowtimesInOneRoom(id).size() > 0) {
             throw new RuntimeException("Cannot update room with existing showtimes.");
-
-        } else {
-            Optional<Room> optionalRoom = roomRepository.findById(id);
-            if (!optionalRoom.isPresent()) {
-                throw new RuntimeException("Room not found with id: " + id);
-            }
-
-            Room room = optionalRoom.get();
-            Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
-            if (cinema == null) {
-                throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
-            }
-
-            // Update room details
-            room.setName(roomDTO.getName());
-            room.setType(roomDTO.getType());
-            room.setStatus(roomDTO.getStatus());
-            room.setCinema(cinema);
-
-            // Handle capacity and seat updates
-            int newCapacity = roomDTO.getCapacity();
-            if (newCapacity != room.getCapacity()) {
-                room.setCapacity(newCapacity);
-                // Recreate seats based on new capacity
-                Set<SeatFormat> newSeatFormats = new HashSet<>();
-                // Delete existing seats
-                seatFormatRepository.deleteAll(room.getSeats());
-                // Create new seats
-                for (int i = 1; i <= newCapacity; i++) {
-                    SeatFormat seat = new SeatFormat();
-                    seat.setName(String.valueOf(i));
-                    seat.setRoom(room);
-                    seat.setType(i > newCapacity - 10 ? "COUPLE" : "STANDARD");
-                    newSeatFormats.add(seat);
-                }
-                seatFormatRepository.saveAll(newSeatFormats);
-                room.setSeats(newSeatFormats);
-            }
-
-            roomRepository.save(room);
         }
+
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+
+        Cinema cinema = cinemaRepository.findByid(roomDTO.getCinemaId());
+        if (cinema == null) {
+            throw new RuntimeException("Cinema not found with id: " + roomDTO.getCinemaId());
+        }
+
+        // Update room details
+        room.setName(roomDTO.getName());
+        room.setType(roomDTO.getType());
+        room.setStatus(roomDTO.getStatus());
+        room.setCinema(cinema);
+
+        int newCapacity = roomDTO.getCapacity();
+        if (newCapacity != room.getCapacity()) {
+            // Xóa từng ghế khỏi danh sách hiện tại
+            room.getSeats().clear();
+
+            // Tạo lại danh sách ghế
+            Set<SeatFormat> newSeatFormats = new HashSet<>();
+            for (int i = 1; i <= newCapacity; i++) {
+                SeatFormat seat = new SeatFormat();
+                seat.setName(String.valueOf(i));
+                seat.setRoom(room);
+                seat.setType(i > newCapacity - 10 ? "COUPLE" : "STANDARD");
+                newSeatFormats.add(seat);
+            }
+
+            room.setCapacity(newCapacity);
+            room.setSeats(newSeatFormats); // Gán lại danh sách mới
+        }
+
+        roomRepository.save(room); // Hibernate sẽ tự động xử lý orphanRemoval
     }
+
 
     @Transactional
     @Override
