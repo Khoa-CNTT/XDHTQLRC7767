@@ -991,6 +991,20 @@ const MovieDetail: React.FC = () => {
   const auth = useSelector((state: RootState) => state.auth);
   const currentUser = auth.user as User | null;
 
+  // Clean up localStorage bookingData when component mounts
+  useEffect(() => {
+    // Check and clear any booking data from localStorage
+    if (localStorage.getItem("bookingData")) {
+      localStorage.removeItem("bookingData");
+    }
+    if (localStorage.getItem("direct_booking_data")) {
+      localStorage.removeItem("direct_booking_data");
+    }
+    if (localStorage.getItem("showtime_booking_data")) {
+      localStorage.removeItem("showtime_booking_data");
+    }
+  }, []);
+
   // Get movie details from Redux store
   const {
     data: movieData,
