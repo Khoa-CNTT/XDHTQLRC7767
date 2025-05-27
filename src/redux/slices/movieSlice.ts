@@ -477,7 +477,7 @@ const movieSlice = createSlice({
     // Admin movie management - bulk update status
     bulkUpdateStatusRequest: (
       state,
-      action: PayloadAction<{ ids: number[]; status: string }>
+      action: PayloadAction<{ ids: number[]; status: string | number }>
     ) => {
       state.adminBulkActions.loading = true;
       state.adminBulkActions.error = null;
@@ -485,7 +485,7 @@ const movieSlice = createSlice({
     },
     bulkUpdateStatusSuccess: (
       state,
-      action: PayloadAction<{ ids: number[]; status: string }>
+      action: PayloadAction<{ ids: number[]; status: string | number }>
     ) => {
       state.adminBulkActions.loading = false;
       state.adminBulkActions.success = true;

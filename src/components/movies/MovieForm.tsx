@@ -140,6 +140,11 @@ const MovieForm: React.FC<MovieFormProps> = ({
     const { genre, ...restValues } = values;
     const formattedValues = {
       ...restValues,
+      // Ensure status is sent as a number
+      status:
+        typeof restValues.status === "string"
+          ? parseInt(restValues.status, 10)
+          : restValues.status,
       releaseDate: restValues.releaseDate
         ? dayjs.isDayjs(restValues.releaseDate)
           ? restValues.releaseDate.format("YYYY-MM-DD")

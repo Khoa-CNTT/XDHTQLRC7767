@@ -108,7 +108,7 @@ interface BulkUpdateStatusAction {
   type: string;
   payload: {
     ids: number[];
-    status: string;
+    status: string | number;
   };
 }
 
@@ -318,7 +318,11 @@ export function* addMovieSaga(
       ageLimit: movie.ageLimit || 0,
       content: movie.content || "",
       genreIds: movie.genreIds || [],
-      status: movie.status || 1,
+      // Ensure status is a number and use the provided value (0 for upcoming, 1 for now showing)
+      status:
+        typeof movie.status === "string"
+          ? parseInt(movie.status, 10)
+          : Number(movie.status ?? 0),
     };
 
     const response = yield call(
@@ -340,7 +344,7 @@ export function* addMovieSaga(
           : undefined),
       duration: response.data.duration || 0,
       genre: response.data.movieGenres?.map((g: any) => g.name) || [],
-      status: response.data.status || 1,
+      status: response.data.status,
       poster: response.data.imageUrl || "https://via.placeholder.com/150x225",
       backdrop: response.data.backdrop || "",
       description: response.data.description || "",
@@ -409,8 +413,15 @@ export function* updateMovieSaga(
       content: data.content || existingMovie.content || "",
       genreIds:
         data.genreIds || existingMovie.movieGenres?.map((g: any) => g.id) || [],
+      // Ensure status is a number
       status:
-        data.status !== undefined ? data.status : existingMovie.status || 1,
+        data.status !== undefined
+          ? typeof data.status === "string"
+            ? parseInt(data.status, 10)
+            : Number(data.status)
+          : typeof existingMovie.status === "string"
+          ? parseInt(existingMovie.status, 10)
+          : Number(existingMovie.status || 0),
     };
 
     // Update the movie
@@ -435,10 +446,7 @@ export function* updateMovieSaga(
       genre: response.data.movieGenres?.map((g: any) => g.name) || [],
       genres: response.data.movieGenres || [],
       movieGenres: response.data.movieGenres || [],
-      status:
-        response.data.status !== undefined
-          ? response.data.status
-          : data.status || existingMovie.status || 1,
+      status: response.data.status,
       poster: response.data.imageUrl || "",
       imageUrl: response.data.imageUrl || "",
       backdrop: response.data.backdrop || "",
@@ -533,6 +541,10 @@ export function* bulkUpdateStatusSaga(
   try {
     const { ids, status } = action.payload;
 
+    // Convert status to number if it's a string
+    const numericStatus =
+      typeof status === "string" ? parseInt(status, 10) : Number(status);
+
     // Get all movies to update
     const moviesData = yield all(
       ids.map((id) => call(axiosInstance.get, `/api/movies/${id}`))
@@ -544,13 +556,18 @@ export function* bulkUpdateStatusSaga(
         const movie = response.data;
         const updateData = {
           ...movie,
-          status: status,
+          status: numericStatus,
         };
         return call(axiosInstance.post, "/api/movies", updateData);
       })
     );
 
-    yield put(bulkUpdateStatusSuccess(action.payload));
+    yield put(
+      bulkUpdateStatusSuccess({
+        ids,
+        status: numericStatus,
+      })
+    );
     notificationUtils.success({
       message: "Thành công",
       description: `Đã cập nhật trạng thái cho ${ids.length} phim`,

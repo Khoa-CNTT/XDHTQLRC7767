@@ -11,7 +11,7 @@ interface MovieBulkActionsProps {
   selectedCount: number;
   onDelete: () => void;
   onExport?: () => void;
-  onChangeStatus?: (status: string) => void;
+  onChangeStatus?: (status: number) => void;
   loading?: boolean;
 }
 
@@ -24,7 +24,7 @@ const MovieBulkActions: React.FC<MovieBulkActionsProps> = ({
 }) => {
   const statusMenu = (
     <Menu
-      onClick={({ key }) => onChangeStatus && onChangeStatus(key as string)}
+      onClick={({ key }) => onChangeStatus && onChangeStatus(Number(key))}
       items={[
         {
           key: "1",

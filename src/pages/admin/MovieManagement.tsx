@@ -290,6 +290,11 @@ const MovieManagement: React.FC = () => {
     // Xử lý ngày phát hành
     const formattedValues = {
       ...values,
+      // Ensure status is always sent as a number
+      status:
+        typeof values.status === "string"
+          ? parseInt(values.status, 10)
+          : Number(values.status),
       // Ensure we handle both dayjs objects and string dates
       releaseDate: values.releaseDate
         ? dayjs.isDayjs(values.releaseDate)
@@ -375,7 +380,7 @@ const MovieManagement: React.FC = () => {
     });
   };
 
-  const handleBulkChangeStatus = (status: string) => {
+  const handleBulkChangeStatus = (status: number) => {
     dispatch(
       bulkUpdateStatusRequest({
         ids: selectedRowKeys as number[],
