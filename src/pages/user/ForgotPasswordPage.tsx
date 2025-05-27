@@ -8,7 +8,7 @@ import { forgotPasswordStart } from "../../redux/slices/authSlice";
 import { RootState } from "../../redux/store";
 import { message } from "antd";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 const { Title, Paragraph } = Typography;
 
@@ -166,7 +166,7 @@ const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { loading, error, success } = useSelector(
+  const { loading, error } = useSelector(
     (state: RootState) => state.auth.forgotPassword
   );
 
@@ -197,7 +197,7 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   if (loading) {
-    return <AuthPageSkeleton />;
+    return <LoadingScreen />;
   }
 
   return (
