@@ -308,7 +308,8 @@ const StaffManagement: React.FC = () => {
     }
   };
 
-  const columns: ColumnsType<any> = [
+  // Define the base columns that are shown to all users
+  const baseColumns: ColumnsType<any> = [
     {
       title: "Avatar",
       dataIndex: "image",
@@ -427,44 +428,45 @@ const StaffManagement: React.FC = () => {
       ],
       onFilter: (value, record) => record.isActivated === value,
     },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_, record: Employee) => (
-        <Space size="small">
-          {(!record.username ||
-            (typeof record.username === "object" &&
-              record.username.role !== "ADMIN")) &&
-            !isEmployee && (
-              <>
-                <Tooltip title="Chỉnh sửa">
-                  <ActionButton
-                    icon={<EditOutlined />}
-                    onClick={() => handleEdit(record)}
-                    type="primary"
-                    size="small"
-                  />
-                </Tooltip>
-                <Tooltip title="Xóa">
-                  <Popconfirm
-                    title="Bạn có chắc chắn muốn xóa nhân viên này?"
-                    onConfirm={() => record.id && handleDelete(record.id)}
-                    okText="Có"
-                    cancelText="Không"
-                  >
-                    <ActionButton
-                      icon={<DeleteOutlined />}
-                      danger
-                      size="small"
-                    />
-                  </Popconfirm>
-                </Tooltip>
-              </>
-            )}
-        </Space>
-      ),
-    },
   ];
+
+  // Add action column for non-employee users
+  const actionColumn = {
+    title: "Thao tác",
+    key: "action",
+    render: (_, record: any) => {
+      // Don't show actions for admin users
+      if (record.username && record.username.role === "ADMIN") {
+        return null;
+      }
+
+      return (
+        <Space size="small">
+          <Tooltip title="Chỉnh sửa">
+            <ActionButton
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              type="primary"
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Xóa">
+            <Popconfirm
+              title="Bạn có chắc chắn muốn xóa nhân viên này?"
+              onConfirm={() => record.id && handleDelete(record.id)}
+              okText="Có"
+              cancelText="Không"
+            >
+              <ActionButton icon={<DeleteOutlined />} danger size="small" />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
+      );
+    },
+  };
+
+  // Use different columns based on user role
+  const columns = isEmployee ? baseColumns : [...baseColumns, actionColumn];
 
   return (
     <div>
