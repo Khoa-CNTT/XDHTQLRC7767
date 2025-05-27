@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Row,
   Col,
@@ -22,7 +22,7 @@ import dayjs from "dayjs";
 import {
   getDailyRevenueRequest,
   getYearlyRevenueRequest,
-  getPaymentsPageRequest,
+  getRecentPaymentsRequest,
   getPaymentStatisticsRequest,
 } from "../../redux/slices/paymentSlice";
 import { RootState } from "../../redux/store";
@@ -115,8 +115,8 @@ const Dashboard: React.FC = () => {
   const dailyRevenue = useSelector(
     (state: RootState) => state.payment.dailyRevenue
   );
-  const paymentsPage = useSelector(
-    (state: RootState) => state.payment.paymentsPage
+  const recentPayments = useSelector(
+    (state: RootState) => state.payment.recentPayments
   );
   const paymentStats = useSelector(
     (state: RootState) => state.payment.statisticsData
@@ -129,14 +129,14 @@ const Dashboard: React.FC = () => {
     }, 1000);
 
     // Fetch data from API
-    dispatch(getYearlyRevenueRequest({ year: selectedYear }));
-    dispatch(getDailyRevenueRequest({ date: selectedDate }));
-    dispatch(getPaymentsPageRequest({ page: 0 }));
+    dispatch(getYearlyRevenueRequest({ year: selectedYear } as any));
+    dispatch(getDailyRevenueRequest({ date: selectedDate } as any));
+    dispatch(getRecentPaymentsRequest({ limit: 5, page: 1 } as any));
 
     if (dateRange && dateRange[0] && dateRange[1]) {
       const startDate = dateRange[0].format("YYYY-MM-DD");
       const endDate = dateRange[1].format("YYYY-MM-DD");
-      dispatch(getPaymentStatisticsRequest({ startDate, endDate }));
+      dispatch(getPaymentStatisticsRequest({ startDate, endDate } as any));
     }
 
     return () => clearTimeout(timer);
@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
     if (date) {
       const formattedDate = date.format("YYYY-MM-DD");
       setSelectedDate(formattedDate);
-      dispatch(getDailyRevenueRequest({ date: formattedDate }));
+      dispatch(getDailyRevenueRequest({ date: formattedDate } as any));
     }
   };
 
@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
     if (date) {
       const year = date.year();
       setSelectedYear(year);
-      dispatch(getYearlyRevenueRequest({ year }));
+      dispatch(getYearlyRevenueRequest({ year } as any));
     }
   };
 
@@ -171,14 +171,14 @@ const Dashboard: React.FC = () => {
         getPaymentStatisticsRequest({
           startDate: dateStrings[0],
           endDate: dateStrings[1],
-        })
+        } as any)
       );
     }
   };
 
   // Convert API revenue data to chart format
   const revenueData =
-    yearlyRevenue.data.length > 0
+    yearlyRevenue.data?.length > 0
       ? yearlyRevenue.data.map((item) => ({
           month: `Tháng ${item[0]}`,
           revenue: item[1],
@@ -198,9 +198,9 @@ const Dashboard: React.FC = () => {
           { month: "Tháng 12", revenue: 0 },
         ];
 
-  // Handle page change for payments table
+  // Handle page change for recent payments table
   const handlePageChange = (page: number) => {
-    dispatch(getPaymentsPageRequest({ page: page - 1 })); // API uses 0-based indexing
+    dispatch(getRecentPaymentsRequest({ limit: 5, page } as any));
   };
 
   // Sample data for charts (will be replaced with API data)
@@ -212,65 +212,44 @@ const Dashboard: React.FC = () => {
     { type: "Khoa học viễn tưởng", value: 5 },
   ];
 
-  // Use API data for recent orders when available, otherwise use sample data
-  const recentOrders =
-    paymentsPage.data.length > 0
-      ? paymentsPage.data.map((payment, index) => ({
-          key: index.toString(),
-          id: payment.id.toString(),
-          customer: payment.customerName || "Khách hàng",
-          movie: "Vé phim",
-          date: payment.date || "",
-          amount: `${payment.amount?.toLocaleString()} VND`,
-          status: payment.status,
-        }))
-      : [
-          {
-            key: "1",
-            id: "ORD-001",
-            customer: "Nguyễn Văn A",
-            movie: "Avengers: Endgame",
-            date: "2023-07-15 14:30",
-            amount: "250,000 VND",
-            status: "Đã thanh toán",
-          },
-          {
-            key: "2",
-            id: "ORD-002",
-            customer: "Trần Thị B",
-            movie: "Spider-Man: No Way Home",
-            date: "2023-07-15 15:45",
-            amount: "200,000 VND",
-            status: "Đã thanh toán",
-          },
-          {
-            key: "3",
-            id: "ORD-003",
-            customer: "Lê Văn C",
-            movie: "Black Widow",
-            date: "2023-07-15 16:30",
-            amount: "180,000 VND",
-            status: "Đã thanh toán",
-          },
-          {
-            key: "4",
-            id: "ORD-004",
-            customer: "Phạm Thị D",
-            movie: "Shang-Chi",
-            date: "2023-07-15 17:15",
-            amount: "220,000 VND",
-            status: "Đã thanh toán",
-          },
-          {
-            key: "5",
-            id: "ORD-005",
-            customer: "Hoàng Văn E",
-            movie: "Eternals",
-            date: "2023-07-15 18:00",
-            amount: "240,000 VND",
-            status: "Đã thanh toán",
-          },
-        ];
+  // Log the recent payments data for debugging
+  console.log("[Dashboard] Recent payments state:", recentPayments);
+
+  // Use API data for recent orders when available
+  const recentOrders = useMemo(() => {
+    console.log(
+      "[Dashboard] Processing recent payments data:",
+      recentPayments.data
+    );
+
+    if (!recentPayments.data) return [];
+
+    // Check if data is an array (expected) or if it's wrapped in a content property
+    const paymentsData = Array.isArray(recentPayments.data)
+      ? recentPayments.data
+      : recentPayments.data.content || [];
+
+    console.log("[Dashboard] Payments data to map:", paymentsData);
+
+    if (paymentsData.length === 0) return [];
+
+    return paymentsData.map((payment, index) => {
+      console.log("[Dashboard] Processing payment item:", payment);
+      return {
+        key: index.toString(),
+        id: payment.id?.toString() || "",
+        customer: payment.customer || "",
+        movie: payment.movieName || "Vé phim",
+        date: payment.date || "",
+        amount: `${payment.amount?.toLocaleString() || 0} VND`,
+        status:
+          payment.status === "success" ? "Đã thanh toán" : payment.status || "",
+      };
+    });
+  }, [recentPayments.data]);
+
+  // Log final processed orders
+  console.log("[Dashboard] Final recent orders:", recentOrders);
 
   const columns = [
     {
@@ -347,10 +326,13 @@ const Dashboard: React.FC = () => {
 
   // Revenue statistics chart configuration based on API data
   const statisticsConfig = {
-    data: paymentStats.data.map((item) => ({
-      date: item.date,
-      amount: item.amount,
-    })),
+    data:
+      (paymentStats.data &&
+        paymentStats.data.map((item) => ({
+          date: item.date,
+          amount: item.amount,
+        }))) ||
+      [],
     xField: "date",
     yField: "amount",
     seriesField: "type",
@@ -402,7 +384,7 @@ const Dashboard: React.FC = () => {
             <StatisticWrapper>
               <Statistic
                 title="Đơn hàng hôm nay"
-                value={dailyRevenue.data?.totalTickets || 0}
+                value={dailyRevenue.data?.ticketCount || 0}
                 prefix={
                   <ShoppingCartOutlined
                     style={{ color: "#52c41a", marginRight: 8 }}
@@ -502,21 +484,27 @@ const Dashboard: React.FC = () => {
                 </Button>
               </div>
             }
-            loading={loading || paymentsPage.loading}
+            loading={loading || recentPayments.loading}
             bodyStyle={{ padding: "0" }}
           >
-            <StyledTable
-              columns={columns}
-              dataSource={recentOrders}
-              pagination={{
-                pageSize: 5,
-                total: paymentsPage.totalPages * 5, // Assuming 5 items per page
-                current: paymentsPage.currentPage + 1, // API uses 0-based indexing
-                onChange: handlePageChange,
-                style: { padding: "16px 24px" },
-              }}
-              rowClassName={() => "dashboard-table-row"}
-            />
+            {recentOrders.length > 0 ? (
+              <StyledTable
+                columns={columns}
+                dataSource={recentOrders}
+                pagination={{
+                  pageSize: 5,
+                  total: (recentPayments.totalPages || 1) * 5,
+                  current: (recentPayments.currentPage || 0) + 1,
+                  onChange: handlePageChange,
+                  style: { padding: "16px 24px" },
+                }}
+                rowClassName={() => "dashboard-table-row"}
+              />
+            ) : (
+              <div style={{ padding: "20px", textAlign: "center" }}>
+                <Text type="secondary">Không có dữ liệu đơn hàng gần đây</Text>
+              </div>
+            )}
           </StyledCard>
         </Col>
       </Row>

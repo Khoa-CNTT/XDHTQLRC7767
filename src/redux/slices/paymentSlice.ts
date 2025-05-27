@@ -33,6 +33,14 @@ interface PaymentState {
   };
   // New state for all payments
   allPayments: Payment[];
+  // New state for recent payments
+  recentPayments: {
+    data: RecentPayment[];
+    loading: boolean;
+    error: string | null;
+    totalPages: number;
+    currentPage: number;
+  };
 }
 
 // Định nghĩa kiểu dữ liệu cho request thanh toán
@@ -63,6 +71,21 @@ export interface Payment {
   customerName: string;
   customerEmail: string;
   customerPhoneNumber: string;
+  // Add properties used in Dashboard
+  id?: number;
+  amount?: number;
+  date?: string;
+  status?: string;
+}
+
+// New interface for recent payments from API
+export interface RecentPayment {
+  id: number;
+  amount: number;
+  date: string;
+  status: string;
+  customer: string;
+  movieName: string;
 }
 
 export type MonthlyRevenue = [number, number];
@@ -81,6 +104,11 @@ export interface PaymentStatistic {
 }
 
 export interface PaymentPageParams {
+  page: number;
+}
+
+export interface RecentPaymentParams {
+  limit: number;
   page: number;
 }
 
@@ -140,6 +168,14 @@ const initialState: PaymentState = {
   },
   // Initialize all payments state
   allPayments: [],
+  // Initialize recent payments state
+  recentPayments: {
+    data: [],
+    loading: false,
+    error: null,
+    totalPages: 0,
+    currentPage: 0,
+  },
 };
 
 // Tạo slice
@@ -201,7 +237,10 @@ const paymentSlice = createSlice({
     },
 
     // New reducers for payment statistics
-    getPaymentsPageRequest: (state) => {
+    getPaymentsPageRequest: (
+      state,
+      action: PayloadAction<PaymentPageParams>
+    ) => {
       state.paymentsPage.loading = true;
       state.paymentsPage.error = null;
     },
@@ -223,7 +262,54 @@ const paymentSlice = createSlice({
       state.paymentsPage.error = action.payload;
     },
 
-    getYearlyRevenueRequest: (state) => {
+    // New reducers for recent payments
+    getRecentPaymentsRequest: (
+      state,
+      action: PayloadAction<RecentPaymentParams>
+    ) => {
+      state.recentPayments.loading = true;
+      state.recentPayments.error = null;
+    },
+    getRecentPaymentsSuccess: (
+      state,
+      action: PayloadAction<
+        | {
+            content: RecentPayment[];
+            totalPages: number;
+            number: number;
+          }
+        | RecentPayment[]
+      >
+    ) => {
+      state.recentPayments.loading = false;
+
+      // Handle both array response and paginated response formats
+      if (Array.isArray(action.payload)) {
+        // Direct array of payments
+        state.recentPayments.data = action.payload;
+        state.recentPayments.totalPages = 1;
+        state.recentPayments.currentPage = 0;
+      } else {
+        // Paginated response with content, totalPages, number
+        state.recentPayments.data = action.payload.content || [];
+        state.recentPayments.totalPages = action.payload.totalPages || 1;
+        state.recentPayments.currentPage = action.payload.number || 0;
+      }
+
+      console.log(
+        "[PAYMENT_SLICE] Recent payments data set:",
+        state.recentPayments.data
+      );
+    },
+    getRecentPaymentsFailure: (state, action: PayloadAction<string>) => {
+      state.recentPayments.loading = false;
+      state.recentPayments.error = action.payload;
+    },
+
+    getYearlyRevenueRequest: (
+      state,
+      action: PayloadAction<YearlyRevenueParams>
+    ) => {
       state.yearlyRevenue.loading = true;
       state.yearlyRevenue.error = null;
     },
@@ -240,7 +326,10 @@ const paymentSlice = createSlice({
       state.yearlyRevenue.error = action.payload;
     },
 
-    getDailyRevenueRequest: (state) => {
+    getDailyRevenueRequest: (
+      state,
+      action: PayloadAction<DailyRevenueParams>
+    ) => {
       state.dailyRevenue.loading = true;
       state.dailyRevenue.error = null;
     },
@@ -348,6 +437,10 @@ export const {
   getPaymentsPageRequest,
   getPaymentsPageSuccess,
   getPaymentsPageFailure,
+  // New exports for recent payments
+  getRecentPaymentsRequest,
+  getRecentPaymentsSuccess,
+  getRecentPaymentsFailure,
   getYearlyRevenueRequest,
   getYearlyRevenueSuccess,
   getYearlyRevenueFailure,

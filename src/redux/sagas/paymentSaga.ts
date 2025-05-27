@@ -11,6 +11,9 @@ import {
   getPaymentsPageRequest,
   getPaymentsPageSuccess,
   getPaymentsPageFailure,
+  getRecentPaymentsRequest,
+  getRecentPaymentsSuccess,
+  getRecentPaymentsFailure,
   getYearlyRevenueRequest,
   getYearlyRevenueSuccess,
   getYearlyRevenueFailure,
@@ -21,10 +24,12 @@ import {
   getPaymentStatisticsSuccess,
   getPaymentStatisticsFailure,
   PaymentPageParams,
+  RecentPaymentParams,
   YearlyRevenueParams,
   DailyRevenueParams,
   StatisticsParams,
   Payment,
+  RecentPayment,
   DailyRevenueDTO,
   getAllPaymentsRequest,
   getAllPaymentsSuccess,
@@ -647,6 +652,71 @@ export function* verifyTransactionSaga(
   }
 }
 
+// New saga function for recent payments
+export function* getRecentPaymentsSaga(
+  action: PayloadAction<RecentPaymentParams>
+): Generator<any, void, any> {
+  try {
+    const { limit, page } = action.payload;
+    console.log(
+      `[PAYMENT_SAGA] Fetching recent payments with limit=${limit}, page=${page}`
+    );
+
+    // URL: http://localhost:8080/api/payment/recent?limit=5&page=1
+    const response = yield call(
+      axiosInstance.get,
+      `http://localhost:8080/api/payment/recent?limit=${limit}&page=${page}`
+    );
+
+    console.log("[PAYMENT_SAGA] Recent payments API response:", response.data);
+
+    // Check if response.data is an array or a paginated object
+    if (Array.isArray(response.data)) {
+      // Direct array response
+      console.log(
+        "[PAYMENT_SAGA] Received array response with",
+        response.data.length,
+        "items"
+      );
+      yield put(getRecentPaymentsSuccess(response.data));
+    } else {
+      // Paginated response
+      const data = response.data as {
+        content: RecentPayment[];
+        totalPages: number;
+        number: number;
+      };
+
+      console.log("[PAYMENT_SAGA] Received paginated response:", {
+        content: data.content || [],
+        totalPages: data.totalPages,
+        currentPage: data.number,
+      });
+
+      yield put(getRecentPaymentsSuccess(data));
+    }
+  } catch (error: any) {
+    console.error("[PAYMENT_SAGA] Get recent payments error:", error);
+    console.error(
+      "[PAYMENT_SAGA] Error details:",
+      error.response?.data || error.message
+    );
+
+    yield put(
+      getRecentPaymentsFailure(
+        error.response?.data?.message ||
+          "Không thể lấy danh sách đơn hàng gần đây"
+      )
+    );
+    notificationUtils.error({
+      message: "Lỗi tải dữ liệu",
+      description:
+        error.response?.data?.message ||
+        "Không thể lấy danh sách đơn hàng gần đây. Vui lòng thử lại sau.",
+    });
+  }
+}
+
 // Saga chính
 export default function* paymentSaga() {
   yield takeEvery(createPaymentRequest.type, createPaymentSaga);
@@ -654,6 +724,7 @@ export default function* paymentSaga() {
 
   // Register new sagas
   yield takeEvery(getPaymentsPageRequest.type, getPaymentsPageSaga);
+  yield takeEvery(getRecentPaymentsRequest.type, getRecentPaymentsSaga);
   yield takeEvery(getYearlyRevenueRequest.type, getYearlyRevenueSaga);
   yield takeEvery(getDailyRevenueRequest.type, getDailyRevenueSaga);
   yield takeEvery(getPaymentStatisticsRequest.type, getPaymentStatisticsSaga);
