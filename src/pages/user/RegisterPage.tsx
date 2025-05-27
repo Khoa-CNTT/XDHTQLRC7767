@@ -225,6 +225,13 @@ const RegisterPage: React.FC = () => {
     (state: RootState) => state.auth.register
   );
 
+  // Remove pendingVerificationEmail from localStorage if it exists
+  useEffect(() => {
+    if (localStorage.getItem("pendingVerificationEmail")) {
+      localStorage.removeItem("pendingVerificationEmail");
+    }
+  }, []);
+
   // Display error message if any
   useEffect(() => {
     if (error) {
@@ -244,6 +251,12 @@ const RegisterPage: React.FC = () => {
     confirm: string;
     phoneNumber: string;
   }) => {
+    // Save email to localStorage for verification page
+    localStorage.setItem(
+      "pendingVerificationEmail",
+      values.email.trim().toLowerCase()
+    );
+
     // Dispatch action đăng ký với redux-saga
     dispatch(
       registerStart({

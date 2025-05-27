@@ -53,9 +53,9 @@ const EmailVerification: React.FC = () => {
         title="Xác thực email của bạn"
         subTitle={
           <>
-            Chúng tôi đã gửi một email xác thực đến địa chỉ{" "}
-            <strong>{email}</strong>. Vui lòng kiểm tra hộp thư đến và làm theo
-            hướng dẫn để hoàn tất quá trình xác thực tài khoản.
+            Chúng tôi đã gửi một email xác thực đến địa chỉ của bạn . Vui lòng
+            kiểm tra hộp thư đến và làm theo hướng dẫn để hoàn tất quá trình xác
+            thực tài khoản.
             <br />
             <br />
             Nếu bạn không nhận được email, vui lòng kiểm tra thư mục spam hoặc
