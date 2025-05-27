@@ -2,13 +2,17 @@ package dtu.doan.service.impl;
 
 import dtu.doan.dto.DailyRevenueDTO;
 import dtu.doan.dto.PaymentTicketDTO;
+import dtu.doan.dto.RecentPaymentDTO;
 import dtu.doan.model.Payment;
+import dtu.doan.model.Ticket;
 import dtu.doan.repository.CustomerRepository;
 import dtu.doan.repository.PaymentRepository;
 import dtu.doan.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,6 +27,8 @@ public class PaymentServiceImpl implements PaymentService {
     CustomerRepository customerRepository;
     @Override
     public Page<Payment> getPageOfPayment(Pageable pageable) {
+        Page<Payment> payments = paymentRepository.getPageOfPayment(pageable);
+        System.out.println(payments);
         return paymentRepository.getPageOfPayment(pageable);
     }
 
@@ -80,6 +86,45 @@ public class PaymentServiceImpl implements PaymentService {
             paymentTicketDTOS.add(paymentTicketDTO);
         }
         return paymentTicketDTOS;
+    }
+
+    @Override
+    public List<RecentPaymentDTO> getRecentPayments(int page,int limit) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC, "date"));
+        Page<Payment> paymentsPage = paymentRepository.findAll(pageable);
+        List<Payment> payments = paymentsPage.getContent();
+
+//        List<Payment> payments = paymentRepository.findAll(Sort.by(Sort.Direction.DESC, "date"));
+
+        List<RecentPaymentDTO> recentPayments = new ArrayList<>();
+
+        for (Payment payment : payments) {
+            if (payment.getTickets() == null || payment.getTickets().isEmpty()) {
+                continue; // Skip payments without tickets
+            }
+
+            RecentPaymentDTO dto = new RecentPaymentDTO();
+            dto.setId(payment.getId());
+            dto.setAmount(payment.getAmount());
+            dto.setStatus(payment.getStatus());
+            dto.setDate(payment.getDate());
+
+            // Get customer name from the first ticket
+            Ticket firstTicket = payment.getTickets().get(0);
+            if (firstTicket.getCustomer() != null) {
+                dto.setCustomer(firstTicket.getCustomer().getFullName());
+            }
+
+            // Get movie name from the first ticket's showtime
+            if (firstTicket.getShowTime() != null && firstTicket.getShowTime().getMovie() != null) {
+                dto.setMovieName(firstTicket.getShowTime().getMovie().getName());
+            }
+
+            recentPayments.add(dto);
+        }
+
+        return recentPayments;
+
     }
 
 

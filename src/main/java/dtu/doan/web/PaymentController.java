@@ -2,6 +2,7 @@ package dtu.doan.web;
 
 import dtu.doan.dto.DailyRevenueDTO;
 import dtu.doan.dto.PaymentTicketDTO;
+import dtu.doan.dto.RecentPaymentDTO;
 import dtu.doan.model.Payment;
 import dtu.doan.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,10 @@ public class PaymentController {
     PaymentService paymentService;
 
     @GetMapping()
-    public ResponseEntity<Page<Payment>> getPageOfPayment(@RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<Page<?>> getPageOfPayment(@RequestParam(value = "page", defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, 5, Sort.by("id").descending());
         Page<Payment> paymentPage = paymentService.getPageOfPayment(pageable);
+        System.out.println(paymentPage);
         return ResponseEntity.ok(paymentPage);
     }
 
@@ -52,5 +54,15 @@ public class PaymentController {
         List<Object[]> statistics = paymentService.getPaymentStatistics(startDate, endDate);
         return ResponseEntity.ok(statistics);
     }
+
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<RecentPaymentDTO>> getRecentPayments(
+            @RequestParam(value = "limit", defaultValue = "5") int limit,
+            @RequestParam(value = "page", defaultValue = "0")int page) {
+        List<RecentPaymentDTO> recentPayments = paymentService.getRecentPayments(page,limit);
+        return new ResponseEntity<>(recentPayments, HttpStatus.OK);
+    }
+
 
 }

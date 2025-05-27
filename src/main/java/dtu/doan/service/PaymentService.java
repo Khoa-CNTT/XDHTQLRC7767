@@ -2,6 +2,7 @@ package dtu.doan.service;
 
 import dtu.doan.dto.DailyRevenueDTO;
 import dtu.doan.dto.PaymentTicketDTO;
+import dtu.doan.dto.RecentPaymentDTO;
 import dtu.doan.model.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,5 +17,6 @@ public interface PaymentService {
     DailyRevenueDTO getRevenueAndTicketCountByDate(LocalDate date);
     List<Object[]> getPaymentStatistics(LocalDate startDate, LocalDate endDate);
     List<PaymentTicketDTO> getAllPayments();
+    List<RecentPaymentDTO> getRecentPayments(int page,int limit);
 
 }
