@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    List<Employee> findByFullNameContainingAndEmailContainingAndPhoneNumberContaining(String fullName, String email, String phoneNumber);
+    List<Employee> findByFullNameContainingAndEmailContainingAndPhoneNumberContainingAndIsDeleteFalse(String fullName, String email, String phoneNumber);
 
     @Query("SELECT e FROM Employee e WHERE e.username.username = ?1")
     Optional<Employee> findEmployeeByUsername(String username);

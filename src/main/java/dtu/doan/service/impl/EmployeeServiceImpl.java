@@ -17,7 +17,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> getAllEmployees(String fullName, String email, String phoneNumber) {
-        return repository.findByFullNameContainingAndEmailContainingAndPhoneNumberContaining(
+        return repository.findByFullNameContainingAndEmailContainingAndPhoneNumberContainingAndIsDeleteFalse(
                 fullName != null ? fullName : "",
                 email != null ? email : "",
                 phoneNumber != null ? phoneNumber : ""
