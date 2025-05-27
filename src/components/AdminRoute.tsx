@@ -2,6 +2,7 @@ import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import LoadingScreen from "./common/LoadingScreen";
+import NotFound from "../pages/NotFound";
 
 const AdminRoute = () => {
   const { isAuthenticated, user } = useSelector(
@@ -22,8 +23,8 @@ const AdminRoute = () => {
     !user ||
     (user.role !== "ADMIN" && user.role !== "EMPLOYEE")
   ) {
-    // If not admin or employee, redirect to login page
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // If not admin or employee, redirect to 404 page instead of login
+    return <NotFound />;
   }
 
   console.log("User đã xác thực thành công, cho phép truy cập dashboard");

@@ -2,6 +2,7 @@ import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import LoadingScreen from "./common/LoadingScreen";
+import NotFound from "../pages/NotFound";
 
 const EmployeeRoute = () => {
   const { isAuthenticated, user } = useSelector(
@@ -28,11 +29,9 @@ const EmployeeRoute = () => {
     !user.account ||
     (user.account.role !== "ADMIN" && user.account.role !== "EMPLOYEE")
   ) {
-    console.log(
-      "Chuyển hướng về trang login vì không phải admin hoặc employee"
-    );
-    // If not admin or employee, redirect to login page
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    console.log("Chuyển hướng về trang 404 vì không phải admin hoặc employee");
+    // If not admin or employee, redirect to 404 page
+    return <NotFound />;
   }
 
   console.log("User có quyền truy cập (ADMIN hoặc EMPLOYEE)");

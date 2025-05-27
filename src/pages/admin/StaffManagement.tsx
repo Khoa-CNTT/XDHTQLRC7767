@@ -430,30 +430,37 @@ const StaffManagement: React.FC = () => {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => (
+      render: (_, record: Employee) => (
         <Space size="small">
-          {(!record.username?.role || record.username.role !== "ADMIN") && (
-            <>
-              <Tooltip title="Chỉnh sửa">
-                <ActionButton
-                  icon={<EditOutlined />}
-                  onClick={() => handleEdit(record)}
-                  type="primary"
-                  size="small"
-                />
-              </Tooltip>
-              <Tooltip title="Xóa">
-                <Popconfirm
-                  title="Bạn có chắc chắn muốn xóa nhân viên này?"
-                  onConfirm={() => record.id && handleDelete(record.id)}
-                  okText="Có"
-                  cancelText="Không"
-                >
-                  <ActionButton icon={<DeleteOutlined />} danger size="small" />
-                </Popconfirm>
-              </Tooltip>
-            </>
-          )}
+          {(!record.username ||
+            (typeof record.username === "object" &&
+              record.username.role !== "ADMIN")) &&
+            !isEmployee && (
+              <>
+                <Tooltip title="Chỉnh sửa">
+                  <ActionButton
+                    icon={<EditOutlined />}
+                    onClick={() => handleEdit(record)}
+                    type="primary"
+                    size="small"
+                  />
+                </Tooltip>
+                <Tooltip title="Xóa">
+                  <Popconfirm
+                    title="Bạn có chắc chắn muốn xóa nhân viên này?"
+                    onConfirm={() => record.id && handleDelete(record.id)}
+                    okText="Có"
+                    cancelText="Không"
+                  >
+                    <ActionButton
+                      icon={<DeleteOutlined />}
+                      danger
+                      size="small"
+                    />
+                  </Popconfirm>
+                </Tooltip>
+              </>
+            )}
         </Space>
       ),
     },

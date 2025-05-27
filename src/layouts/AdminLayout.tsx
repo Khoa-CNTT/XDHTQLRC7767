@@ -301,11 +301,10 @@ const AdminLayout: React.FC = () => {
                   }}
                   icon={<UserOutlined />}
                 />
-                z
                 <Text
                   style={{ marginLeft: 8, fontWeight: 500, color: "#334155" }}
                 >
-                  Admin
+                  {user?.fullName || "User"}
                 </Text>
               </UserDropdown>
             </Dropdown>
