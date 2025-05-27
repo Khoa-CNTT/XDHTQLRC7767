@@ -14,7 +14,6 @@ import { RootState } from "../../redux/store";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { authService } from "../../services/authService";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
 
 const { Title, Text } = Typography;
 

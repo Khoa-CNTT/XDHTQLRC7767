@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { resetPasswordStart } from "../../redux/slices/authSlice";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import AuthPageSkeleton from "../../components/auth/AuthPageSkeleton";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 const { Title } = Typography;
 
@@ -200,7 +200,7 @@ const ResetPasswordPage: React.FC = () => {
   };
 
   if (loading) {
-    return <AuthPageSkeleton />;
+    return <LoadingScreen />;
   }
 
   return (
